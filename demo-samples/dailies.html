@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>GeoJSON points</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <script async defer src="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js" onload="initMap()"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .mapboxgl-popup {
+            max-width: 400px;
+        }
+
+        .map-overlay {
+            font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+            position: absolute;
+            top: 10;
+            width: 50%;
+            left: 50%;
+            -webkit-transform: translateX(-50%);
+            transform: translateX(-50%);
+            padding: 10px;
+        }
+        
+        .map-overlay .map-overlay-inner {
+            background-color: #aaa;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .map-overlay input {
+            background-color: transparent;
+            display: inline-block;
+            width: 100%;
+            position: relative;
+            margin: 0;
+            cursor: ew-resize;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <div class="map-overlay top">
+        <div class="map-overlay-inner">
+            <h2>COVID-19 New Cases by Day</h2>
+            <label id="date"></label>
+            <input id="slider" type="range" min="0" max="1000" step="1" value="1000" />
+        </div>
+    </div>
+    <script>
+        var totalsUrl = 'totals.json';
+        var dailyUrl = 'dailies.json'
+        var dates = [];
+        var timeControl = document.getElementById("slider");
+        var timeLabel = document.getElementById("date");
+
+        function initMap() {
+            mapboxgl.accessToken = 'pk.eyJ1IjoiamJyYW5pZ2FuIiwiYSI6IktMZk9BdlEifQ.C3UajH3z1zLu1lIDBsbaMQ';
+            var map = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/mapbox/dark-v10',
+                center: [-0, 0],
+                zoom: 2,
+                maxZoom: 6,
+                hash: true
+            });
+
+            function filterBy(isodate) {
+                var filters = ['==', 'date', isodate];
+                map.setFilter('daily', filters);
+                // map.setFilter('earthquake-labels', filters);
+
+                // Set the label to the month
+                // document.getElementById('month').textContent = months[month];
+            }
+
+            function setTimeControlLabel(date) {
+                timeLabel.innerText = dates[date];
+            };
+
+            function buildTimeControl() {
+                timeControl.setAttribute("max", dates.length - 1)
+                timeControl.setAttribute("value", dates.length - 1);
+                setTimeControlLabel(dates.length - 1);
+            };
+
+            timeControl.addEventListener("input", () => {
+                setTimeControlLabel(timeControl.value);
+                filterBy(dates[timeControl.value]);
+            });
+
+            map.on('load', function () {
+                map.addSource('cumulative', {
+                    'type': 'geojson',
+                    'data': {
+                        'type': 'FeatureCollection',
+                        'features': []
+                    }
+                });
+                map.addSource('new', {
+                    'type': 'geojson',
+                    'data': {
+                        'type': 'FeatureCollection',
+                        'features': []
+                    }
+                });
+                map.addLayer({
+                    'id': 'totals',
+                    'type': 'circle',
+                    'source': 'cumulative',
+                    'paint': {
+                        'circle-radius': ['interpolate', ['linear'], ['zoom'],
+                            0, ['*', ['log10', ['sqrt', ['get', 'total']]], 5],
+                            10, ['*', ['log10', ['sqrt', ['get', 'total']]], 40]
+                        ],
+                        'circle-color': [
+                            'step',
+                            ['get', 'total'],
+                            '#fad965',
+                            10,
+                            '#fca967',
+                            100,
+                            '#e97455',
+                            1000,
+                            '#dd4457'
+                        ],
+                        'circle-opacity': 1
+                    }
+                });
+                map.addLayer({
+                    'id': 'daily',
+                    'type': 'circle',
+                    'source': 'new',
+                    'paint': {
+                        'circle-radius': ['interpolate', ['linear'], ['zoom'],
+                            0, ['*', ['log10', ['sqrt', ['get', 'total']]], 5],
+                            10, ['*', ['log10', ['sqrt', ['get', 'total']]], 40]
+                        ],
+                        'circle-color': 'cornflowerblue',
+                        'circle-opacity': 1
+                    }
+                });
+
+                // Create a popup, but don't add it to the map yet.
+                var popup = new mapboxgl.Popup({
+                    closeButton: false,
+                    closeOnClick: false
+                });
+
+                                // Create a popup, but don't add it to the map yet.
+                                var popup = new mapboxgl.Popup({
+                    closeButton: false,
+                    closeOnClick: false
+                });
+
+                map.on('mouseenter', 'totals', function (e) {
+                    // Change the cursor style as a UI indicator.
+                    map.getCanvas().style.cursor = 'pointer';
+
+                    var coordinates = e.features[0].geometry.coordinates.slice();
+                    var props = e.features[0].properties;
+                    var city = props.city ? props.city+', ' : '';
+                    var province = props.province ? props.province+', ' : '';
+                    var country = props.country ? props.country : '';
+                    var description = 
+                        '<h3 class="popup-header">' + city + province + country + '</h3>' +
+                        '<div>' + '<strong>Number of Cases: </strong>' + props.total + '</div>';
+
+                    // Ensure that if the map is zoomed out such that multiple
+                    // copies of the feature are visible, the popup appears
+                    // over the copy being pointed to.
+                    while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                        coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                    }
+
+                    // Populate the popup and set its coordinates
+                    // based on the feature found.
+                    popup
+                        .setLngLat(coordinates)
+                        .setHTML(description)
+                        .addTo(map);
+                });
+
+                map.on('mouseleave', 'totals', function () {
+                    map.getCanvas().style.cursor = '';
+                    popup.remove();
+                });
+
+                fetch(totalsUrl).then(res => res.json()).then(res => {
+                    map.getSource('cumulative').setData(res);
+                });
+
+                fetch(dailyUrl).then(res => res.json()).then(res => {
+                    var datesUnsorted = [];
+                    res.features.forEach(feature => {
+                        var date = feature.properties.date;
+                        if(!datesUnsorted.includes(date) && date !== '' && date !== '2020-2-18' && date !== '2020-02-2020 - 26-02-25') {
+                            datesUnsorted.push(date)
+                        }
+                    });
+                    dates = datesUnsorted.sort();
+                    buildTimeControl();
+                    map.getSource('new').setData(res);
+                    filterBy(dates[dates.length - 1]);
+                });
+
+            });
+        }
+    </script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css" rel="stylesheet" />
+</body>
+
+</html>
