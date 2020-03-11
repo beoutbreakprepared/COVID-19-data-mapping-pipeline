@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>GeoJSON points</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <script async defer src="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js" onload="initMap()"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+        .mapboxgl-popup {
+            max-width: 400px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <script>
+        var dataUrl = 'totals.json';
+
+        function initMap() {
+            mapboxgl.accessToken = 'pk.eyJ1IjoiamJyYW5pZ2FuIiwiYSI6IktMZk9BdlEifQ.C3UajH3z1zLu1lIDBsbaMQ';
+            var map = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/mapbox/dark-v10',
+                center: [-0, 0],
+                zoom: 2,
+                maxZoom: 6,
+                hash: true
+            });
+
+            map.on('load', function () {
+                map.addSource('points', {
+                    'type': 'geojson',
+                    'data': {
+                        'type': 'FeatureCollection',
+                        'features': []
+                    }
+                });
+                map.addLayer({
+                    'id': 'sites',
+                    'type': 'circle',
+                    'source': 'points',
+                    'paint': {
+                        'circle-radius': ['interpolate', ['linear'], ['zoom'],
+                            0, ['*', ['log10', ['sqrt', ['get', 'total']]], 5],
+                            10, ['*', ['log10', ['sqrt', ['get', 'total']]], 40]
+                        ],
+                        'circle-color': [
+                            'step',
+                            ['get', 'total'],
+                            '#fad965',
+                            10,
+                            '#fca967',
+                            100,
+                            '#e97455',
+                            1000,
+                            '#dd4457'
+                        ],
+                        'circle-opacity': 1
+                    }
+                });
+
+                // Create a popup, but don't add it to the map yet.
+                var popup = new mapboxgl.Popup({
+                    closeButton: false,
+                    closeOnClick: false
+                });
+
+                map.on('mouseenter', 'sites', function (e) {
+                    // Change the cursor style as a UI indicator.
+                    map.getCanvas().style.cursor = 'pointer';
+
+                    var coordinates = e.features[0].geometry.coordinates.slice();
+                    var props = e.features[0].properties;
+                    var city = props.city ? props.city+', ' : '';
+                    var province = props.province ? props.province+', ' : '';
+                    var country = props.country ? props.country : '';
+                    var description = 
+                        '<h3 class="popup-header">' + city + province + country + '</h3>' +
+                        '<div>' + '<strong>Number of Cases: </strong>' + props.total + '</div>';
+
+                    // Ensure that if the map is zoomed out such that multiple
+                    // copies of the feature are visible, the popup appears
+                    // over the copy being pointed to.
+                    while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                        coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                    }
+
+                    // Populate the popup and set its coordinates
+                    // based on the feature found.
+                    popup
+                        .setLngLat(coordinates)
+                        .setHTML(description)
+                        .addTo(map);
+                });
+
+                map.on('mouseleave', 'sites', function () {
+                    map.getCanvas().style.cursor = '';
+                    popup.remove();
+                });
+
+                fetch(dataUrl).then(res => res.json()).then(res => {
+                    map.getSource('points').setData(res);
+                });
+            });
+        }
+    </script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css" rel="stylesheet" />
+</body>
+
+</html>
