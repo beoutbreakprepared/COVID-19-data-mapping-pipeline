@@ -6,34 +6,55 @@
     <title>GeoJSON points</title>
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
     <script async defer src="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js" onload="initMap()"></script>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-        }
-
-        #map {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 100%;
-        }
-        .mapboxgl-popup {
-            max-width: 400px;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="styles.css" />
 </head>
 
 <body>
-    <div id="map"></div>
+    <div class="map-container">
+      <div id="map"></div>
+      <div class="legend">
+        <ul>
+          <li style="width:16px; height:16px; z-index:5">
+            <span class="circle" style="background-color: #ffef66;"></span>
+            <span class="label">
+              <span class="label-val">10</span>
+            </span>
+          </li>
+          <li style="width:30px; height:30px; z-index:4">
+            <span class="circle" style="background-color: #da7d4a;"></span>
+            <span class="label">
+              <span class="label-val">100</span>
+            </span>
+          </li>
+          <li style="width:40px; height:40px; z-index:3">
+            <span class="circle" style="background-color: #c84d38;"></span>
+            <span class="label">
+              <span class="label-val">250</span>
+            </span>
+          </li>
+          <li style="width:50px; height:50px; z-index:2">
+            <span class="circle" style="background-color: #a8101a;"></span>
+            <span class="label">
+              <span class="label-val">500</span>
+            </span>
+          </li>
+          <li style="width:64px; height:64px; z-index:1">
+            <span class="circle" style="background-color: #6c0007;"></span>
+            <span class="label">
+              <span class="label-val">> 500</span>
+            </span>
+          </li>
+        </ul>
+      </div>
+    </div>
     <script>
         var dataUrl = 'totals.json';
 
         function initMap() {
-            mapboxgl.accessToken = 'pk.eyJ1IjoiamJyYW5pZ2FuIiwiYSI6IktMZk9BdlEifQ.C3UajH3z1zLu1lIDBsbaMQ';
+            mapboxgl.accessToken = 'pk.eyJ1Ijoia2F0ZWx5bm5vYnJpZW4iLCJhIjoiY2sxa3ZjbTR4MDA2bTNjcGR4cXIwZnJidSJ9.wrkfV082TaX5P65i2L8upg';
             var map = new mapboxgl.Map({
                 container: 'map',
-                style: 'mapbox://styles/mapbox/dark-v10',
+                style: 'mapbox://styles/katelynnobrien/ck5y23wmc0aso1iqtbww5nzrr',
                 center: [-0, 0],
                 zoom: 2,
                 maxZoom: 6,
@@ -60,15 +81,17 @@
                         'circle-color': [
                             'step',
                             ['get', 'total'],
-                            '#fad965',
+                            '#ffef66',
                             10,
-                            '#fca967',
+                            '#da7d4a',
                             100,
-                            '#e97455',
-                            1000,
-                            '#dd4457'
+                            '#c84d38',
+                            250,
+                            '#a8101a',
+                            500,
+                            '#6c0007',
                         ],
-                        'circle-opacity': 1
+                        'circle-opacity': .8
                     }
                 });
 
@@ -87,7 +110,7 @@
                     var city = props.city ? props.city+', ' : '';
                     var province = props.province ? props.province+', ' : '';
                     var country = props.country ? props.country : '';
-                    var description = 
+                    var description =
                         '<h3 class="popup-header">' + city + province + country + '</h3>' +
                         '<div>' + '<strong>Number of Cases: </strong>' + props.total + '</div>';
 
@@ -118,6 +141,6 @@
         }
     </script>
     <link href="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css" rel="stylesheet" />
-</body>
+  </body>
 
 </html>
