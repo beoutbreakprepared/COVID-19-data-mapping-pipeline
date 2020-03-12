@@ -104,4 +104,5 @@ li .label-val {
 
 .mapboxgl-popup {
   max-width: 400px;
+  color: #222;
 }
