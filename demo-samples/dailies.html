@@ -63,8 +63,7 @@
         </div>
     </div>
     <script>
-        var totalsUrl = 'totals.json';
-        var dailyUrl = 'dailies.json'
+        var dataUrl = './ncov2019.dailies.geojson';
         var dates = [];
         var timeControl = document.getElementById("slider");
         var timeLabel = document.getElementById("date");
@@ -83,6 +82,7 @@
             function filterBy(isodate) {
                 var filters = ['==', 'date', isodate];
                 map.setFilter('daily', filters);
+                map.setFilter('totals', filters);
             }
 
             function setTimeControlLabel(date) {
@@ -101,65 +101,55 @@
             });
 
             map.on('load', function () {
-                map.addSource('cumulative', {
+                map.addSource('counts', {
                     'type': 'geojson',
                     'data': {
                         'type': 'FeatureCollection',
                         'features': []
                     }
                 });
-                map.addSource('new', {
-                    'type': 'geojson',
-                    'data': {
-                        'type': 'FeatureCollection',
-                        'features': []
-                    }
-                });
+                // map.addSource('new', {
+                //     'type': 'geojson',
+                //     'data': {
+                //         'type': 'FeatureCollection',
+                //         'features': []
+                //     }
+                // });
                 map.addLayer({
                     'id': 'totals',
                     'type': 'circle',
-                    'source': 'cumulative',
+                    'source': 'counts',
                     'paint': {
-                        'circle-radius': ['interpolate', ['linear'], ['zoom'],
-                            0, ['*', ['log10', ['sqrt', ['get', 'total']]], 5],
-                            10, ['*', ['log10', ['sqrt', ['get', 'total']]], 40]
-                        ],
+                        'circle-radius': ['*', ['log10', ['sqrt', ['get', 'total']]], 25],
                         'circle-color': [
                             'step',
                             ['get', 'total'],
-                            '#fad965',
+                            '#ffef66',
                             10,
-                            '#fca967',
+                            '#da7d4a',
                             100,
-                            '#e97455',
-                            1000,
-                            '#dd4457'
+                            '#c84d38',
+                            250,
+                            '#a8101a',
+                            500,
+                            '#6c0007',
                         ],
-                        'circle-opacity': 0.7
+                        'circle-opacity': .8
                     }
                 });
                 map.addLayer({
                     'id': 'daily',
                     'type': 'circle',
-                    'source': 'new',
+                    'source': 'counts',
                     'paint': {
-                        'circle-radius': ['interpolate', ['linear'], ['zoom'],
-                            0, ['*', ['log10', ['sqrt', ['get', 'total']]], 5],
-                            10, ['*', ['log10', ['sqrt', ['get', 'total']]], 40]
-                        ],
+                        'circle-radius': ['*', ['log10', ['sqrt', ['get', 'new']]], 25],
                         'circle-color': 'cornflowerblue',
-                        'circle-opacity': 0.7
+                        'circle-opacity': 0.8
                     }
                 });
 
                 // Create a popup, but don't add it to the map yet.
                 var popup = new mapboxgl.Popup({
-                    closeButton: false,
-                    closeOnClick: false
-                });
-
-                                // Create a popup, but don't add it to the map yet.
-                                var popup = new mapboxgl.Popup({
                     closeButton: false,
                     closeOnClick: false
                 });
@@ -197,11 +187,11 @@
                     popup.remove();
                 });
 
-                fetch(totalsUrl).then(res => res.json()).then(res => {
-                    map.getSource('cumulative').setData(res);
-                });
+                // fetch(totalsUrl).then(res => res.json()).then(res => {
+                //     map.getSource('cumulative').setData(res);
+                // });
 
-                fetch(dailyUrl).then(res => res.json()).then(res => {
+                fetch(dataUrl).then(res => res.json()).then(res => {
                     var datesUnsorted = [];
                     res.features.forEach(feature => {
                         var date = feature.properties.date;
@@ -211,7 +201,7 @@
                     });
                     dates = datesUnsorted.sort();
                     buildTimeControl();
-                    map.getSource('new').setData(res);
+                    map.getSource('counts').setData(res);
                     filterBy(dates[dates.length - 1]);
                 });
 
