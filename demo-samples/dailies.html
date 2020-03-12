@@ -83,10 +83,6 @@
             function filterBy(isodate) {
                 var filters = ['==', 'date', isodate];
                 map.setFilter('daily', filters);
-                // map.setFilter('earthquake-labels', filters);
-
-                // Set the label to the month
-                // document.getElementById('month').textContent = months[month];
             }
 
             function setTimeControlLabel(date) {
@@ -139,7 +135,7 @@
                             1000,
                             '#dd4457'
                         ],
-                        'circle-opacity': 1
+                        'circle-opacity': 0.7
                     }
                 });
                 map.addLayer({
@@ -152,7 +148,7 @@
                             10, ['*', ['log10', ['sqrt', ['get', 'total']]], 40]
                         ],
                         'circle-color': 'cornflowerblue',
-                        'circle-opacity': 1
+                        'circle-opacity': 0.7
                     }
                 });
 
