@@ -6,6 +6,7 @@
     <title>GeoJSON points</title>
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
     <script async defer src="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js" onload="initMap()"></script>
+    <link rel="stylesheet" type="text/css" href="styles.css" />
     <style>
         body {
             margin: 0;
@@ -35,7 +36,7 @@
         }
         
         .map-overlay .map-overlay-inner {
-            background-color: #aaa;
+            background-color: #444;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
             border-radius: 3px;
             padding: 10px;
@@ -54,26 +55,61 @@
 </head>
 
 <body>
-    <div id="map"></div>
-    <div class="map-overlay top">
-        <div class="map-overlay-inner">
-            <h2>COVID-19 New Cases by Day</h2>
-            <label id="date"></label>
-            <input id="slider" type="range" min="0" max="1000" step="1" value="1000" />
+    <div class="map-container">
+        <div id="map"></div>
+        <div class="map-overlay top">
+            <div class="map-overlay-inner">
+                <h2>COVID-19 New Cases by Day</h2>
+                <label id="date"></label>
+                <input id="slider" type="range" min="0" max="1000" step="1" value="1000" />
+            </div>
+        </div>
+        <div class="legend">
+            <ul>
+            <li style="width:12px; height:12px; z-index:5">
+                <span class="circle" style="background-color: #ffef66;"></span>
+                <span class="label">
+                <span class="label-val">10</span>
+                </span>
+            </li>
+            <li style="width:25px; height:25px; z-index:4">
+                <span class="circle" style="background-color: #da7d4a;"></span>
+                <span class="label">
+                <span class="label-val">100</span>
+                </span>
+            </li>
+            <li style="width:33px; height:33px; z-index:3">
+                <span class="circle" style="background-color: #c84d38;"></span>
+                <span class="label">
+                <span class="label-val">500</span>
+                </span>
+            </li>
+            <li style="width:41px; height:41px; z-index:2">
+                <span class="circle" style="background-color: #a8101a;"></span>
+                <span class="label">
+                <span class="label-val">2K</span>
+                </span>
+            </li>
+            <li style="width:50px; height:50px; z-index:1">
+                <span class="circle" style="background-color: #6c0007;"></span>
+                <span class="label">
+                <span class="label-val">> 10K</span>
+                </span>
+            </li>
+            </ul>
         </div>
     </div>
     <script>
-        var totalsUrl = 'totals.json';
-        var dailyUrl = 'dailies.json'
+        var dataUrl = './ncov2019.dailies.geojson';
         var dates = [];
         var timeControl = document.getElementById("slider");
         var timeLabel = document.getElementById("date");
 
         function initMap() {
-            mapboxgl.accessToken = 'pk.eyJ1IjoiamJyYW5pZ2FuIiwiYSI6IktMZk9BdlEifQ.C3UajH3z1zLu1lIDBsbaMQ';
+            mapboxgl.accessToken = 'pk.eyJ1Ijoia2F0ZWx5bm5vYnJpZW4iLCJhIjoiY2sxa3ZjbTR4MDA2bTNjcGR4cXIwZnJidSJ9.wrkfV082TaX5P65i2L8upg';
             var map = new mapboxgl.Map({
                 container: 'map',
-                style: 'mapbox://styles/mapbox/dark-v10',
+                style: 'mapbox://styles/katelynnobrien/ck5y23wmc0aso1iqtbww5nzrr',
                 center: [-0, 0],
                 zoom: 2,
                 maxZoom: 6,
@@ -83,6 +119,7 @@
             function filterBy(isodate) {
                 var filters = ['==', 'date', isodate];
                 map.setFilter('daily', filters);
+                map.setFilter('totals', filters);
             }
 
             function setTimeControlLabel(date) {
@@ -101,65 +138,55 @@
             });
 
             map.on('load', function () {
-                map.addSource('cumulative', {
+                map.addSource('counts', {
                     'type': 'geojson',
                     'data': {
                         'type': 'FeatureCollection',
                         'features': []
                     }
                 });
-                map.addSource('new', {
-                    'type': 'geojson',
-                    'data': {
-                        'type': 'FeatureCollection',
-                        'features': []
-                    }
-                });
+                // map.addSource('new', {
+                //     'type': 'geojson',
+                //     'data': {
+                //         'type': 'FeatureCollection',
+                //         'features': []
+                //     }
+                // });
                 map.addLayer({
                     'id': 'totals',
                     'type': 'circle',
-                    'source': 'cumulative',
+                    'source': 'counts',
                     'paint': {
-                        'circle-radius': ['interpolate', ['linear'], ['zoom'],
-                            0, ['*', ['log10', ['sqrt', ['get', 'total']]], 5],
-                            10, ['*', ['log10', ['sqrt', ['get', 'total']]], 40]
-                        ],
+                        'circle-radius': ['*', ['log10', ['sqrt', ['get', 'total']]], 25],
                         'circle-color': [
                             'step',
                             ['get', 'total'],
-                            '#fad965',
+                            '#ffef66',
                             10,
-                            '#fca967',
+                            '#da7d4a',
                             100,
-                            '#e97455',
-                            1000,
-                            '#dd4457'
+                            '#c84d38',
+                            500,
+                            '#a8101a',
+                            2000,
+                            '#6c0007',
                         ],
-                        'circle-opacity': 0.7
+                        'circle-opacity': .8
                     }
                 });
                 map.addLayer({
                     'id': 'daily',
                     'type': 'circle',
-                    'source': 'new',
+                    'source': 'counts',
                     'paint': {
-                        'circle-radius': ['interpolate', ['linear'], ['zoom'],
-                            0, ['*', ['log10', ['sqrt', ['get', 'total']]], 5],
-                            10, ['*', ['log10', ['sqrt', ['get', 'total']]], 40]
-                        ],
+                        'circle-radius': ['*', ['log10', ['sqrt', ['get', 'new']]], 25],
                         'circle-color': 'cornflowerblue',
-                        'circle-opacity': 0.7
+                        'circle-opacity': 0.8
                     }
                 });
 
                 // Create a popup, but don't add it to the map yet.
                 var popup = new mapboxgl.Popup({
-                    closeButton: false,
-                    closeOnClick: false
-                });
-
-                                // Create a popup, but don't add it to the map yet.
-                                var popup = new mapboxgl.Popup({
                     closeButton: false,
                     closeOnClick: false
                 });
@@ -197,11 +224,11 @@
                     popup.remove();
                 });
 
-                fetch(totalsUrl).then(res => res.json()).then(res => {
-                    map.getSource('cumulative').setData(res);
-                });
+                // fetch(totalsUrl).then(res => res.json()).then(res => {
+                //     map.getSource('cumulative').setData(res);
+                // });
 
-                fetch(dailyUrl).then(res => res.json()).then(res => {
+                fetch(dataUrl).then(res => res.json()).then(res => {
                     var datesUnsorted = [];
                     res.features.forEach(feature => {
                         var date = feature.properties.date;
@@ -211,7 +238,7 @@
                     });
                     dates = datesUnsorted.sort();
                     buildTimeControl();
-                    map.getSource('new').setData(res);
+                    map.getSource('counts').setData(res);
                     filterBy(dates[dates.length - 1]);
                 });
 
