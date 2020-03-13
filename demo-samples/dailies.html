@@ -6,61 +6,20 @@
     <title>GeoJSON points</title>
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
     <script async defer src="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js" onload="initMap()"></script>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-        }
-
-        #map {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 100%;
-        }
-
-        .mapboxgl-popup {
-            max-width: 400px;
-        }
-
-        .map-overlay {
-            font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
-            position: absolute;
-            top: 10;
-            width: 50%;
-            left: 50%;
-            -webkit-transform: translateX(-50%);
-            transform: translateX(-50%);
-            padding: 10px;
-        }
-        
-        .map-overlay .map-overlay-inner {
-            background-color: #aaa;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-            border-radius: 3px;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .map-overlay input {
-            background-color: transparent;
-            display: inline-block;
-            width: 100%;
-            position: relative;
-            margin: 0;
-            cursor: ew-resize;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="styles.css" />
 </head>
 
 <body>
-    <div id="map"></div>
-    <div class="map-overlay top">
-        <div class="map-overlay-inner">
-            <h2>COVID-19 New Cases by Day</h2>
-            <label id="date"></label>
-            <input id="slider" type="range" min="0" max="1000" step="1" value="1000" />
+    <div class="map-container">
+      <div class="header">
+        <h1>Novel Coronavirus (COVID-19)</h1>
+        <div class="range-slider">
+      	  <div id="spread"><img src="../app/img/play.svg" width="20" height="20" alt="Play" />Play</div>
+          <input id="slider" type="range" value="1000" min="0" max="1000" step="1" />
+          <label id="date"></label>
         </div>
+      </div>
+      <div id="map"></div>
     </div>
     <script>
         var totalsUrl = 'totals.json';
@@ -173,7 +132,7 @@
                     var city = props.city ? props.city+', ' : '';
                     var province = props.province ? props.province+', ' : '';
                     var country = props.country ? props.country : '';
-                    var description = 
+                    var description =
                         '<h3 class="popup-header">' + city + province + country + '</h3>' +
                         '<div>' + '<strong>Number of Cases: </strong>' + props.total + '</div>';
 
