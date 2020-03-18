@@ -1,27 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', 'UA-17547010-1']);
-    _gaq.push(['_trackPageview']);
-    (function() {
-      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-    })();
-  </script>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Novel Coronavirus (COVID-19)</title>
-  <link rel="stylesheet" type="text/css" href="css/normalize.css" />
-  <link rel="stylesheet" type="text/css" href="css/reboot.css" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <script async defer src="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js" onload="initMap()"></script>
   <link rel="stylesheet" type="text/css" href="css/fonts.css" />
-  <link href='js/mapbox-gl.css' rel='stylesheet' />
-  <link rel="stylesheet" type="text/css" href="css/styles.css?b" />
+  <!-- <link rel="stylesheet" type="text/css" href="css/styles.css?b" /> -->
+  <link rel="stylesheet" type="text/css" href="css/styles-new.css?b" />
 </head>
 <body>
-	    <!-- modal structure -->
   <div class="modal-wrapper" id="modal">
     <div class="modal-backdrop"></div>
     <div class="modal">
@@ -68,283 +56,221 @@
       </div>
     </div>
   </div>
-  <div class="header">
-    <h1>Novel Coronavirus (COVID-19)</h1>
-    <ul class="list-unstyled legend-header">
-      <li><strong>Number of cases:</strong></li>
-      <li><img src="img/pin1.svg" width="25px" height="25px" alt="1" />50+</li>
-      <li><img src="img/pin2.svg" width="20px" height="20px" alt="2" />25-49</li>
-      <li><img src="img/pin3.svg" width="15px" height="15px" alt="3" />10-24</li>
-      <li><img src="img/pin4.svg" width="10px" height="10px" alt="4" />< 10</li>
-    </ul>
-    <div class="reported-cases">
-      <div class="reported-cases-num" id="total-cases"></div>
-      <div class="reported-cases-label">Confirmed Cases<br /><span class="last-updated">Last updated: <span class="last-updated-date" id="last-updated-date"></span></span></div>
-    </div>
-  </div>
   <div class="map-container">
-	  <div id="spread"><img src="img/play.svg" width="25" height="25" alt="Play" />Animate Spread</div>
-	  <div id="spread-date"></div>
-    <div class="footer-wrapper">
-	    <div class="footer">
-  	    <img src="img/oxford-white.svg" class="oxford-logo" alt="University of Oxford" />
-  	    <img src="img/hm-logo.svg" class="hm-logo" alt="HealthMap" />
-  	    <img src="img/harvard-logo.svg" class="hms-logo" alt="Harvard Medical School" />
-  	    <img src="img/BCHlogomotto_inline_white.svg" class="bch-logo" alt="Boston Children's Hospital" />
-  	    <img src="img/netsi-white.png" class="netsi-logo" alt="Network Science Institute at Northeastern University" />
-  	    <img src="img/Oxford_Martin_School_Logo.png" class="oxford-martin-logo" alt="Oxford Martin School" />
-  	    <img src="img/Tsinghua_University.png" class="tsinghua-logo" alt="Tsinghua University" />
-  	    <img src="img/IHME_logo_acr_WHITE_large.png" class="ihme-logo" alt="Institute for Health Metrics and Evaluation" />
-  	    <div id="credits">
-  	      <div id="contributors">Full list of contributors</div>
-  	      <div id="source"><a href="https://github.com/beoutbreakprepared/nCoV2019" target="_new">nCoV2019 Dataset</a></div>
-  	    </div>
-  	  </div>
-  	  <p class="disclaimer">All data used to produce this map are exclusively collected from publicly available sources including government reports and news media</p>
+    <div class="header">
+      <h1><span>Novel Coronavirus (</span>COVID-19<span>)</span></h1>
+      <div class="reported-cases">
+        <div class="reported-cases-num" id="total-cases">187,746</div>
+        <div class="reported-cases-label">Confirmed cases<span class="last-updated">as of <span class="last-updated-date" id="last-updated-date">2020-03-17</span></span></div>
+        <div class="legend-toggle" onClick="toggleLegend()"><span>Toggle Legend</span></div>
+      </div>
+    </div>
+    <div id="legend" class="legend">
+      <div class="legend-header">Confirmed Cases</div>
+      <ul>
+        <li style="width:25px; height:25px; z-index:5">
+          <span class="circle" style="background-color: #921694; border: 1px solid #810583;"></span>
+          <span class="label"><span class="label-val">10</span></span>
+        </li>
+        <li style="width:42.5px; height:42.5px; z-index:4">
+          <span class="circle" style="background-color: #D34D60; border: 1px solid #C23C50;"></span>
+          <span class="label"><span class="label-val">50</span></span>
+        </li>
+        <li style="width:60px; height:60px; z-index:3">
+          <span class="circle" style="background-color: #FB9533; border: 1px solid #EA8422;"></span>
+          <span class="label"><span class="label-val" style="color: #454545">250</span></span>
+        </li>
+        <li style="width:75px; height:75px; z-index:2">
+          <span class="circle" style="background-color: #FCC332; border: 1px solid #DBB221;"></span>
+          <span class="label"><span class="label-val" style="color: #454545">1000</span></span>
+        </li>
+        <li style="width:100px; height:100px; z-index:1">
+          <span class="circle" style="background-color: #EDF91C; border: 1px solid #DCE80B;"></span>
+          <span class="label"><span class="label-val" style="color: #454545">5000+</span></span>
+        </li>
+      </ul>
+      <div class="new-cases">
+        <span class="circle" style="background-color: #fff; border: 1px solid #fff;"></span>
+        <span class="label"><span class="label-val">New</span></span>
+      </div>
+    </div>
+    <div class="range-slider">
+  	  <div id="spread"><img src="../app/img/play.svg" width="20" height="20" alt="Play" />Play</div>
+      <input id="slider" type="range" value="1000" min="0" max="1000" step="1" />
+      <label id="date"></label>
     </div>
     <div id="map"></div>
   </div>
-
-  <script type="text/javascript" src="js/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
-  <script src='./js/mapbox-gl.js'></script>
-
   <script type="text/javascript">
 
-    $(document).ready(function() {
-      // json files - append date/time string to prevent caching
-      var staticCasesJson = './ncov2019.unique-locations.json?nocache=' + (new Date()).getTime();
-      var animatedCasesJson = './ncov2019.animation-data.json?nocache=' + (new Date()).getTime();
-      var latestCountsJson = './latestCounts.json?nocache=' + (new Date()).getTime();
+  function toggleLegend() {
+    var legend = document.getElementById('legend');
+    legend.classList.toggle("is-hidden");
+  }
 
-      var transitionEnd = 'webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend';
-      var showModal = function() {
-        // switch elements to have 'display' value (block, flex) but keep hidden via opacity
-        $('.modal-wrapper').addClass('is-block').outerWidth();
-        $('.modal').addClass('is-flex').outerWidth();
-        // add css class for transitioning via opacity
-        $('.modal-wrapper').addClass('is-visible');
-        $('.modal').addClass('is-visible');
-      }
-      var closeModal = function() {
-        $('.modal-wrapper, .modal')
-          .removeClass('is-visible')
-          .one(transitionEnd, function() {
-            $('.modal-wrapper').removeClass('is-block');
-            $('.modal').removeClass('is-flex');
-          });
-      }
+  var dataUrl = './ncov2019.dailies.geojson';
+  //var totalsUrl = 'totals.json';
+  //var dailyUrl = 'dailies.json'
+  var dates = [];
+  var timeControl = document.getElementById("slider");
+  var timeLabel = document.getElementById("date");
 
-      $('#contributors').click(function() {
-        showModal();
-      })
-      $('.modal-backdrop, .modal-cancel').click(function() {
-        closeModal();
-      })
-
-      // begin animation of markers
-      $('#spread').click(function() {
-        clearMarkers(markers);
-        clearMarkers(animatedMarkers);
-        startAnimation();
-      })
-
-      // clear markers from map
-      function clearMarkers(markersArray) {
-        for (var i = 0; i < markersArray.length; i++) {
-          markersArray[i].remove();
-        }
-        markersArray = []
-      }
-
-      // set marker styles
-      function setMarkerStyle(caseCount) {
-        if (caseCount < 10) {
-          pinClass = 'pin4';
-        } else if (caseCount>= 10 && caseCount <= 24) {
-          pinClass = 'pin3';
-        } else if (caseCount >= 25 && caseCount <= 49) {
-          pinClass = 'pin2';
-        } else if (caseCount >= 50) {
-          pinClass = 'pin1';
-        }
-        return pinClass
-      }
-
-      // format date as yyyy-mm-dd
-      function parseDate(str) {
-        var mdy = str.split('.');
-        var formattedDate = new Date(mdy[2], mdy[1], mdy[0]);
-        return formattedDate.getFullYear() + '-' + ('0' + formattedDate.getMonth()).slice(-2) + '-' + ('0' + formattedDate.getDate()).slice(-2);
-      }
-
-      // pase date for comparison
-      function parseDateForCompare(str) {
-        var mdy = str.split('-');
-        return new Date(mdy[0], mdy[1]-1, mdy[2]);
-      }
-
-      var today = new Date();
-      var formattedToday =  today.getFullYear() + '-' + ('0' + (today.getMonth() + 1)).slice(-2) + '-' + ('0' + today.getDate()).slice(-2);
-
-      // get latest case counts from scraped data
-      $.getJSON(latestCountsJson, function(json) {
-        var counts = json[0].caseCount;
-        var formattedDate = json[0].date;
-        $('#total-cases').html(counts);
-        $('#last-updated-date').html(formattedDate);
-      });
-
-      // establish map
+  function initMap() {
       mapboxgl.accessToken = 'pk.eyJ1Ijoia2F0ZWx5bm5vYnJpZW4iLCJhIjoiY2sxa3ZjbTR4MDA2bTNjcGR4cXIwZnJidSJ9.wrkfV082TaX5P65i2L8upg';
       var map = new mapboxgl.Map({
-        container: 'map', // HTML container id
-        style: 'mapbox://styles/katelynnobrien/ck5y23wmc0aso1iqtbww5nzrr',
-        center: [10, 0], // starting position as [lng, lat]
-        zoom: 1
+          container: 'map',
+          style: 'mapbox://styles/katelynnobrien/ck5y23wmc0aso1iqtbww5nzrr',
+          center: [10, 0],
+          zoom: 1,
+          maxZoom: 6,
+          //hash: true
       });
-      // Add zoom and rotation controls to the map.
-      map.addControl(new mapboxgl.NavigationControl());
 
-      // Set arrays to store markers
-      var markers = [];
-      var animatedMarkers = [];
-
-      // create marker and put on map
-      function createMarker(cssClass, lon, lat, markerArray, popup) {
-        var customMarker = document.createElement('div');
-        customMarker.className = cssClass
-        var marker = new mapboxgl.Marker(customMarker)
-        if (popup) {
-          marker.setPopup(popup)
-        }
-        marker
-        .setLngLat([lon, lat])
-        .addTo(map)
-        markerArray.push(marker);
+      function filterBy(isodate) {
+          var filters = ['==', 'date', isodate];
+          map.setFilter('daily', filters);
+          map.setFilter('totals', filters);
       }
 
-      // animate spread of disease
-      function startAnimation() {
-        $.getJSON(animatedCasesJson, function(json) {
-          var numDates = json.length
-          var count = 0;
-          map.flyTo({ zoom: 3, center: [102,24] });
-          function animateMarkers() {
-            var dateDetails = json[count]
-            var date = Object.keys(dateDetails);
-            var compareDate = parseDateForCompare(date[0]);
-            if ((today.getTime() - compareDate.getTime()) < 0) {
-                setTimeout(function() {
-                  staticMarkers(); // finish animation on static pins with popups
-                }, 600);
-            } else {
-              var locations = dateDetails[date]
-              if (date[0] === '2020-01-20') {
-                map.flyTo({ zoom: 1, center: [10,0] });
+      function setTimeControlLabel(date) {
+          timeLabel.innerText = dates[date];
+      };
+
+      function buildTimeControl() {
+          timeControl.setAttribute("max", dates.length - 1)
+          timeControl.setAttribute("value", dates.length - 1);
+          setTimeControlLabel(dates.length - 1);
+      };
+
+      timeControl.addEventListener("input", () => {
+          setTimeControlLabel(timeControl.value);
+          filterBy(dates[timeControl.value]);
+      });
+
+      map.on('load', function () {
+          map.addSource('counts', {
+              'type': 'geojson',
+              'data': {
+                  'type': 'FeatureCollection',
+                  'features': []
               }
-              setTimeout(function() {
-                $('#spread-date').show().html(date[0]);
-                if (count === 0) {
-                  createMarker('pin1', 114.2797, 30.596415, animatedMarkers);
-                }
-                locations.map(function(location, i) {
-                  var caseCount = location.caseCount
-                  var pinClass = location.pin.split('.');
-                  if (location.longitude !== '' && location.latitude !== '') {
-                    createMarker(pinClass[0],location.longitude, location.latitude, animatedMarkers);
-                  }
-                })
-                count++;
-                animateMarkers();
-              }, 600);
-            }
-          }
-          // add initial marker to Wuhan to fix discrepencies with missing date_confirmation
-          createMarker('pin2', 114.2797, 30.596415, animatedMarkers);
-          animateMarkers()
-        })
+          });
+          map.addLayer({
+            'id': 'totals',
+            'type': 'circle',
+            'source': 'counts',
+            'paint': {
+                'circle-radius': ['*', ['log10', ['sqrt', ['get', 'total']]], 25],
+                'circle-color': [
+                    'step',
+                    ['get', 'total'],
+                    '#921694',
+                    10,
+                    '#D34D60',
+                    50,
+                    '#FB9533',
+                    250,
+                    '#FCC332',
+                    500,
+                    '#EDF91C',
+                ],
+                'circle-stroke-color': [
+                    'step',
+                    ['get', 'total'],
+                    '#810583',
+                    10,
+                    '#C23C50',
+                    50,
+                    '#EA8422',
+                    250,
+                    '#EBB221',
+                    500,
+                    '#DCE80B',
+                ],
+                'circle-opacity': .9,
+                'circle-stroke-width': 1,
+              }
+          });
+          map.addLayer({
+              'id': 'daily',
+              'type': 'circle',
+              'source': 'counts',
+              'paint': {
+                  'circle-radius': ['*', ['log10', ['sqrt', ['get', 'new']]], 25],
+                  'circle-color': '#ffffff',
+                  'circle-opacity': 0.75,
+                  'circle-stroke-width': 1,
+                  'circle-stroke-color': '#ffffff',
+              }
+          });
 
-      }
+          // Create a popup, but don't add it to the map yet.
+          var popup = new mapboxgl.Popup({
+              closeButton: false,
+              closeOnClick: false
+          });
 
-      function staticMarkers() {
-        $('#spread-date').hide().html();
+          // Create a popup, but don't add it to the map yet.
+          var popup = new mapboxgl.Popup({
+              closeButton: false,
+              closeOnClick: false
+          });
 
-        $.getJSON(staticCasesJson, function(json) {
+          map.on('mouseenter', 'totals', function (e) {
+              // Change the cursor style as a UI indicator.
+              map.getCanvas().style.cursor = 'pointer';
 
-          // the 2 datasets that drive the rest
-          var outsideHubeiCases = json.outside_Hubei
-          var hubeiCases = json.Hubei
-          var totalCases = json.totalCases
+              var coordinates = e.features[0].geometry.coordinates.slice();
+              var props = e.features[0].properties;
+              var city = props.city ? props.city+', ' : '';
+              var province = props.province ? props.province+', ' : '';
+              var country = props.country ? props.country : '';
+              var description =
+                  '<h3 class="popup-header">' + city + province + country + '</h3>' +
+                  '<div>' + '<strong>Number of Cases: </strong>' + props.total + '</div>';
 
-          placeMarkers(outsideHubeiCases)
-          placeMarkers(hubeiCases)
-
-
-          function placeMarkers(locationsData) {
-            $.each(locationsData, function(k, v) {
-            	var uniqueLat = !Number.isNaN(v.latitude) ? v.latitude : ''
-              var uniqueLon = !Number.isNaN(v.longitude) ? v.longitude : ''
-            	var caseCount = v.cases
-            	var uniqueCity = v.city
-            	var uniqueProvince = v.province
-            	var uniqueCountry = v.country
-            	var pinClass = ''
-
-              if ((uniqueLat !== '' && uniqueLat !== '#REF!') && (uniqueLon !== '' && uniqueLon !== '#REF!')) {
-
-            	  pinClass = setMarkerStyle(caseCount);
-
-            	  var city = v.city ? v.city+', ' : '';
-                var province = v.province ? v.province+', ' : '';
-                var country = v.country ? v.country : '';
-            	  var age = v.age ? v.age : '';
-            	  var sex = v.sex ? v.sex : '';
-            	  var symptoms = v.symptoms ? v.symptoms : '';
-            	  var dateConfirmation = v.date_confirmation ? v.date_confirmation : '';
-            	  var printDate = '';
-            	  var source = v.source ? v.source : '';
-
-            	  if (caseCount === 1) {
-                  var age = (age !== undefined && age !== '') ? '<div><strong>Age:</strong> '+age+'</div>' : '';
-                  var sex = (sex !== undefined && sex !== '') ? '<div><strong>Sex:</strong> '+sex+'</div>' : '';
-                  var symptoms = (symptoms !== undefined && symptoms !== '') ? '<div><strong>Reported Symptoms: </strong>'+ symptoms+'</div>' : '';
-                  if (dateConfirmation) {
-                    var formattedDate = parseDate(dateConfirmation)
-                    var printDate = '<div><strong>Date Confirmed: </strong>' + formattedDate + '</div>';
-                  }
-                  var source = source ? '<div><a href='+source+' target="_new">Source</a></div>' : '';
-                } else {
-                  sex = '';
-                  age = '';
-                  symptoms = '';
-                  source = '';
-                }
-
-            	  popupContent =
-                  '<h1 class="popup-header">' + city + province + country + '</h1>' +
-                  '<div>' + '<strong>Number of Cases: </strong>' + caseCount + '</div>' +
-                  sex +
-                  age +
-                  symptoms +
-            	    printDate +
-                  source ;
-
-            	  var popup = new mapboxgl.Popup().setHTML(popupContent)
-                createMarker(pinClass, uniqueLon, uniqueLat, markers, popup);
+              // Ensure that if the map is zoomed out such that multiple
+              // copies of the feature are visible, the popup appears
+              // over the copy being pointed to.
+              while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                  coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
               }
 
-            })
-      	    clearMarkers(animatedMarkers);
-      	    animatedMarkers = [];
-          }
-        });
-      }
+              // Populate the popup and set its coordinates
+              // based on the feature found.
+              popup
+                  .setLngLat(coordinates)
+                  .setHTML(description)
+                  .addTo(map);
+          });
 
-      // load initial markers
-      staticMarkers();
+          map.on('mouseleave', 'totals', function () {
+              map.getCanvas().style.cursor = '';
+              popup.remove();
+          });
 
-    })
+          // fetch(totalsUrl).then(res => res.json()).then(res => {
+          //     map.getSource('cumulative').setData(res);
+          // });
 
+          fetch(dataUrl).then(res => res.json()).then(res => {
+              var datesUnsorted = [];
+              res.features.forEach(feature => {
+                  var date = feature.properties.date;
+                  if(!datesUnsorted.includes(date) && date !== '' && date !== '2020-2-18' && date !== '2020-02-2020 - 26-02-25') {
+                      datesUnsorted.push(date)
+                  }
+              });
+              dates = datesUnsorted.sort();
+              buildTimeControl();
+              map.getSource('counts').setData(res);
+              filterBy(dates[dates.length - 1]);
+          });
+
+      });
+    }
   </script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css" rel="stylesheet" />
+
 </body>
 </html>
