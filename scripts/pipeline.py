@@ -1,7 +1,6 @@
 ##########
-# Sheet Import Script adapted from : https://developers.google.com/sheets/api/quickstart/python
 # Author/Editor Thomas Brewer, thomas.brewer@childrens.harvard.edu
-# Last edit : 2020-03-11
+# Last edit : 2020-03-18
 #########
 
 testing = True

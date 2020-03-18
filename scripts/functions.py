@@ -9,7 +9,7 @@ from google.auth.transport.requests import Request
 from datetime import datetime, timedelta
 from shutil import copyfile
 
-def log_message(message, config):
+def log_message(message: str, config: configparser.ConfigParser) -> None:
     logfile = config['FILES'].get('LOG', './logfile')
     date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     message = '{} {}'.format(date, message)
@@ -27,6 +27,7 @@ def savedata(data: list, outfile: str) -> None:
 
 
 def load_sheet(data_range: str, config: configparser.ConfigParser) -> pd.DataFrame:
+    # Sheet Import Script adapted from : https://developers.google.com/sheets/api/quickstart/python
     scopes      = ['https://www.googleapis.com/auth/spreadsheets.readonly']
     creds       = None
     token       = config['SHEETS'].get('TOKEN', './token.pickle')
