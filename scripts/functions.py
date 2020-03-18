@@ -58,7 +58,6 @@ def load_sheet(data_range: str, config: configparser.ConfigParser) -> pd.DataFra
     values  = sheet.values().get(spreadsheetId=spreadsheetid, range=data_range).execute().get('values', [])
 
     if not values:
-        log_message('ERROR: data not found')
         raise ValueError('Sheet data not found')
 
     else:
@@ -116,9 +115,8 @@ def load_sheet(data_range: str, config: configparser.ConfigParser) -> pd.DataFra
                 if True in [length_error, lat_error, date_error]:
                     continue
                 else:
-                    message = f'ERROR :  {repr(Err)}'
-                    log_message(message)
                     raise Err
+
         return pd.DataFrame(data=keep, columns=columns)
 
 def clean_data(data: pd.DataFrame, colnames: list) -> pd.DataFrame:
