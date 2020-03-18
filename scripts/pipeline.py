@@ -1,7 +1,12 @@
-##########
-# Author/Editor Thomas Brewer, thomas.brewer@childrens.harvard.edu
-# Last edit : 2020-03-18
-#########
+'''
+Pipeline to fetch covid-19 data from Open Line List and reformat for map on : 
+    healthmap.org/covid-19
+
+Author : Thomas Brewer
+email  : thomas.brewer@childrens.harvard.edu
+'''
+
+
 
 testing = True
 import configparser
@@ -46,13 +51,10 @@ def main():
 
         # save all results
         fullpath   = config['FILES'].get('FULL')
-        backuppath = config['FILES'].get('JSONB')
         savedata(full_data, fullpath)
     
         uniquepath = config['FILES'].get('TOTAL')
-        backuppath = config['FILES'].get('TOTALB')
         savedata(unique_data, uniquepath)
-
 
         # Animation
         anipath = config['FILES'].get('ANIMATION', './')
