@@ -6,8 +6,7 @@
   <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
   <script async defer src="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js" onload="initMap()"></script>
   <link rel="stylesheet" type="text/css" href="css/fonts.css" />
-  <!-- <link rel="stylesheet" type="text/css" href="css/styles.css?b" /> -->
-  <link rel="stylesheet" type="text/css" href="css/styles-new.css?b" />
+  <link rel="stylesheet" type="text/css" href="css/styles.css?b" />
 </head>
 <body>
   <div class="modal-wrapper" id="modal-wrapper">
@@ -152,7 +151,7 @@
           center: [10, 0],
           zoom: 1,
           maxZoom: 6,
-          //hash: true
+          // hash: true
       }).addControl(new mapboxgl.NavigationControl(), 'top-left');
 
       function filterBy(isodate) {
