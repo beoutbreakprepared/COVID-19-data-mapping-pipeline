@@ -62,51 +62,47 @@
       <div class="reported-cases">
         <div class="reported-cases-num" id="total-cases">187,746</div>
         <div class="reported-cases-label">Confirmed cases<span class="last-updated">as of <span class="last-updated-date" id="last-updated-date">2020-03-17</span></span></div>
-        <div class="legend-toggle" onClick="toggleLegend()"><span>Toggle Legend</span></div>
       </div>
     </div>
-    <div id="legend" class="legend">
-      <div class="legend-header">Confirmed Cases</div>
-      <ul>
-        <li style="width:25px; height:25px; z-index:5">
-          <span class="circle" style="background-color: #921694; border: 1px solid #810583;"></span>
-          <span class="label"><span class="label-val">10</span></span>
-        </li>
-        <li style="width:42.5px; height:42.5px; z-index:4">
-          <span class="circle" style="background-color: #D34D60; border: 1px solid #C23C50;"></span>
-          <span class="label"><span class="label-val">50</span></span>
-        </li>
-        <li style="width:60px; height:60px; z-index:3">
-          <span class="circle" style="background-color: #FB9533; border: 1px solid #EA8422;"></span>
-          <span class="label"><span class="label-val" style="color: #454545">250</span></span>
-        </li>
-        <li style="width:75px; height:75px; z-index:2">
-          <span class="circle" style="background-color: #FCC332; border: 1px solid #DBB221;"></span>
-          <span class="label"><span class="label-val" style="color: #454545">1000</span></span>
-        </li>
-        <li style="width:100px; height:100px; z-index:1">
-          <span class="circle" style="background-color: #EDF91C; border: 1px solid #DCE80B;"></span>
-          <span class="label"><span class="label-val" style="color: #454545">5000+</span></span>
-        </li>
-      </ul>
-      <div class="new-cases">
-        <span class="circle" style="background-color: #fff; border: 1px solid #fff;"></span>
-        <span class="label"><span class="label-val">New</span></span>
+    <div class="footer">
+      <div class="range-slider">
+    	  <div id="spread"><img src="../app/img/play.svg" width="20" height="20" alt="Play" /><span class="spread-label">Play</span></div>
+        <input id="slider" type="range" value="1000" min="0" max="1000" step="1" />
+        <label id="date"></label>
       </div>
-    </div>
-    <div class="range-slider">
-  	  <div id="spread"><img src="../app/img/play.svg" width="20" height="20" alt="Play" />Play</div>
-      <input id="slider" type="range" value="1000" min="0" max="1000" step="1" />
-      <label id="date"></label>
+      <div id="legend" class="legend">
+        <div class="legend-header">Cases</div>
+        <ul>
+          <li style="height:100px; z-index:1">
+            <span class="circle" style="width:100px; height:100px; background-color: #EDF91C; border: 1px solid #DCE80B;"></span>
+            <span class="label"><span class="label-val">5000+</span></span>
+          </li>
+          <li style="height:75px; z-index:2">
+            <span class="circle" style="width:75px; height:75px; background-color: #FCC332; border: 1px solid #DBB221;"></span>
+            <span class="label"><span class="label-val">1000</span></span>
+          </li>
+          <li style="height:60px; z-index:3">
+            <span class="circle" style="width:60px; height:60px; background-color: #FB9533; border: 1px solid #EA8422;"></span>
+            <span class="label"><span class="label-val">250</span></span>
+          </li>
+          <li style="height:42.5px; z-index:4">
+            <span class="circle" style="width:42.5px; height:42.5px; background-color: #D34D60; border: 1px solid #C23C50;"></span>
+            <span class="label"><span class="label-val">50</span></span>
+          </li>
+          <li style="height:25px; z-index:5">
+            <span class="circle" style="width:25px; height:25px; background-color: #921694; border: 1px solid #810583;"></span>
+            <span class="label"><span class="label-val">10</span></span>
+          </li>
+        </ul>
+        <div class="new-cases">
+          <span class="circle" style="background-color: #fff; border: 1px solid #fff;"></span>
+          <span class="label"><span class="label-val">New</span></span>
+        </div>
+      </div>
     </div>
     <div id="map"></div>
   </div>
   <script type="text/javascript">
-
-  function toggleLegend() {
-    var legend = document.getElementById('legend');
-    legend.classList.toggle("is-hidden");
-  }
 
   var dataUrl = './ncov2019.dailies.geojson';
   //var totalsUrl = 'totals.json';
