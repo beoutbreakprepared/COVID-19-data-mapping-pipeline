@@ -10,14 +10,19 @@
   <link rel="stylesheet" type="text/css" href="css/styles-new.css?b" />
 </head>
 <body>
-  <div class="modal-wrapper" id="modal">
+  <div class="modal-wrapper" id="modal-wrapper">
     <div class="modal-backdrop"></div>
-    <div class="modal">
+    <div class="modal" id="modal">
       <div class="modal-header">
-        <div class="modal-title">Contributors</div>
-        <div class="modal-cancel"><img src="img/close-icon.svg" width="20" height="20" alt="Close" /></div>
+        <div class="modal-title">About this Map</div>
+        <div class="modal-cancel" onClick=handleHideModal()><img src="img/close-icon.svg" width="20" height="20" alt="Close" /></div>
       </div>
       <div class="modal-body">
+        <p>The Covid-19 map visualizes a deep and meticulous dataset that is freely accessible to anyone involved in coronavirus research; something that represents a completely new approach to how we collect data and make it readily available during an outbreak. The data changes the game in terms of how we respond to new global threats such as these.</p>
+        <h2>Data</h2>
+    	  <p>All data used to produce this map are exclusively collected from publicly available sources including government reports and news media.</p>
+        <p>Datasets and resources can be found in <a href="https://github.com/beoutbreakprepared/nCoV2019" target="new">GitHub</a>.</p>
+        <h2>Collaborators</h2>
         <ul>
       		<li>Isha Berry, <a href="mailto:isha.berry@mail.utoronto.ca">isha.berry@mail.utoronto.ca</a></li>
           <li>John Brownstein, <a href="mailto:John.Brownstein@childrens.harvard.edu">John.Brownstein@childrens.harvard.edu</a></li>
@@ -42,7 +47,9 @@
           <li>Bo Xu, <a href="mailto:xu-b15@mails.tsinghua.edu.cn">xu-b15@mails.tsinghua.edu.cn</a></li>
           <li>Alex Zarebski, <a href="mailto:aezarebski@gmail.com">aezarebski@gmail.com</a></li>
         </ul>
-        <div class="mobile-logos">
+
+        <h2>Institutions</h2>
+        <div class="logos">
           <img src="img/oxford-blue.svg" class="oxford-logo" alt="University of Oxford" />
           <img src="img/hm-logo-color.svg" class="hm-logo" alt="HealthMap" />
           <img src="img/harvard-logo-color.svg" class="hms-logo" alt="Harvard Medical School" />
@@ -52,52 +59,55 @@
           <img src="img/Tsinghua_University.png" class="tsinghua-logo" alt="Tsinghua University" />
           <img src="img/IHME_logo_acr_color_large.png" class="ihme-logo" alt="Institute for Health Metrics and Evaluation" />
         </div>
-    	  <p class="mobile-disclaimer">All data used to produce this map are exclusively collected from publicly available sources including government reports and news media</p>
+        <h2>News and Publications</h2>
+        <ul>
+          <li><a href="https://www.independent.co.uk/voices/coronavirus-covid-19-pandemic-outbreak-data-research-cdc-who-a9406281.html">I’m a researcher who’s helped change how we tackle pandemics like coronavirus forever – this is what we’ve learned</a> • Independant</li>
+          <li><a href="https://www.thelancet.com/journals/laninf/article/PIIS1473-3099(20)30119-5/fulltext">Open access epidemiological data from the COVID-19 outbreak</a> • The Lancet</li>
+        </ul>
       </div>
     </div>
   </div>
   <div class="map-container">
     <div class="header">
       <h1><span>Novel Coronavirus (</span>COVID-19<span>)</span></h1>
+      <button id="toggle-modal" onClick="handleShowModal()">About<span> this </span> Map</button>
       <div class="reported-cases">
         <div class="reported-cases-num" id="total-cases">187,746</div>
         <div class="reported-cases-label">Confirmed cases<span class="last-updated">as of <span class="last-updated-date" id="last-updated-date">2020-03-17</span></span></div>
       </div>
     </div>
-    <div class="footer">
-      <div class="range-slider">
-    	  <div id="spread"><img src="../app/img/play.svg" width="20" height="20" alt="Play" /><span class="spread-label">Play</span></div>
-        <input id="slider" type="range" value="1000" min="0" max="1000" step="1" />
-        <label id="date"></label>
-      </div>
-      <div id="legend" class="legend">
-        <div class="legend-header">Cases</div>
-        <ul>
-          <li style="height:80px; z-index:1">
-            <span class="circle" style="width:80px; height:80px; background-color: #EDF91C; border: 1px solid #DCE80B;"></span>
-            <span class="label"><span class="label-val">10,000+</span></span>
-          </li>
-          <li style="height:66px; z-index:2">
-            <span class="circle" style="width:66px; height:66px; background-color: #FCC332; border: 1px solid #DBB221;"></span>
-            <span class="label"><span class="label-val">2000</span></span>
-          </li>
-          <li style="height:54px; z-index:3">
-            <span class="circle" style="width:54px; height:54px; background-color: #FB9533; border: 1px solid #EA8422;"></span>
-            <span class="label"><span class="label-val">500</span></span>
-          </li>
-          <li style="height:40px; z-index:4">
-            <span class="circle" style="width:40px; height:40px; background-color: #D34D60; border: 1px solid #C23C50;"></span>
-            <span class="label"><span class="label-val">100</span></span>
-          </li>
-          <li style="height:20px; z-index:5">
-            <span class="circle" style="width:20px; height:20px; background-color: #921694; border: 1px solid #810583;"></span>
-            <span class="label"><span class="label-val">10</span></span>
-          </li>
-        </ul>
-        <div class="new-cases">
-          <span class="circle" style="background-color: cornflowerblue; border: 1px solid cornflowerblue;"></span>
-          <span class="label"><span class="label-val">New</span></span>
-        </div>
+    <div class="range-slider">
+  	  <div id="spread"><img src="../app/img/play.svg" width="20" height="20" alt="Play" /><span class="spread-label">Play</span></div>
+      <input id="slider" type="range" value="1000" min="0" max="1000" step="1" />
+      <label id="date"></label>
+    </div>
+    <div id="legend" class="legend">
+      <div class="legend-header">Cases</div>
+      <ul>
+        <li style="height:80px; z-index:1">
+          <span class="circle" style="width:80px; height:80px; background-color: #EDF91C; border: 1px solid #DCE80B;"></span>
+          <span class="label"><span class="label-val">10,000+</span></span>
+        </li>
+        <li style="height:66px; z-index:2">
+          <span class="circle" style="width:66px; height:66px; background-color: #FCC332; border: 1px solid #DBB221;"></span>
+          <span class="label"><span class="label-val">2000</span></span>
+        </li>
+        <li style="height:54px; z-index:3">
+          <span class="circle" style="width:54px; height:54px; background-color: #FB9533; border: 1px solid #EA8422;"></span>
+          <span class="label"><span class="label-val">500</span></span>
+        </li>
+        <li style="height:40px; z-index:4">
+          <span class="circle" style="width:40px; height:40px; background-color: #D34D60; border: 1px solid #C23C50;"></span>
+          <span class="label"><span class="label-val">100</span></span>
+        </li>
+        <li style="height:20px; z-index:5">
+          <span class="circle" style="width:20px; height:20px; background-color: #921694; border: 1px solid #810583;"></span>
+          <span class="label"><span class="label-val">10</span></span>
+        </li>
+      </ul>
+      <div class="new-cases">
+        <span class="circle" style="background-color: cornflowerblue; border: 1px solid cornflowerblue;"></span>
+        <span class="label"><span class="label-val">New</span></span>
       </div>
     </div>
     <div id="map"></div>
@@ -110,6 +120,29 @@
   var dates = [];
   var timeControl = document.getElementById("slider");
   var timeLabel = document.getElementById("date");
+
+  var modalWrapper = document.getElementById("modal-wrapper");
+  var modal = document.getElementById("modal");
+
+  var handleShowModal = function() {
+    // switch elements to have 'display' value (block, flex) but keep hidden via opacity
+    modalWrapper.classList.add('is-block');
+    modal.classList.add('is-flex');
+    setTimeout(function() {
+      // for transition
+      modalWrapper.classList.add('is-visible');
+      modal.classList.add('is-visible');
+    }, 40);
+  }
+  var handleHideModal = function() {
+    modalWrapper.classList.remove('is-visible');
+    modal.classList.remove('is-visible');
+    setTimeout(function() {
+      // for transition
+      modalWrapper.classList.remove('is-block');
+      modal.classList.add('is-flex');
+    }, 400);
+  }
 
   function initMap() {
       mapboxgl.accessToken = 'pk.eyJ1Ijoia2F0ZWx5bm5vYnJpZW4iLCJhIjoiY2sxa3ZjbTR4MDA2bTNjcGR4cXIwZnJidSJ9.wrkfV082TaX5P65i2L8upg';
@@ -170,21 +203,7 @@
                     2000,
                     '#EDF91C',
                 ],
-                // 'circle-stroke-color': [
-                //     'step',
-                //     ['get', 'total'],
-                //     '#810583',
-                //     10,
-                //     '#C23C50',
-                //     50,
-                //     '#EA8422',
-                //     250,
-                //     '#EBB221',
-                //     500,
-                //     '#DCE80B',
-                // ],
                 'circle-opacity': .6,
-                // 'circle-stroke-width': 1,
               }
           });
           map.addLayer({

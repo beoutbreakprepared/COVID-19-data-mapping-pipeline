@@ -32,6 +32,14 @@ body {
   background-color: #333;
 }
 
+a, a:visited {
+  color: #666;
+}
+
+a:focus, a:hover, a:active {
+  color: #
+}
+
 .header {
   position: absolute;
   top: 0;
@@ -87,22 +95,13 @@ h1 span {
   text-transform: none;
 }
 
-.footer {
-  position: absolute;
-  left: 1rem;
-  right: 1rem;
-  bottom: 3rem;
-  padding: 1rem;
-  /* background-color: rgba(70,70,70,.8); */
-  z-index: 5;
-}
-
 .legend {
   position: fixed;
   top: 4rem;
   right: .5rem;
   width: 4.5em;
   height: 9rem;
+  z-index: 4;
 }
 
 .legend-header {
@@ -409,15 +408,16 @@ input[type=range]::-ms-thumb {
 .modal-header {
   display: flex;
   align-items: center;
-  height: 4.5rem;
+  height: 4rem;
   justify-content: space-between;
   border-bottom: 1px solid #dedede;
 }
 
 .modal-title {
   flex: 1;
+  color: #333;
   padding: 0 0 0 3rem;
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   font-weight: 200;
 }
 
@@ -428,8 +428,8 @@ input[type=range]::-ms-thumb {
 
 .modal-cancel {
   position: relative;
-  width: 4.5rem;
-  height: 4.5rem;
+  width: 4rem;
+  height: 4rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -450,14 +450,14 @@ input[type=range]::-ms-thumb {
 }
 
 .modal-body h2 {
-  margin: 0;
-  font-size: 1.6rem;
-  font-weight: normal;
-  color: #7cbbc4;
+  margin: 1.25rem 0 .75rem 0;
+  font-size: 1.3rem;
+  font-weight: 200;
+  color: #921694;
 }
 
 .modal-body ul {
-  margin: 0;
+  margin: 1rem 0 1.25rem 2rem;
   padding: 0;
 }
 
@@ -467,13 +467,75 @@ input[type=range]::-ms-thumb {
 }
 
 .modal-body p {
-  margin: 1.5rem 0;
+  margin: 1rem 0 1.25rem 0;
+}
+
+.logos {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.logos img {
+  display: block;
+  margin: 1rem 0;
+  flex: none;
+}
+
+.oxford-logo { width: 60px; }
+.hm-logo { width: 185px; }
+.hms-logo { width: 120px; }
+.bch-logo { width: 110px; }
+.netsi-logo { width: 200px; }
+.oxford-martin-logo { width: 80px; }
+.tsinghua-logo { width: 60px; }
+.ihme-logo { width: 100px; }
+
+button {
+  display: block;
+  padding: .25rem .5rem;
+  font-family: 'OpenSans', sans-serif;
+  font-size: .7rem;
+  font-weight: 400;
+  color: #f0f0f0;
+  text-decoration: none;
+  background-color: #333;
+  border: 1px solid #666;
+  border-radius: .2rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+button:focus, button:hover {
+  background-color: #454545;
+}
+
+#toggle-modal {
+  position: fixed;
+  right: .5rem;
+  bottom: 5.5rem;
+}
+
+#toggle-modal span {
+  display: none;
 }
 
 
 @media only screen and (min-width: 500px) {
 
   h1 span {
+    display: inline;
+  }
+
+  #toggle-modal {
+    left: auto;
+    right: .5rem;
+    transform: none;
+    bottom: 3rem;
+  }
+
+  #toggle-modal span {
     display: inline;
   }
 
@@ -489,13 +551,12 @@ input[type=range]::-ms-thumb {
     display: inline;
   }
 
-}
-
-@media only screen and (min-width: 641px) {
-
   .range-slider {
-    bottom: 2.25rem;
+    right: auto;
+    width: 75%;
+    bottom: 2.75rem;
   }
+
 
 }
 
@@ -503,12 +564,6 @@ input[type=range]::-ms-thumb {
 
   .legend {
     right: 1rem;
-  }
-
-  .range-slider {
-    right: auto;
-    width: 50%;
-    bottom: 3.5rem;
   }
 
   .modal {
@@ -531,13 +586,21 @@ input[type=range]::-ms-thumb {
     transition: all 400ms ease;
   }
 
+  .modal-title {
+    font-size: 1.8rem;
+  }
+
   .modal-body {
-    padding: 1.5rem 6rem;
+    padding: 1.5rem 5rem 1.5rem 3rem;
+  }
+
+  .modal-body h2 {
+    font-size: 1.5rem;
   }
 
 }
 
-@media only screen and (max-width: 814px) {
+@media only screen and (max-width: 849px) {
 
   .legend ul li {
     width: 3.5rem;
@@ -550,7 +613,7 @@ input[type=range]::-ms-thumb {
 }
 
 
-@media only screen and (min-width: 815px) {
+@media only screen and (min-width: 850px) {
 
   .header {
     flex-direction: row;
@@ -562,6 +625,14 @@ input[type=range]::-ms-thumb {
   h1 {
     font-size: 1.5rem;
     margin-bottom: 0;
+  }
+
+  #toggle-modal {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    margin-right: 2rem;
   }
 
   .map-container {
@@ -585,7 +656,6 @@ input[type=range]::-ms-thumb {
     height: 11.5rem;
     border-radius: .2rem;
     background-color: rgba(70,70,70,.8);
-    z-index: 4;
   }
 
   .legend-header {
@@ -645,7 +715,7 @@ input[type=range]::-ms-thumb {
   }
 
   .range-slider {
-    left: 2rem;
+    left: 1rem;
     bottom: 3.5rem;
     padding: .5rem 1rem;
   }
@@ -657,6 +727,11 @@ input[type=range]::-ms-thumb {
 
   .header h1 {
     font-size: 1.8rem;
+  }
+
+  #toggle-modal {
+    font-size: .9rem;
+    padding: .5rem .75rem;
   }
 
   .reported-cases {
