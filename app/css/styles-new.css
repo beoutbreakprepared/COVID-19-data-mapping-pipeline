@@ -102,7 +102,7 @@ h1 span {
   top: 4rem;
   right: .5rem;
   width: 4.5em;
-  height: 10.5rem;
+  height: 9rem;
 }
 
 .legend-header {
@@ -129,7 +129,7 @@ h1 span {
 
 .legend ul .circle {
   display: block;
-  opacity: .9;
+  opacity: .6;
 }
 
 .legend ul .label {
@@ -168,8 +168,8 @@ h1 span {
   display: block;
   width: 12px !important;
   height: 12px !important;
-  /* border-radius: 50%; */
-  opacity: .9;
+  border-radius: 50%;
+  opacity: .6;
 }
 
 .new-cases .label {
@@ -184,8 +184,9 @@ h1 span {
 .new-cases .label:after {
   content: '';
   display: block;
-  width: 20px;
+  width: 8px;
   height: 0;
+  margin-right: .8rem;
   border-top: 1px dotted #fff;
 }
 
@@ -567,10 +568,6 @@ input[type=range]::-ms-thumb {
     padding-top: 4rem;
   }
 
-  /* .new-cases {
-    left: 2.45rem;
-  } */
-
   .new-cases {
     height: 1rem;
     left: 1rem;
@@ -585,7 +582,7 @@ input[type=range]::-ms-thumb {
     bottom: 3.5rem;
     right: 2rem;
     width: 11rem;
-    height: 13rem;
+    height: 11.5rem;
     border-radius: .2rem;
     background-color: rgba(70,70,70,.8);
     z-index: 4;
