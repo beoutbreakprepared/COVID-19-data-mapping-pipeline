@@ -339,6 +339,7 @@ input[type=range]::-ms-thumb {
   position: absolute;
   top: 0;
   bottom: 0;
+  padding-top: 3rem;
   width: 100%;
 }
 
@@ -560,6 +561,10 @@ input[type=range]::-ms-thumb {
   h1 {
     font-size: 1.5rem;
     margin-bottom: 0;
+  }
+
+  .map-container {
+    padding-top: 4rem;
   }
 
   /* .new-cases {

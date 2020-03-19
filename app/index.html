@@ -120,7 +120,7 @@
           zoom: 1,
           maxZoom: 6,
           //hash: true
-      });
+      }).addControl(new mapboxgl.NavigationControl(), 'top-left');
 
       function filterBy(isodate) {
           var filters = ['==', 'date', isodate];
