@@ -130,8 +130,8 @@
     var playButton = document.getElementById("spread");
 
     fetch(latestCountsUrl)
-      .then(res => res.json())
-      .then(res => {
+      .then(function(res) { return res.json(); })
+      .then(function(res) {
         totalCases.innerText = res[0].caseCount
         lastUpdatedDate.innerText = res[0].date
       });
@@ -196,7 +196,7 @@
         setTimeControlLabel(dates.length - 1);
       };
 
-      timeControl.addEventListener("input", () => {
+      timeControl.addEventListener("input", function() {
         setTimeControlLabel(timeControl.value);
         filterBy(dates[timeControl.value]);
       });
@@ -291,9 +291,11 @@
         //     map.getSource('cumulative').setData(res);
         // });
 
-        fetch(dataUrl).then(res => res.json()).then(res => {
+        fetch(dataUrl)
+        .then(function(res) { return res.json(); })
+        .then(function(res) {
           var datesUnsorted = [];
-          res.features.forEach(feature => {
+          res.features.forEach(function(feature) {
             var date = feature.properties.date;
             if (!datesUnsorted.includes(date) && date !== '' && date !== '2020-2-18' && date !== '2020-02-2020 - 26-02-25') {
               datesUnsorted.push(date)
