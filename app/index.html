@@ -4,7 +4,8 @@
   <title>Novel Coronavirus (COVID-19)</title>
   <meta charset="utf-8">
   <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <script async defer src="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js" onload="initMap()"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.7.2/bluebird.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.4/fetch.min.js"></script>
   <link rel="stylesheet" type="text/css" href="css/fonts.css" />
   <link rel="stylesheet" type="text/css" href="css/styles.css?b" />
 </head>
@@ -114,6 +115,18 @@
     <div id="map"></div>
   </div>
   <script type="text/javascript">
+    // polyfill for array.includes()
+    if (!Array.prototype.includes) {
+      Array.prototype.includes = function (search, start) {
+        'use strict';
+
+        if (search instanceof RegExp) {
+          throw TypeError('first argument must not be a RegExp');
+        }
+        if (start === undefined) { start = 0; }
+        return this.indexOf(search, start) !== -1;
+      };
+    }
 
     var dataUrl = './ncov2019.weekly.geojson?nocache=' + (new Date()).getTime();
     var latestCountsUrl = './latestCounts.json?nocache=' + (new Date()).getTime();
@@ -130,8 +143,8 @@
     var playButton = document.getElementById("spread");
 
     fetch(latestCountsUrl)
-      .then(res => res.json())
-      .then(res => {
+      .then(function(res) { return res.json(); })
+      .then(function(res) {
         totalCases.innerText = res[0].caseCount
         lastUpdatedDate.innerText = res[0].date
       });
@@ -174,7 +187,7 @@
           filterBy(dates[i]);
           setTimeControlLabel(i);
           i++;
-          if(i == dates.length) {
+          if(i === dates.length) {
             clearInterval(stepMap);
           }
         }, 500);
@@ -196,7 +209,7 @@
         setTimeControlLabel(dates.length - 1);
       };
 
-      timeControl.addEventListener("input", () => {
+      timeControl.addEventListener("input", function() {
         setTimeControlLabel(timeControl.value);
         filterBy(dates[timeControl.value]);
       });
@@ -291,11 +304,13 @@
         //     map.getSource('cumulative').setData(res);
         // });
 
-        fetch(dataUrl).then(res => res.json()).then(res => {
+        fetch(dataUrl)
+        .then(function(res) { return res.json(); })
+        .then(function(res) {
           var datesUnsorted = [];
-          res.features.forEach(feature => {
+          res.features.forEach(function(feature) {
             var date = feature.properties.date;
-            if (!datesUnsorted.includes(date) && date !== '' && date !== '2020-2-18' && date !== '2020-02-2020 - 26-02-25') {
+            if (!datesUnsorted.includes(date)) {
               datesUnsorted.push(date)
             }
           });
@@ -311,6 +326,7 @@
       });
     }
   </script>
+  <script async defer src="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js" onload="initMap()"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css" rel="stylesheet" />
 
 </body>
