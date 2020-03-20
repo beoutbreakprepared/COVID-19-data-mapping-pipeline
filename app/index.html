@@ -76,7 +76,7 @@
       </div>
     </div>
     <div class="range-slider">
-  	  <div id="spread"><img src="../app/img/play.svg" width="20" height="20" alt="Play" /><span class="spread-label">Play</span></div>
+  	  <div id="spread"><img src="./img/play.svg" width="20" height="20" alt="Play" /><span class="spread-label">Play</span></div>
       <input id="slider" type="range" value="1000" min="0" max="1000" step="1" />
       <label id="date"></label>
     </div>
@@ -113,171 +113,188 @@
   </div>
   <script type="text/javascript">
 
-  var dataUrl = './ncov2019.dailies.geojson';
-  //var totalsUrl = 'totals.json';
-  //var dailyUrl = 'dailies.json'
-  var dates = [];
-  var timeControl = document.getElementById("slider");
-  var timeLabel = document.getElementById("date");
+    var dataUrl = './ncov2019.weekly.geojson';
+    //var totalsUrl = 'totals.json';
+    //var dailyUrl = 'dailies.json'
+    var dates = [];
+    var timeControl = document.getElementById("slider");
+    var timeLabel = document.getElementById("date");
 
-  var modalWrapper = document.getElementById("modal-wrapper");
-  var modal = document.getElementById("modal");
+    var modalWrapper = document.getElementById("modal-wrapper");
+    var modal = document.getElementById("modal");
+    var playButton = document.getElementById("spread");
 
-  var handleShowModal = function() {
-    // switch elements to have 'display' value (block, flex) but keep hidden via opacity
-    modalWrapper.classList.add('is-block');
-    modal.classList.add('is-flex');
-    setTimeout(function() {
-      // for transition
-      modalWrapper.classList.add('is-visible');
-      modal.classList.add('is-visible');
-    }, 40);
-  }
-  var handleHideModal = function() {
-    modalWrapper.classList.remove('is-visible');
-    modal.classList.remove('is-visible');
-    setTimeout(function() {
-      // for transition
-      modalWrapper.classList.remove('is-block');
+    var handleShowModal = function () {
+      // switch elements to have 'display' value (block, flex) but keep hidden via opacity
+      modalWrapper.classList.add('is-block');
       modal.classList.add('is-flex');
-    }, 400);
-  }
+      setTimeout(function () {
+        // for transition
+        modalWrapper.classList.add('is-visible');
+        modal.classList.add('is-visible');
+      }, 40);
+    }
+    var handleHideModal = function () {
+      modalWrapper.classList.remove('is-visible');
+      modal.classList.remove('is-visible');
+      setTimeout(function () {
+        // for transition
+        modalWrapper.classList.remove('is-block');
+        modal.classList.add('is-flex');
+      }, 400);
+    }
 
-  function initMap() {
+    function initMap() {
       mapboxgl.accessToken = 'pk.eyJ1Ijoia2F0ZWx5bm5vYnJpZW4iLCJhIjoiY2sxa3ZjbTR4MDA2bTNjcGR4cXIwZnJidSJ9.wrkfV082TaX5P65i2L8upg';
       var map = new mapboxgl.Map({
-          container: 'map',
-          style: 'mapbox://styles/katelynnobrien/ck5y23wmc0aso1iqtbww5nzrr',
-          center: [10, 0],
-          zoom: 1,
-          maxZoom: 6,
-          // hash: true
+        container: 'map',
+        style: 'mapbox://styles/katelynnobrien/ck5y23wmc0aso1iqtbww5nzrr',
+        center: [10, 0],
+        zoom: 1,
+        maxZoom: 6,
+        // hash: true
       }).addControl(new mapboxgl.NavigationControl(), 'top-left');
 
+      var animateMap = function() {
+        var i = 0;
+        var stepMap = setInterval(function() {
+          timeControl.value = i;
+          filterBy(dates[i]);
+          setTimeControlLabel(i);
+          i++;
+          if(i == dates.length) {
+            clearInterval(stepMap);
+          }
+        }, 500);
+      }
+
       function filterBy(isodate) {
-          var filters = ['==', 'date', isodate];
-          map.setFilter('daily', filters);
-          map.setFilter('totals', filters);
+        var filters = ['==', 'date', isodate];
+        map.setFilter('daily', filters);
+        map.setFilter('totals', filters);
       }
 
       function setTimeControlLabel(date) {
-          timeLabel.innerText = dates[date];
+        timeLabel.innerText = dates[date];
       };
 
       function buildTimeControl() {
-          timeControl.setAttribute("max", dates.length - 1)
-          timeControl.setAttribute("value", dates.length - 1);
-          setTimeControlLabel(dates.length - 1);
+        timeControl.setAttribute("max", dates.length - 1)
+        timeControl.setAttribute("value", dates.length - 1);
+        setTimeControlLabel(dates.length - 1);
       };
 
       timeControl.addEventListener("input", () => {
-          setTimeControlLabel(timeControl.value);
-          filterBy(dates[timeControl.value]);
+        setTimeControlLabel(timeControl.value);
+        filterBy(dates[timeControl.value]);
       });
 
       map.on('load', function () {
-          map.addSource('counts', {
-              'type': 'geojson',
-              'data': {
-                  'type': 'FeatureCollection',
-                  'features': []
-              }
+        map.addSource('counts', {
+          'type': 'geojson',
+          'data': {
+            'type': 'FeatureCollection',
+            'features': []
+          }
+        });
+        map.addLayer({
+          'id': 'totals',
+          'type': 'circle',
+          'source': 'counts',
+          'paint': {
+            'circle-radius': ['*', ['log10', ['sqrt', ['get', 'total']]], 20],
+            'circle-color': [
+              'step',
+              ['get', 'total'],
+              '#921694',
+              10,
+              '#D34D60',
+              100,
+              '#FB9533',
+              500,
+              '#FCC332',
+              2000,
+              '#EDF91C',
+            ],
+            'circle-opacity': .6,
+          }
+        });
+        map.addLayer({
+          'id': 'daily',
+          'type': 'circle',
+          'source': 'counts',
+          'paint': {
+            'circle-radius': ['*', ['log10', ['sqrt', ['get', 'new']]], 20],
+            'circle-color': 'cornflowerblue',
+            'circle-opacity': 0.6,
+          }
+        });
+
+        // Create a popup, but don't add it to the map yet.
+        var popup = new mapboxgl.Popup({
+          closeButton: false,
+          closeOnClick: false
+        });
+
+        // Create a popup, but don't add it to the map yet.
+        var popup = new mapboxgl.Popup({
+          closeButton: false,
+          closeOnClick: false
+        });
+
+        map.on('mouseenter', 'totals', function (e) {
+          // Change the cursor style as a UI indicator.
+          map.getCanvas().style.cursor = 'pointer';
+
+          var coordinates = e.features[0].geometry.coordinates.slice();
+          var props = e.features[0].properties;
+          var city = props.city ? props.city + ', ' : '';
+          var province = props.province ? props.province + ', ' : '';
+          var country = props.country ? props.country : '';
+          var description =
+            '<h3 class="popup-header">' + city + province + country + '</h3>' +
+            '<div>' + '<strong>Number of Cases: </strong>' + props.total + '</div>';
+
+          // Ensure that if the map is zoomed out such that multiple
+          // copies of the feature are visible, the popup appears
+          // over the copy being pointed to.
+          while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+          }
+
+          // Populate the popup and set its coordinates
+          // based on the feature found.
+          popup
+            .setLngLat(coordinates)
+            .setHTML(description)
+            .addTo(map);
+        });
+
+        map.on('mouseleave', 'totals', function () {
+          map.getCanvas().style.cursor = '';
+          popup.remove();
+        });
+
+        // fetch(totalsUrl).then(res => res.json()).then(res => {
+        //     map.getSource('cumulative').setData(res);
+        // });
+
+        fetch(dataUrl).then(res => res.json()).then(res => {
+          var datesUnsorted = [];
+          res.features.forEach(feature => {
+            var date = feature.properties.date;
+            if (!datesUnsorted.includes(date) && date !== '' && date !== '2020-2-18' && date !== '2020-02-2020 - 26-02-25') {
+              datesUnsorted.push(date)
+            }
           });
-          map.addLayer({
-            'id': 'totals',
-            'type': 'circle',
-            'source': 'counts',
-            'paint': {
-                'circle-radius': ['*', ['log10', ['sqrt', ['get', 'total']]], 20],
-                'circle-color': [
-                    'step',
-                    ['get', 'total'],
-                    '#921694',
-                    10,
-                    '#D34D60',
-                    100,
-                    '#FB9533',
-                    500,
-                    '#FCC332',
-                    2000,
-                    '#EDF91C',
-                ],
-                'circle-opacity': .6,
-              }
+          dates = datesUnsorted.sort();
+          buildTimeControl();
+          map.getSource('counts').setData(res);
+          filterBy(dates[dates.length - 1]);
+          playButton.addEventListener("click", function () {
+            animateMap();
           });
-          map.addLayer({
-              'id': 'daily',
-              'type': 'circle',
-              'source': 'counts',
-              'paint': {
-                  'circle-radius': ['*', ['log10', ['sqrt', ['get', 'new']]], 20],
-                  'circle-color': 'cornflowerblue',
-                  'circle-opacity': 0.6,
-              }
-          });
-
-          // Create a popup, but don't add it to the map yet.
-          var popup = new mapboxgl.Popup({
-              closeButton: false,
-              closeOnClick: false
-          });
-
-          // Create a popup, but don't add it to the map yet.
-          var popup = new mapboxgl.Popup({
-              closeButton: false,
-              closeOnClick: false
-          });
-
-          map.on('mouseenter', 'totals', function (e) {
-              // Change the cursor style as a UI indicator.
-              map.getCanvas().style.cursor = 'pointer';
-
-              var coordinates = e.features[0].geometry.coordinates.slice();
-              var props = e.features[0].properties;
-              var city = props.city ? props.city+', ' : '';
-              var province = props.province ? props.province+', ' : '';
-              var country = props.country ? props.country : '';
-              var description =
-                  '<h3 class="popup-header">' + city + province + country + '</h3>' +
-                  '<div>' + '<strong>Number of Cases: </strong>' + props.total + '</div>';
-
-              // Ensure that if the map is zoomed out such that multiple
-              // copies of the feature are visible, the popup appears
-              // over the copy being pointed to.
-              while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-                  coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-              }
-
-              // Populate the popup and set its coordinates
-              // based on the feature found.
-              popup
-                  .setLngLat(coordinates)
-                  .setHTML(description)
-                  .addTo(map);
-          });
-
-          map.on('mouseleave', 'totals', function () {
-              map.getCanvas().style.cursor = '';
-              popup.remove();
-          });
-
-          // fetch(totalsUrl).then(res => res.json()).then(res => {
-          //     map.getSource('cumulative').setData(res);
-          // });
-
-          fetch(dataUrl).then(res => res.json()).then(res => {
-              var datesUnsorted = [];
-              res.features.forEach(feature => {
-                  var date = feature.properties.date;
-                  if(!datesUnsorted.includes(date) && date !== '' && date !== '2020-2-18' && date !== '2020-02-2020 - 26-02-25') {
-                      datesUnsorted.push(date)
-                  }
-              });
-              dates = datesUnsorted.sort();
-              buildTimeControl();
-              map.getSource('counts').setData(res);
-              filterBy(dates[dates.length - 1]);
-          });
+        });
 
       });
     }
