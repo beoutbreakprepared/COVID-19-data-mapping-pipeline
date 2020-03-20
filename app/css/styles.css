@@ -213,7 +213,6 @@ h1 span {
   color: #fff;
   font-size: .7rem;
   text-transform: uppercase;
-  /* background-color: #94ad58; */
   background-color: #66cc66;
   border-radius: .3rem;
   transition: all .3s ease;
@@ -225,14 +224,13 @@ h1 span {
 }
 
 #spread:hover {
-  /* background-color: #738b36; */
   background-color: #44aa44;
 }
 
 .range-slider {
   position: fixed;
-  left: .5rem;
-  right: .5rem;
+  left: .25rem;
+  right: .25rem;
   bottom: 3rem;
   padding: .25rem .5rem;
   display: flex;
@@ -249,7 +247,7 @@ h1 span {
 .range-slider label {
   display: flex;
   align-items: baseline;
-  font-size: .8rem;
+  font-size: .7rem;
   color: #dedede;
   line-height: 1rem;
   text-transform: uppercase;
@@ -257,7 +255,8 @@ h1 span {
 
 .range-slider label span {
   display: inline-block;
-  margin-left: .5rem;
+  flex: 1;
+  margin-left: .3rem;
   font-weight: 600;
   color: #fff;
 }
@@ -265,6 +264,7 @@ h1 span {
 input[type=range] {
   flex: 1;
   margin: 0 .5rem;
+  height: .1rem;
   -webkit-appearance: none;
   cursor: ew-resize;
 }
@@ -311,7 +311,7 @@ input[type=range]::-moz-range-thumb {
   width: 1rem;
   height: 1rem;
   border-radius: 50%;
-  background: #999;
+  background: #fff;
   border: 0;
   box-shadow: 2px 2px 3px 0px rgba(0,0,0,.4);
   cursor: ew-resize;
@@ -534,22 +534,32 @@ button:focus, button:hover {
   display: none;
 }
 
-
-@media only screen and (min-width: 500px) {
-
-  h1 span {
-    display: inline;
-  }
-
-}
-
-@media only screen and (min-width: 600px) {
+@media only screen and (min-width: 500px) and (max-height: 374px) {
 
   #toggle-modal {
     left: auto;
     right: .5rem;
     transform: none;
     bottom: 3rem;
+  }
+
+  .range-slider {
+    right: auto;
+    width: 75%;
+    bottom: 2.75rem;
+  }
+
+}
+
+
+@media only screen and (min-width: 500px) and (min-height: 375px) {
+
+  h1 span {
+    display: inline;
+  }
+
+  #toggle-modal {
+    bottom: 5.25rem;
   }
 
   #toggle-modal span {
@@ -569,9 +579,11 @@ button:focus, button:hover {
   }
 
   .range-slider {
-    right: auto;
-    width: 70%;
     bottom: 2.75rem;
+  }
+
+  .range-slider label {
+    font-size: .8rem;
   }
 
 }
@@ -672,8 +684,8 @@ button:focus, button:hover {
   .legend {
     padding: 1rem 0;
     top: auto;
-    bottom: 3.5rem;
-    right: 2rem;
+    bottom: 7rem;
+    right: 1rem;
     width: 11rem;
     height: 11.5rem;
     border-radius: .2rem;
@@ -738,6 +750,7 @@ button:focus, button:hover {
 
   .range-slider {
     left: 1rem;
+    right: 1rem;
     bottom: 3.5rem;
     padding: .5rem 1rem;
   }
