@@ -311,7 +311,7 @@ input[type=range]::-moz-range-thumb {
   width: 1rem;
   height: 1rem;
   border-radius: 50%;
-  background: #ffffff;
+  background: #999;
   border: 0;
   box-shadow: 2px 2px 3px 0px rgba(0,0,0,.4);
   cursor: ew-resize;
