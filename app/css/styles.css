@@ -335,7 +335,7 @@ input[type=range]::-ms-fill-upper {
   border-radius: 50%;
 }
 input[type=range]::-ms-thumb {
-  margin-top: -.55;
+  margin-top: 0;
   width: 1rem;
   height: 1rem;
   background: #ffffff;
@@ -343,6 +343,9 @@ input[type=range]::-ms-thumb {
   border: 0;
   box-shadow: 2px 2px 3px 0px rgba(0,0,0,.4);
   cursor: ew-resize;
+}
+input[type=range]::-ms-tooltip {
+  display:none;
 }
 
 .map-container {
