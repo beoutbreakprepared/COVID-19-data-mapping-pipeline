@@ -71,8 +71,8 @@
       <h1><span>Novel Coronavirus (</span>COVID-19<span>)</span></h1>
       <button id="toggle-modal" onClick="handleShowModal()">About<span> this </span> Map</button>
       <div class="reported-cases">
-        <div class="reported-cases-num" id="total-cases">187,746</div>
-        <div class="reported-cases-label">Confirmed cases<span class="last-updated">as of <span class="last-updated-date" id="last-updated-date">2020-03-17</span></span></div>
+        <div class="reported-cases-num" id="total-cases"></div>
+        <div class="reported-cases-label">Confirmed cases<span class="last-updated">as of <span class="last-updated-date" id="last-updated-date"></span></span></div>
       </div>
     </div>
     <div class="range-slider">
@@ -114,15 +114,26 @@
   <script type="text/javascript">
 
     var dataUrl = './ncov2019.weekly.geojson';
+    var latestCountsUrl = './latestCounts.json';
     //var totalsUrl = 'totals.json';
     //var dailyUrl = 'dailies.json'
     var dates = [];
     var timeControl = document.getElementById("slider");
     var timeLabel = document.getElementById("date");
 
+    var totalCases = document.getElementById("total-cases");
+    var lastUpdatedDate = document.getElementById("last-updated-date");
+
     var modalWrapper = document.getElementById("modal-wrapper");
     var modal = document.getElementById("modal");
     var playButton = document.getElementById("spread");
+
+    fetch(latestCountsUrl)
+      .then(res => res.json())
+      .then(res => {
+        totalCases.innerText = res[0].caseCount
+        lastUpdatedDate.innerText = res[0].date
+      });
 
     var handleShowModal = function () {
       // switch elements to have 'display' value (block, flex) but keep hidden via opacity
