@@ -128,7 +128,7 @@ h1 span {
 
 .legend ul .circle {
   display: block;
-  opacity: .6;
+  opacity: .85;
 }
 
 .legend ul .label {
@@ -168,7 +168,7 @@ h1 span {
   width: 12px !important;
   height: 12px !important;
   border-radius: 50%;
-  opacity: .6;
+  opacity: .85;
 }
 
 .new-cases .label {
@@ -259,7 +259,6 @@ h1 span {
   display: inline-block;
   margin-left: .5rem;
   font-weight: 600;
-  font-size: 1rem;
   color: #fff;
 }
 
@@ -539,6 +538,10 @@ button:focus, button:hover {
     display: inline;
   }
 
+}
+
+@media only screen and (min-width: 600px) {
+
   #toggle-modal {
     left: auto;
     right: .5rem;
@@ -564,10 +567,9 @@ button:focus, button:hover {
 
   .range-slider {
     right: auto;
-    width: 75%;
+    width: 70%;
     bottom: 2.75rem;
   }
-
 
 }
 
@@ -763,6 +765,10 @@ button:focus, button:hover {
     display: inline;
     font-size: .9rem;
     font-weight: normal;
+  }
+
+  .range-slider label span {
+    font-size: 1rem;
   }
 
 }
