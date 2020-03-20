@@ -426,7 +426,7 @@ input[type=range]::-ms-thumb {
 .modal-title {
   flex: 1;
   color: #333;
-  padding: 0 0 0 3rem;
+  padding: 0 0 0 1rem;
   font-size: 1.5rem;
   font-weight: 200;
 }
@@ -452,8 +452,8 @@ input[type=range]::-ms-thumb {
   flex: 1;
   width: 100%;
   min-height: 10rem;
-  padding: 1.5rem 3rem;
-  font-size: .9rem;
+  padding: 1.5rem 1rem;
+  font-size: .8rem;
   line-height: 1.6;
   color: #454545;
   overflow: auto;
@@ -467,7 +467,7 @@ input[type=range]::-ms-thumb {
 }
 
 .modal-body ul {
-  margin: 1rem 0 1.25rem 2rem;
+  margin: 1rem 0 1.25rem 1rem;
   padding: 0;
 }
 
@@ -573,11 +573,7 @@ button:focus, button:hover {
 
 }
 
-@media only screen and (min-width: 700px) {
-
-  .legend {
-    right: 1rem;
-  }
+@media only screen and (min-width: 700px) and (min-height: 415px) {
 
   .modal {
     top: 50%;
@@ -599,12 +595,22 @@ button:focus, button:hover {
     transition: all 400ms ease;
   }
 
+}
+
+@media only screen and (min-width: 700px) {
+
+  .legend {
+    right: 1rem;
+  }
+
   .modal-title {
+    padding-left: 3rem;
     font-size: 1.8rem;
   }
 
   .modal-body {
     padding: 1.5rem 5rem 1.5rem 3rem;
+    font-size: .9rem;
   }
 
   .modal-body h2 {
