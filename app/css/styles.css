@@ -248,8 +248,19 @@ h1 span {
 
 .range-slider label {
   display: flex;
-  /* width: 5rem; */
-  align-items: center;
+  align-items: baseline;
+  font-size: .8rem;
+  color: #dedede;
+  line-height: 1rem;
+  text-transform: uppercase;
+}
+
+.range-slider label span {
+  display: inline-block;
+  margin-left: .5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #fff;
 }
 
 input[type=range] {
