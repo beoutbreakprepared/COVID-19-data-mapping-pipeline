@@ -113,10 +113,9 @@
   </div>
   <script type="text/javascript">
 
-    var dataUrl = './ncov2019.weekly.geojson';
-    var latestCountsUrl = './latestCounts.json';
-    //var totalsUrl = 'totals.json';
-    //var dailyUrl = 'dailies.json'
+    var dataUrl = './ncov2019.weekly.geojson?nocache=' + (new Date()).getTime();
+    var latestCountsUrl = './latestCounts.json?nocache=' + (new Date()).getTime();
+
     var dates = [];
     var timeControl = document.getElementById("slider");
     var timeLabel = document.getElementById("date");
