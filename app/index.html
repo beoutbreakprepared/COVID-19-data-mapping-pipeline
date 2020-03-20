@@ -115,6 +115,18 @@
     <div id="map"></div>
   </div>
   <script type="text/javascript">
+    // polyfill for array.includes()
+    if (!Array.prototype.includes) {
+      Array.prototype.includes = function (search, start) {
+        'use strict';
+
+        if (search instanceof RegExp) {
+          throw TypeError('first argument must not be a RegExp');
+        }
+        if (start === undefined) { start = 0; }
+        return this.indexOf(search, start) !== -1;
+      };
+    }
 
     var dataUrl = './ncov2019.weekly.geojson?nocache=' + (new Date()).getTime();
     var latestCountsUrl = './latestCounts.json?nocache=' + (new Date()).getTime();
@@ -175,7 +187,7 @@
           filterBy(dates[i]);
           setTimeControlLabel(i);
           i++;
-          if(i == dates.length) {
+          if(i === dates.length) {
             clearInterval(stepMap);
           }
         }, 500);
@@ -298,7 +310,9 @@
           var datesUnsorted = [];
           res.features.forEach(function(feature) {
             var date = feature.properties.date;
-            datesUnsorted.push(date);
+            if (!datesUnsorted.includes(date)) {
+              datesUnsorted.push(date)
+            }
           });
           dates = datesUnsorted.sort();
           buildTimeControl();
