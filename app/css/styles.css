@@ -722,6 +722,18 @@ button:focus, button:hover {
     font-size: 1.5rem;
   }
 
+  #spread {
+    padding: .2rem .75rem .2rem .5rem;
+  }
+
+  #spread img {
+    margin-right: .25rem;
+  }
+
+  #spread .spread-label {
+    display: inline;
+  }
+
 }
 
 @media only screen and (max-width: 849px) {
