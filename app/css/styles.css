@@ -34,10 +34,11 @@ body {
 
 a, a:visited {
   color: #666;
+  transition: all .3s ease;
 }
 
 a:focus, a:hover, a:active {
-  color: #
+  color: #999;
 }
 
 .header {
@@ -45,6 +46,7 @@ a:focus, a:hover, a:active {
   top: 0;
   left: 0;
   display: flex;
+  /* flex-direction: column; */
   justify-content: space-between;
   align-items: center;
   height: 3rem;
@@ -58,10 +60,21 @@ h1 {
   flex: 1;
   display: flex;
   margin: 0;
-  padding: 0 0 0 1rem;
+  justify-content: flex-start;
+  align-items: center;
   font-size: 1.2rem;
   font-weight: 200;
   color: #fff;
+}
+
+.hm-logo-header {
+  width: 8rem;
+}
+
+.page-title {
+  display: none;
+  padding-left: .8rem;
+  border-left: 1px solid #ececec;
 }
 
 h1 span {
@@ -95,11 +108,15 @@ h1 span {
   text-transform: none;
 }
 
+.lg-phone {
+  display: none;
+}
+
 .legend {
   position: fixed;
   top: 4rem;
   right: .5rem;
-  width: 4.5em;
+  width: 6em;
   height: 9rem;
   z-index: 4;
 }
@@ -231,7 +248,7 @@ h1 span {
   position: fixed;
   left: .25rem;
   right: .25rem;
-  bottom: 3rem;
+  bottom: 6rem;
   padding: .25rem .5rem;
   display: flex;
   align-items: center;
@@ -351,7 +368,7 @@ input[type=range]::-ms-tooltip {
 .map-container {
   position: absolute;
   top: 0;
-  bottom: 0;
+  bottom: 0rem;
   padding-top: 3rem;
   width: 100%;
 }
@@ -361,6 +378,40 @@ input[type=range]::-ms-tooltip {
   width: 100%;
   height: 100%;
   z-index: 1;
+}
+
+.credit {
+  position: fixed;
+  left: 0;
+  width: 100%;
+  bottom: 2.5rem;
+  height: 3rem;
+  padding: .4rem .5rem;
+  color: #cccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: .7rem;
+  /* background-color: #232323; */
+  z-index: 8;
+}
+
+.credit span {
+  line-height: 1.3;
+  text-align: center;
+}
+
+.credit a {
+  margin-left: .5rem;
+}
+
+.credit a, .credit a:visited {
+  color: #ccc;
+  transition: all .3s ease;
+}
+
+.credit a:focus, .credit a:hover, .credit a:active {
+  color: #999;
 }
 
 /* modal */
@@ -527,39 +578,62 @@ button:focus, button:hover {
 #toggle-modal {
   position: fixed;
   right: .5rem;
-  bottom: 5.5rem;
+  bottom: 8.5rem;
 }
 
 #toggle-modal span {
   display: none;
 }
 
-@media only screen and (min-width: 500px) and (max-height: 374px) {
 
-  #toggle-modal {
-    left: auto;
-    right: .5rem;
-    transform: none;
-    bottom: 3rem;
+@media only screen and (min-width: 375px) {
+
+  .hm-logo-header {
+    width: 10rem;
   }
 
-  .range-slider {
-    right: auto;
-    width: 75%;
-    bottom: 2.75rem;
+}
+
+@media only screen and (min-width: 475px) {
+
+  .page-title {
+    display: block;
   }
 
 }
 
 
-@media only screen and (min-width: 500px) and (min-height: 375px) {
+@media only screen and (min-width: 500px) and (max-height: 320px) {
+
+  #toggle-modal {
+    left: auto;
+    right: .5rem;
+    transform: none;
+    bottom: 4rem;
+  }
+
+  .range-slider {
+    right: auto;
+    width: 75%;
+    bottom: 4rem;
+  }
+
+  .credit {
+    bottom: 2.5rem;
+    height: 1rem;
+  }
+
+}
+
+@media only screen and (min-width: 500px) and (min-height: 321px) and (max-height: 414px) {
 
   h1 span {
     display: inline;
   }
 
   #toggle-modal {
-    bottom: 5.25rem;
+    right: .5rem;
+    bottom: 6.5rem;
   }
 
   #toggle-modal span {
@@ -579,11 +653,19 @@ button:focus, button:hover {
   }
 
   .range-slider {
-    bottom: 2.75rem;
+    width: auto;
+    left: .5rem;
+    right: .5rem;
+    bottom: 4rem;
   }
 
   .range-slider label {
     font-size: .8rem;
+  }
+
+  .credit {
+    bottom: 2.5rem;
+    height: 1rem;
   }
 
 }
@@ -613,6 +695,14 @@ button:focus, button:hover {
 }
 
 @media only screen and (min-width: 700px) {
+
+  h1 span {
+    display: inline;
+  }
+
+  .hm-logo-header {
+    width: 12rem;
+  }
 
   .legend {
     right: 1rem;
@@ -684,7 +774,7 @@ button:focus, button:hover {
   .legend {
     padding: 1rem 0;
     top: auto;
-    bottom: 7rem;
+    bottom: 10rem;
     right: 1rem;
     width: 11rem;
     height: 11.5rem;
@@ -751,7 +841,7 @@ button:focus, button:hover {
   .range-slider {
     left: 1rem;
     right: 1rem;
-    bottom: 3.5rem;
+    bottom: 6.5rem;
     padding: .5rem 1rem;
   }
 
@@ -761,7 +851,7 @@ button:focus, button:hover {
 @media only screen and (min-width: 1000px) {
 
   .header h1 {
-    font-size: 1.8rem;
+    /* font-size: 1.8rem; */
   }
 
   #toggle-modal {
@@ -771,7 +861,7 @@ button:focus, button:hover {
 
   .reported-cases {
     padding: 0 2.2rem;
-  }
+  /* } */
 
   .reported-cases-num {
     font-size: 2.3rem;

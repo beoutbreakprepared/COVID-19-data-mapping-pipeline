@@ -22,6 +22,19 @@
         <h2>Data</h2>
     	  <p>All data used to produce this map are exclusively collected from publicly available sources including government reports and news media.</p>
         <p>Datasets and resources can be found in <a href="https://github.com/beoutbreakprepared/nCoV2019" target="new">GitHub</a>.</p>
+
+        <h2>Participating Institutions</h2>
+        <div class="logos">
+          <img src="img/oxford-blue.svg" class="oxford-logo" alt="University of Oxford" />
+          <img src="img/hm-logo-color.svg" class="hm-logo" alt="HealthMap" />
+          <img src="img/harvard-logo-color.svg" class="hms-logo" alt="Harvard Medical School" />
+          <img src="img/BCH_Primary_Logo.svg" class="bch-logo" alt="Boston Children's Hospital" />
+          <img src="img/netsi.png" class="netsi-logo" alt="Network Science Institute at Northeastern University" />
+          <img src="img/Oxford_Martin_School_Logo_color.png" class="oxford-martin-logo" alt="Oxford Martin School" />
+          <img src="img/Tsinghua_University.png" class="tsinghua-logo" alt="Tsinghua University" />
+          <img src="img/IHME_logo_acr_color_large.png" class="ihme-logo" alt="Institute for Health Metrics and Evaluation" />
+        </div>
+
         <h2>Collaborators</h2>
         <ul>
       		<li>Isha Berry, <a href="mailto:isha.berry@mail.utoronto.ca">isha.berry@mail.utoronto.ca</a></li>
@@ -54,28 +67,19 @@
           <li><a href="https://www.thelancet.com/journals/laninf/article/PIIS1473-3099(20)30119-5/fulltext">Open access epidemiological data from the COVID-19 outbreak</a> • The Lancet</li>
         </ul>
 
-        <h2>Institutions</h2>
-        <div class="logos">
-          <img src="img/oxford-blue.svg" class="oxford-logo" alt="University of Oxford" />
-          <img src="img/hm-logo-color.svg" class="hm-logo" alt="HealthMap" />
-          <img src="img/harvard-logo-color.svg" class="hms-logo" alt="Harvard Medical School" />
-          <img src="img/BCH_Primary_Logo.svg" class="bch-logo" alt="Boston Children's Hospital" />
-          <img src="img/netsi.png" class="netsi-logo" alt="Network Science Institute at Northeastern University" />
-          <img src="img/Oxford_Martin_School_Logo_color.png" class="oxford-martin-logo" alt="Oxford Martin School" />
-          <img src="img/Tsinghua_University.png" class="tsinghua-logo" alt="Tsinghua University" />
-          <img src="img/IHME_logo_acr_color_large.png" class="ihme-logo" alt="Institute for Health Metrics and Evaluation" />
-        </div>
-
       </div>
     </div>
   </div>
   <div class="map-container">
     <div class="header">
-      <h1><span>Novel Coronavirus (</span>COVID-19<span>)</span></h1>
+      <h1>
+        <img src="img/hm-logo-color-white-text.svg" class="hm-logo-header" alt="HealthMap" />
+        <div class="page-title"><span>Novel Coronavirus (</span>COVID-19<span>)</span></div>
+      </h1>
       <button id="toggle-modal" onClick="handleShowModal()">About<span> this </span> Map</button>
       <div class="reported-cases">
         <div class="reported-cases-num" id="total-cases"></div>
-        <div class="reported-cases-label">Confirmed cases<span class="last-updated">as of <span class="last-updated-date" id="last-updated-date"></span></span></div>
+        <div class="reported-cases-label">Confirmed <span class="lg-phone">cases</span><span class="last-updated"><span class="lg-phone">as of</span> <span class="last-updated-date" id="last-updated-date"></span></span></div>
       </div>
     </div>
     <div class="range-slider">
@@ -84,7 +88,7 @@
       <label>Week of <span id="date"></span></label>
     </div>
     <div id="legend" class="legend">
-      <div class="legend-header">Cases</div>
+      <div class="legend-header">COVID-19 Cases</div>
       <ul>
         <li style="height:80px; z-index:1">
           <span class="circle" style="width:80px; height:80px; background-color: #EDF91C;"></span>
@@ -112,6 +116,7 @@
         <span class="label"><span class="label-val">New</span></span>
       </div>
     </div>
+    <div class="credit"><span>In collaboration with the Open COVID-19 Data Curation Group <a href=" https://github.com/beoutbreakprepared/nCoV2019/tree/master/latest_data" target="new">COVID-19 Dataset</a></span></div>
     <div id="map"></div>
   </div>
   <script type="text/javascript">
