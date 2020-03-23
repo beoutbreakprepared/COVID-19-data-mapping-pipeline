@@ -7,7 +7,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.7.2/bluebird.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.4/fetch.min.js"></script>
   <link rel="stylesheet" type="text/css" href="css/fonts.css" />
-  <link rel="stylesheet" type="text/css" href="css/styles.css?b" />
+  <link rel="stylesheet" type="text/css" href="css/styles.css?c" />
 </head>
 <body>
   <div class="modal-wrapper" id="modal-wrapper">
@@ -37,7 +37,8 @@
 
         <h2>Collaborators</h2>
         <ul>
-      		<li>Isha Berry, <a href="mailto:isha.berry@mail.utoronto.ca">isha.berry@mail.utoronto.ca</a></li>
+      	  <li>Isha Berry, <a href="mailto:isha.berry@mail.utoronto.ca">isha.berry@mail.utoronto.ca</a></li>
+          <li>Thomas Brewer, <a href="mailto:Thomas.Brewer@childrens.harvard.edu">Thomas.Brewer@childrens.harvard.edu</a></li>
           <li>John Brownstein, <a href="mailto:John.Brownstein@childrens.harvard.edu">John.Brownstein@childrens.harvard.edu</a></li>
           <li>Emily Cohn, <a href="mailto:Emily.Cohn@childrens.harvard.edu">Emily.Cohn@childrens.harvard.edu</a></li>
           <li>Lauren Goodwin, <a href="mailto:Lauren.Goodwin@childrens.harvard.edu">Lauren.Goodwin@childrens.harvard.edu</a></li>
@@ -133,7 +134,7 @@
       };
     }
 
-    var dataUrl = './ncov2019.weekly.geojson?nocache=' + (new Date()).getTime();
+    var dataUrl = './dailies.geojson?nocache=' + (new Date()).getTime();
     var latestCountsUrl = './latestCounts.json?nocache=' + (new Date()).getTime();
 
     var dates = [];
@@ -254,7 +255,8 @@
           'type': 'circle',
           'source': 'counts',
           'paint': {
-            'circle-radius': ['*', ['log10', ['sqrt', ['get', 'new']]], 20],
+            'circle-radius': 10,
+            //'circle-radius': ['*', ['log10', ['sqrt', ['get', 'new']]], 20],
             'circle-color': 'cornflowerblue',
             'circle-opacity': 0.6,
           }
