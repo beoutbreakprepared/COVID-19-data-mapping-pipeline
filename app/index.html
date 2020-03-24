@@ -255,8 +255,7 @@
           'type': 'circle',
           'source': 'counts',
           'paint': {
-            'circle-radius': 10,
-            //'circle-radius': ['*', ['log10', ['sqrt', ['get', 'new']]], 20],
+            'circle-radius': [ 'case', ['<', 0, ['number', ['get', 'new']]], ['*', ['log10', ['sqrt', ['get', 'new']]], 20], 0 ],
             'circle-color': 'cornflowerblue',
             'circle-opacity': 0.6,
           }
