@@ -75,18 +75,23 @@
     <div class="sidebar">
       <div class="pullbar"></div>
       <div class="sidebar-header">
-        <img src="img/hm-logo-color.svg" alt="HealthMap" />
+        <img src="img/hm-logo-color-white-text.svg" alt="HealthMap" />
         <h1 class="page-title">COVID-19</h1>
       </div>
       <div class="reported-cases">
         <div class="reported-cases-num" id="total-cases"></div>
-        <div class="reported-cases-label">Confirmed cases as of </span> <span class="last-updated-date" id="last-updated-date"></span></span></div>
+        <div class="reported-cases-label">Confirmed cases worldwide</div>
+        <div class="last-updated-date">Updated <span id="last-updated-date"></span></div>
       </div>
       <ul id="location-list" class="location-list"></ul>
     </div>
     <div class="map-wrapper">
       <div class="mobile-header">
         <img src="img/hm-logo-color-white-text.svg" alt="HealthMap" />
+      </div>
+      <div class="map-type-toggle">
+        <button class="is-active">Line List</button>
+        <button>WHO Data</button>
       </div>
       <button id="toggle-modal" onClick="handleShowModal()">About<span> this </span> Map</button>
       <div id="legend" class="legend">
@@ -171,7 +176,7 @@
       .then(function(res) { return res.json(); })
       .then(function(res) {
         var obj = res.features
-        list = '<li onClick="handleFlyTo(10,0,1)"><span class="label">Global</span><span class="num">300,000</span></span></li>';
+        list = '';
         for (let key in obj) {
           let location = obj[key];
           var name = location.attributes.ADM0_NAME;
