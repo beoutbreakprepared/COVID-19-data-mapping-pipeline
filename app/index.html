@@ -76,18 +76,21 @@
       <div class="pullbar"></div>
       <div class="sidebar-header">
         <img src="img/hm-logo-color-white-text.svg" alt="HealthMap" />
-        <h1 class="page-title">COVID-19</h1>
+        <h1 class="sidebar-title">COVID-19</h1>
       </div>
-      <div class="reported-cases">
+      <div class="reported-cases" onClick="handleFlyTo(10, 0, 1)">
         <div class="reported-cases-num" id="total-cases"></div>
-        <div class="reported-cases-label">Confirmed cases worldwide</div>
-        <div class="last-updated-date">Updated <span id="last-updated-date"></span></div>
+        <div class="reported-cases-subtext">
+          <div class="reported-cases-label">Confirmed cases worldwide</div>
+          <div class="last-updated-date">Updated <span id="last-updated-date"></span></div>
+        </div>
       </div>
       <ul id="location-list" class="location-list"></ul>
     </div>
     <div class="map-wrapper">
       <div class="mobile-header">
         <img src="img/hm-logo-color-white-text.svg" alt="HealthMap" />
+        <h1 class="mobile-title">COVID-19</h1>
       </div>
       <div class="map-type-toggle">
         <button class="is-active">Line List</button>
@@ -191,7 +194,7 @@
             case cumConf>100 && cumConf<=500: legendGroup='legend-group-500'; break;
             case cumConf>500 && cumConf<=2000: legendGroup='legend-group-2000'; break;
           }
-          list += '<li onClick="handleFlyTo(' + lat + ',' + lon + ',' + 3 + ')"><span class="label">' + name + '</span><span class="num ' + legendGroup + '">' + cumConf + '</span></span></li>';
+          list += '<li><button onClick="handleFlyTo(' + lat + ',' + lon + ',' + 3 + ')"><span class="label">' + name + '</span><span class="num ' + legendGroup + '">' + cumConf + '</span></span></button></li>';
         }
         document.getElementById('location-list').innerHTML = list;
       });
@@ -240,7 +243,8 @@
         }, 500);
       }
 
-      window.handleFlyTo = function(lat, lon, zoom) {
+      window.handleFlyTo = function(lat, lon, zoom, item) {
+        console.log(item)
         map.flyTo({ center: [lat, lon], zoom: zoom })
         window.scrollTo({
           top: 0,
