@@ -85,6 +85,7 @@
           <div class="last-updated-date">Updated <span id="last-updated-date"></span></div>
         </div>
       </div>
+      <input type="text" id="location-filter" name="location-filter" onkeyup="filterList()" />
       <ul id="location-list" class="location-list"></ul>
     </div>
     <div class="map-wrapper">
@@ -199,6 +200,27 @@
         document.getElementById('location-list').innerHTML = list;
       });
 
+    // filter list of locations
+    function filterList() {
+      // Declare variables
+      var input, filter, ul, li, label, i, txtValue;
+      input = document.getElementById('location-filter');
+      filter = input.value.toUpperCase();
+      ul = document.getElementById("location-list");
+      li = ul.getElementsByTagName('li');
+      // Loop through all list items, and hide those who don't match the search query
+      for (i = 0; i < li.length; i++) {
+        label = li[i].getElementsByClassName('label')[0];
+        //a = li[i].getElementsByTagName("a")[0];
+        txtValue = label.textContent || label.innerText;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+          li[i].style.display = "";
+        } else {
+          li[i].style.display = "none";
+        }
+      }
+    }
+
     var handleShowModal = function () {
       // switch elements to have 'display' value (block, flex) but keep hidden via opacity
       modalWrapper.classList.add('is-block');
@@ -220,10 +242,10 @@
     }
 
     function initMap() {
-      mapboxgl.accessToken = 'pk.eyJ1Ijoia2F0ZWx5bm5vYnJpZW4iLCJhIjoiY2sxa3ZjbTR4MDA2bTNjcGR4cXIwZnJidSJ9.wrkfV082TaX5P65i2L8upg';
+      mapboxgl.accessToken = 'pk.eyJ1IjoiaGVhbHRobWFwIiwiYSI6ImNrOGl1NGNldTAyYXYzZnBqcnBmN3RjanAifQ.H377pe4LPPcymeZkUBiBtg';
       var map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/katelynnobrien/ck5y23wmc0aso1iqtbww5nzrr',
+        style: 'mapbox://styles/healthmap/ck7o47dgs1tmb1ilh5b1ro1vn',
         center: [10, 0],
         zoom: 1,
         maxZoom: 8,
