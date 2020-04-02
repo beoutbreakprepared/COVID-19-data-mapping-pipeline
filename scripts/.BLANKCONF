@@ -1,0 +1,33 @@
+[DEFAULT]
+
+[SHEETS]
+SPREADSHEETID = # GoogleSheet ID  
+CREDENTIALS = # Google API credentials
+TOKEN = # Pickled credentials (for use after 1st authentication) 
+
+[FILES]
+# Where to save data (and log)
+LOG = # logfile
+FULL = # Full data from sheets.
+TOTAL = # Counts by location 
+ANIMATION = # Animation Data
+
+[HTML]
+# Where to copy data for website
+TOTAL = 
+ANIMATION = 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
