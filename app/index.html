@@ -85,7 +85,10 @@
           <div class="last-updated-date">Updated <span id="last-updated-date"></span></div>
         </div>
       </div>
-      <input type="text" id="location-filter" name="location-filter" onkeyup="filterList()" />
+      <div class="location-filter-wrapper">
+        <input type="text" id="location-filter" name="location-filter" onkeyup="filterList()" placeholder="Filter country list" />
+        <div class="clear-filter" id="clear-filter" onClick="clearFilter()"><img src="img/close-icon.svg" width="12" height="12" alt="Clear" /></div>
+      </div>
       <ul id="location-list" class="location-list"></ul>
     </div>
     <div class="map-wrapper">
@@ -202,23 +205,36 @@
 
     // filter list of locations
     function filterList() {
-      // Declare variables
-      var input, filter, ul, li, label, i, txtValue;
+      var input, filter, ul, li, label, i, txtValue, clearFilter;
       input = document.getElementById('location-filter');
       filter = input.value.toUpperCase();
       ul = document.getElementById("location-list");
       li = ul.getElementsByTagName('li');
+      clearFilter = document.getElementById('clear-filter');
       // Loop through all list items, and hide those who don't match the search query
       for (i = 0; i < li.length; i++) {
         label = li[i].getElementsByClassName('label')[0];
-        //a = li[i].getElementsByTagName("a")[0];
         txtValue = label.textContent || label.innerText;
-        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-          li[i].style.display = "";
+        // show/hide clear filter button
+        if (filter !== '') {
+          clearFilter.classList.add('is-visible');
         } else {
-          li[i].style.display = "none";
+          clearFilter.classList.remove('is-visible');
+        }
+        // show/hide list items
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+          li[i].classList.remove('is-hidden');
+        } else {
+          li[i].classList.add('is-hidden');
         }
       }
+    }
+
+    // clear filter
+    function clearFilter() {
+      var input = document.getElementById('location-filter');
+      input.value = '';
+      filterList();
     }
 
     var handleShowModal = function () {
