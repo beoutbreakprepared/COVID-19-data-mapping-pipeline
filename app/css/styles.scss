@@ -1,5 +1,5 @@
-@import './variables.scss';
-@import './mixins.scss';
+@import 'variables';
+@import 'mixins';
 
 *, *::before, *::after {
   box-sizing: inherit;
@@ -723,4 +723,4 @@ input[type=range]::-ms-tooltip {
   display:none;
 }
 
-@import './media-queries.scss';
+@import 'media-queries';
