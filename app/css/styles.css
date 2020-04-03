@@ -227,6 +227,12 @@ h1 {
 .location-list button.is-active {
   border-color: #67009E; }
 
+.location-list .label {
+  margin-right: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; }
+
 .location-list .num {
   display: flex;
   align-items: center;

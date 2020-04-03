@@ -248,6 +248,12 @@ h1 {
       border-color: $legend-group-10;
     }
   }
+  .label {
+    margin-right: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   .num {
     display: flex;
     align-items: center;
