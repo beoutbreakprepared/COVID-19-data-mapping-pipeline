@@ -100,24 +100,24 @@
       <div id="legend" class="legend">
         <div class="legend-header">COVID-19 Cases</div>
         <ul>
-          <li style="height:80px; z-index:1">
-            <span class="circle" style="width:80px; height:80px; background-color: #EDF91C;"></span>
+          <li style="height:40px; z-index:1">
+            <span class="circle" style="width:40px; height:40px; background-color: #EDF91C;"></span>
             <span class="label"><span class="label-val">10,000+</span></span>
           </li>
-          <li style="height:66px; z-index:2">
-            <span class="circle" style="width:66px; height:66px; background-color: #FB9533;"></span>
+          <li style="height:33px; z-index:2">
+            <span class="circle" style="width:33px; height:33px; background-color: #FB9533;"></span>
             <span class="label"><span class="label-val">2000</span></span>
           </li>
-          <li style="height:54px; z-index:3">
-            <span class="circle" style="width:54px; height:54px; background-color: #D34D60;"></span>
+          <li style="height:27px; z-index:3">
+            <span class="circle" style="width:27px; height:27px; background-color: #D34D60;"></span>
             <span class="label"><span class="label-val">500</span></span>
           </li>
-          <li style="height:40px; z-index:4">
-            <span class="circle" style="width:40px; height:40px; background-color: #921694;"></span>
+          <li style="height:20px; z-index:4">
+            <span class="circle" style="width:20px; height:20px; background-color: #921694;"></span>
             <span class="label"><span class="label-val">100</span></span>
           </li>
-          <li style="height:20px; z-index:5">
-            <span class="circle" style="width:20px; height:20px; background-color: #67009E;"></span>
+          <li style="height:10px; z-index:5">
+            <span class="circle" style="width:10px; height:10px; background-color: #67009E;"></span>
             <span class="label"><span class="label-val">10</span></span>
           </li>
         </ul>
@@ -314,7 +314,8 @@
           'type': 'circle',
           'source': 'counts',
           'paint': {
-            'circle-radius': ['*', ['log10', ['sqrt', ['get', 'total']]], 20],
+            'circle-radius': [ 'case', ['<', 0, ['number', ['get', 'total']]], ['*', ['log10', ['sqrt', ['get', 'total']]], 10], 0 ],
+            //'circle-radius': ['*', ['log10', ['sqrt', ['get', 'total']]], 15],
             'circle-color': [
               'step',
               ['get', 'total'],
@@ -336,7 +337,7 @@
           'type': 'circle',
           'source': 'counts',
           'paint': {
-            'circle-radius': [ 'case', ['<', 0, ['number', ['get', 'new']]], ['*', ['log10', ['sqrt', ['get', 'new']]], 20], 0 ],
+            'circle-radius': [ 'case', ['<', 0, ['number', ['get', 'new']]], ['*', ['log10', ['sqrt', ['get', 'new']]], 10], 0 ],
             'circle-color': 'cornflowerblue',
             'circle-opacity': 0.6,
           }
