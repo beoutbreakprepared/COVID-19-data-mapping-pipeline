@@ -188,7 +188,7 @@
           lon = location.centroid.y ? location.centroid.y : 0;
           cumConf = location.attributes.cum_conf ? location.attributes.cum_conf : 0;
           legendGroup = location.attributes.legendGroup ? location.attributes.legendGroup : '';
-          list += '<li><button onClick="handleFlyTo(' + lat + ',' + lon + ',' + 4 + ')"><span class="label">' + name + '</span><span class="num ' + legendGroup + '">' + cumConf + '</span></span></button></li>';
+          list += '<li><button onClick="handleFlyTo(' + lat + ',' + lon + ',' + 4 + ')"><span class="label">' + name + '</span><span class="num legend-group-' + legendGroup + '">' + cumConf + '</span></span></button></li>';
         }
         document.getElementById('location-list').innerHTML = list;
       });
