@@ -182,19 +182,12 @@
         list = '';
         for (let key in obj) {
           let location = obj[key];
-          var name, lat, lon, cumConf;
-          var legendGroup = 'legend-group-default';
+          var name, lat, lon, cumConf, legendGroup;
           name = location.attributes.ADM0_NAME ? location.attributes.ADM0_NAME : '';
           lat = location.centroid.x ? location.centroid.x : 0;
           lon = location.centroid.y ? location.centroid.y : 0;
           cumConf = location.attributes.cum_conf ? location.attributes.cum_conf : 0;
-          // do this in pipeline ?
-          switch (true) {
-            case cumConf<=10: legendGroup='legend-group-10'; break;
-            case cumConf>10 && cumConf<=100: legendGroup='legend-group-100'; break;
-            case cumConf>100 && cumConf<=500: legendGroup='legend-group-500'; break;
-            case cumConf>500 && cumConf<=2000: legendGroup='legend-group-2000'; break;
-          }
+          legendGroup = location.attributes.legendGroup ? location.attributes.legendGroup : '';
           list += '<li><button onClick="handleFlyTo(' + lat + ',' + lon + ',' + 4 + ')"><span class="label">' + name + '</span><span class="num ' + legendGroup + '">' + cumConf + '</span></span></button></li>';
         }
         document.getElementById('location-list').innerHTML = list;
