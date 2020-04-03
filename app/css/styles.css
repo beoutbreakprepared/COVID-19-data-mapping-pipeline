@@ -383,17 +383,14 @@ input[type=range]::-ms-tooltip {
 
 .credit {
   position: fixed;
-  left: 0;
   width: 100%;
   bottom: 2.5rem;
-  height: 3rem;
   padding: .4rem .5rem;
   color: #cccc;
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: .7rem;
-  /* background-color: #232323; */
   z-index: 8;
 }
 
@@ -619,11 +616,6 @@ button:focus, button:hover {
     bottom: 4rem;
   }
 
-  .credit {
-    bottom: 2.5rem;
-    height: 1rem;
-  }
-
 }
 
 @media only screen and (min-width: 500px) and (min-height: 321px) and (max-height: 414px) {
@@ -662,11 +654,6 @@ button:focus, button:hover {
 
   .range-slider label {
     font-size: .8rem;
-  }
-
-  .credit {
-    bottom: 2.5rem;
-    height: 1rem;
   }
 
 }
