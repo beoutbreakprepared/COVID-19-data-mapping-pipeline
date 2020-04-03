@@ -567,50 +567,6 @@ h1 {
   bottom: 8.5rem;
 }
 
-.map-type-toggle {
-  list-style: none;
-  position: absolute;
-  top: auto;
-  bottom: 6rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  margin: 0;
-  padding: 0;
-  z-index: 5;
-
-  button {
-    position: relative;
-    display: inline-block;
-    white-space: nowrap;
-    padding: .2rem 1rem;
-    font-size: .8rem;
-    font-weight: 400;
-    color: #fff;
-    text-decoration: none;
-    background-color: $body-bgcolor;
-    border: 1px solid #787878;
-    border-radius: 0;
-    &:hover, &:focus, &.focus {
-      background-color: #454545;
-    }
-    &:active,
-    &.is-active {
-      background-color: #66cc66;
-      border-color: #66cc66;
-    }
-    &:first-child {
-      border-top-left-radius: .3rem;
-      border-bottom-left-radius: .3rem;
-    }
-    &:last-child {
-      border-top-right-radius: .3rem;
-      border-bottom-right-radius: .3rem;
-      border-left: 0;
-    }
-  }
-}
-
 /* range slider */
 
 #spread {

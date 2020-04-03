@@ -546,47 +546,6 @@ h1 {
   right: .5rem;
   bottom: 8.5rem; }
 
-.map-type-toggle {
-  list-style: none;
-  position: absolute;
-  top: auto;
-  bottom: 6rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  margin: 0;
-  padding: 0;
-  z-index: 5; }
-
-.map-type-toggle button {
-  position: relative;
-  display: inline-block;
-  white-space: nowrap;
-  padding: .2rem 1rem;
-  font-size: .8rem;
-  font-weight: 400;
-  color: #fff;
-  text-decoration: none;
-  background-color: #242424;
-  border: 1px solid #787878;
-  border-radius: 0; }
-
-.map-type-toggle button:hover, .map-type-toggle button:focus, .map-type-toggle button.focus {
-  background-color: #454545; }
-
-.map-type-toggle button:active, .map-type-toggle button.is-active {
-  background-color: #66cc66;
-  border-color: #66cc66; }
-
-.map-type-toggle button:first-child {
-  border-top-left-radius: .3rem;
-  border-bottom-left-radius: .3rem; }
-
-.map-type-toggle button:last-child {
-  border-top-right-radius: .3rem;
-  border-bottom-right-radius: .3rem;
-  border-left: 0; }
-
 /* range slider */
 #spread {
   display: flex;
@@ -782,10 +741,6 @@ input[type=range]::-ms-tooltip {
     z-index: 3; }
   .mobile-header {
     display: none; }
-  .map-type-toggle {
-    top: .5rem;
-    bottom: auto;
-    transform: translateX(50%); }
   .pullbar {
     display: none; }
   .location-list {
