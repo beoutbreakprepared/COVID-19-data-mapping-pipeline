@@ -71,55 +71,72 @@
       </div>
     </div>
   </div>
-  <div class="map-container">
-    <div class="header">
-      <h1>
-        <img src="img/hm-logo-color-white-text.svg" class="hm-logo-header" alt="HealthMap" />
-        <div class="page-title"><span>Novel Coronavirus (</span>COVID-19<span>)</span></div>
-      </h1>
-      <button id="toggle-modal" onClick="handleShowModal()">About<span> this </span> Map</button>
-      <div class="reported-cases">
+  <div class="page-wrapper">
+    <div class="sidebar">
+      <div class="pullbar"></div>
+      <div class="sidebar-header">
+        <img src="img/hm-logo-color-white-text.svg" alt="HealthMap" />
+        <h1 class="sidebar-title">COVID-19</h1>
+      </div>
+      <div class="reported-cases" onClick="handleFlyTo(10, 0, 1)">
         <div class="reported-cases-num" id="total-cases"></div>
-        <div class="reported-cases-label">Confirmed <span class="lg-phone">cases</span><span class="last-updated"><span class="lg-phone">as of</span> <span class="last-updated-date" id="last-updated-date"></span></span></div>
+        <div class="reported-cases-subtext">
+          <div class="reported-cases-label">Confirmed cases worldwide</div>
+          <div class="last-updated-date">Updated <span id="last-updated-date"></span></div>
+        </div>
       </div>
-    </div>
-    <div class="range-slider">
-  	  <div id="spread"><img src="./img/play.svg" width="20" height="20" alt="Play" /><span class="spread-label">Play</span></div>
-      <input id="slider" type="range" value="1000" min="0" max="1000" step="1" />
-      <label>Week of <span id="date"></span></label>
-    </div>
-    <div id="legend" class="legend">
-      <div class="legend-header">COVID-19 Cases</div>
-      <ul>
-        <li style="height:80px; z-index:1">
-          <span class="circle" style="width:80px; height:80px; background-color: #EDF91C;"></span>
-          <span class="label"><span class="label-val">10,000+</span></span>
-        </li>
-        <li style="height:66px; z-index:2">
-          <span class="circle" style="width:66px; height:66px; background-color: #FB9533;"></span>
-          <span class="label"><span class="label-val">2000</span></span>
-        </li>
-        <li style="height:54px; z-index:3">
-          <span class="circle" style="width:54px; height:54px; background-color: #D34D60;"></span>
-          <span class="label"><span class="label-val">500</span></span>
-        </li>
-        <li style="height:40px; z-index:4">
-          <span class="circle" style="width:40px; height:40px; background-color: #921694;"></span>
-          <span class="label"><span class="label-val">100</span></span>
-        </li>
-        <li style="height:20px; z-index:5">
-          <span class="circle" style="width:20px; height:20px; background-color: #67009E;"></span>
-          <span class="label"><span class="label-val">10</span></span>
-        </li>
-      </ul>
-      <div class="new-cases">
-        <span class="circle" style="background-color: cornflowerblue;"></span>
-        <span class="label"><span class="label-val">New</span></span>
+      <div class="location-filter-wrapper">
+        <input type="text" id="location-filter" name="location-filter" onkeyup="filterList()" placeholder="Filter country list" />
+        <div class="clear-filter" id="clear-filter" onClick="clearFilter()"><img src="img/close-icon.svg" width="12" height="12" alt="Clear" /></div>
       </div>
+      <ul id="location-list" class="location-list"></ul>
     </div>
-    <div class="credit"><span>In collaboration with the Open COVID-19 Data Curation Group <a href=" https://github.com/beoutbreakprepared/nCoV2019/tree/master/latest_data" target="new">COVID-19 Dataset</a></span></div>
-    <div id="map"></div>
+    <div class="map-wrapper">
+      <div class="mobile-header">
+        <img src="img/hm-logo-color-white-text.svg" alt="HealthMap" />
+        <h1 class="mobile-title">COVID-19</h1>
+      </div>
+      <button id="toggle-modal" onClick="handleShowModal()">About<span> this </span> Map</button>
+      <div id="legend" class="legend">
+        <div class="legend-header">COVID-19 Cases</div>
+        <ul>
+          <li style="height:40px; z-index:1">
+            <span class="circle" style="width:40px; height:40px; background-color: #EDF91C;"></span>
+            <span class="label"><span class="label-val">10,000+</span></span>
+          </li>
+          <li style="height:33px; z-index:2">
+            <span class="circle" style="width:33px; height:33px; background-color: #FB9533;"></span>
+            <span class="label"><span class="label-val">2000</span></span>
+          </li>
+          <li style="height:27px; z-index:3">
+            <span class="circle" style="width:27px; height:27px; background-color: #D34D60;"></span>
+            <span class="label"><span class="label-val">500</span></span>
+          </li>
+          <li style="height:20px; z-index:4">
+            <span class="circle" style="width:20px; height:20px; background-color: #921694;"></span>
+            <span class="label"><span class="label-val">100</span></span>
+          </li>
+          <li style="height:10px; z-index:5">
+            <span class="circle" style="width:10px; height:10px; background-color: #67009E;"></span>
+            <span class="label"><span class="label-val">10</span></span>
+          </li>
+        </ul>
+        <div class="new-cases">
+          <span class="circle" style="background-color: cornflowerblue;"></span>
+          <span class="label"><span class="label-val">New</span></span>
+        </div>
+      </div>
+      <div class="range-slider">
+    	  <div id="spread"><img src="./img/play.svg" width="20" height="20" alt="Play" /><span class="spread-label">Play</span></div>
+        <input id="slider" type="range" value="1000" min="0" max="1000" step="1" />
+        <label>Week of <span id="date"></span></label>
+      </div>
+      <div id="map"></div>
+    </div>
   </div>
+  <!--
+    <div class="credit"><span>In collaboration with the Open COVID-19 Data Curation Group <a href=" https://github.com/beoutbreakprepared/nCoV2019/tree/master/latest_data" target="new">COVID-19 Dataset</a></span></div>
+  -->
   <script type="text/javascript">
     // polyfill for array.includes()
     if (!Array.prototype.includes) {
@@ -136,6 +153,7 @@
 
     var dataUrl = './dailies.geojson?nocache=' + (new Date()).getTime();
     var latestCountsUrl = './latestCounts.json?nocache=' + (new Date()).getTime();
+    var whoUrl = './who.json?nocache=' + (new Date()).getTime();
 
     var dates = [];
     var timeControl = document.getElementById("slider");
@@ -148,12 +166,66 @@
     var modal = document.getElementById("modal");
     var playButton = document.getElementById("spread");
 
+    // load latest counts from scraper
     fetch(latestCountsUrl)
       .then(function(res) { return res.json(); })
       .then(function(res) {
         totalCases.innerText = res[0].caseCount
         lastUpdatedDate.innerText = res[0].date
       });
+
+    // build list of locations with counts
+    fetch(whoUrl)
+      .then(function(res) { return res.json(); })
+      .then(function(res) {
+        var obj = res.features
+        list = '';
+        for (let key in obj) {
+          let location = obj[key];
+          var name, lat, lon, cumConf, legendGroup;
+          name = location.attributes.ADM0_NAME ? location.attributes.ADM0_NAME : '';
+          lat = location.centroid.x ? location.centroid.x : 0;
+          lon = location.centroid.y ? location.centroid.y : 0;
+          cumConf = location.attributes.cum_conf ? location.attributes.cum_conf : 0;
+          legendGroup = location.attributes.legendGroup ? location.attributes.legendGroup : '';
+          list += '<li><button onClick="handleFlyTo(' + lat + ',' + lon + ',' + 4 + ')"><span class="label">' + name + '</span><span class="num legend-group-' + legendGroup + '">' + cumConf + '</span></span></button></li>';
+        }
+        document.getElementById('location-list').innerHTML = list;
+      });
+
+    // filter list of locations
+    function filterList() {
+      var input, filter, ul, li, label, i, txtValue, clearFilter;
+      input = document.getElementById('location-filter');
+      filter = input.value.toUpperCase();
+      ul = document.getElementById("location-list");
+      li = ul.getElementsByTagName('li');
+      clearFilter = document.getElementById('clear-filter');
+      // Loop through all list items, and hide those who don't match the search query
+      for (i = 0; i < li.length; i++) {
+        label = li[i].getElementsByClassName('label')[0];
+        txtValue = label.textContent || label.innerText;
+        // show/hide clear filter button
+        if (filter !== '') {
+          clearFilter.classList.add('is-visible');
+        } else {
+          clearFilter.classList.remove('is-visible');
+        }
+        // show/hide list items
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+          li[i].classList.remove('is-hidden');
+        } else {
+          li[i].classList.add('is-hidden');
+        }
+      }
+    }
+
+    // clear filter
+    function clearFilter() {
+      var input = document.getElementById('location-filter');
+      input.value = '';
+      filterList();
+    }
 
     var handleShowModal = function () {
       // switch elements to have 'display' value (block, flex) but keep hidden via opacity
@@ -176,15 +248,14 @@
     }
 
     function initMap() {
-      mapboxgl.accessToken = 'pk.eyJ1Ijoia2F0ZWx5bm5vYnJpZW4iLCJhIjoiY2sxa3ZjbTR4MDA2bTNjcGR4cXIwZnJidSJ9.wrkfV082TaX5P65i2L8upg';
+      mapboxgl.accessToken = 'pk.eyJ1IjoiaGVhbHRobWFwIiwiYSI6ImNrOGl1NGNldTAyYXYzZnBqcnBmN3RjanAifQ.H377pe4LPPcymeZkUBiBtg';
       var map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/katelynnobrien/ck5y23wmc0aso1iqtbww5nzrr',
+        style: 'mapbox://styles/healthmap/ck7o47dgs1tmb1ilh5b1ro1vn',
         center: [10, 0],
         zoom: 1,
-        maxZoom: 6,
         // hash: true
-      }).addControl(new mapboxgl.NavigationControl(), 'top-left');
+      }).addControl(new mapboxgl.NavigationControl());
 
       var animateMap = function() {
         var i = 0;
@@ -197,6 +268,16 @@
             clearInterval(stepMap);
           }
         }, 500);
+      }
+
+      window.handleFlyTo = function(lat, lon, zoom, item) {
+        console.log(item)
+        map.flyTo({ center: [lat, lon], zoom: zoom })
+        window.scrollTo({
+          top: 0,
+          left: 0,
+          behavior: 'smooth'
+        });
       }
 
       function filterBy(isodate) {
@@ -233,7 +314,8 @@
           'type': 'circle',
           'source': 'counts',
           'paint': {
-            'circle-radius': ['*', ['log10', ['sqrt', ['get', 'total']]], 20],
+            'circle-radius': [ 'case', ['<', 0, ['number', ['get', 'total']]], ['*', ['log10', ['sqrt', ['get', 'total']]], 10], 0 ],
+            //'circle-radius': ['*', ['log10', ['sqrt', ['get', 'total']]], 15],
             'circle-color': [
               'step',
               ['get', 'total'],
@@ -255,7 +337,7 @@
           'type': 'circle',
           'source': 'counts',
           'paint': {
-            'circle-radius': [ 'case', ['<', 0, ['number', ['get', 'new']]], ['*', ['log10', ['sqrt', ['get', 'new']]], 20], 0 ],
+            'circle-radius': [ 'case', ['<', 0, ['number', ['get', 'new']]], ['*', ['log10', ['sqrt', ['get', 'new']]], 10], 0 ],
             'circle-color': 'cornflowerblue',
             'circle-opacity': 0.6,
           }
@@ -331,6 +413,8 @@
 
       });
     }
+
+
   </script>
   <script async defer src="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js" onload="initMap()"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css" rel="stylesheet" />

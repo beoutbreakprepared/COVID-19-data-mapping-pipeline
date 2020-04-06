@@ -1,0 +1,33 @@
+// variables
+
+$font-family: 'Open Sans', helvetica, sans-serif;
+
+$sidebar-width: 20rem;
+$sidebar-width-sm: 14rem;
+
+$sidebar-bgcolor: rgba(48,48,48,.85);
+$sidebar-bgcolor-mobile: rgba(59,59,59,.85);
+
+$body-bgcolor: #242424;
+
+$text-color-light: #fff;
+$text-color-dark: #333;
+
+$mobile-map-height: 70vh;
+
+//$breakpoint-sm-max: 411px;
+$breakpoint-xl-min: 500px;
+$breakpoint-sm-max: $breakpoint-xl-min - 1px;
+
+$breakpoint-sm-max-landscape: 667px;
+
+$breakpoint-legend-style-max-portrait: 414px;
+$breakpoint-legend-style-min-portrait: $breakpoint-legend-style-max-portrait + 1px;
+$breakpoint-legend-style-max-landscape: 823px;
+$breakpoint-legend-style-min-landscape: $breakpoint-legend-style-max-landscape + 1px;
+
+$legend-group-10: #67009E;
+$legend-group-100: #921694;
+$legend-group-500: #D34d60;
+$legend-group-2000: #FB9533;
+$legend-group-default: #EDF91C;
