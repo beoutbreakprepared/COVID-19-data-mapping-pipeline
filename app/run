@@ -1,0 +1,33 @@
+#!/usr/bin/python
+
+import os
+import shlex
+import subprocess
+import sys
+import threading
+
+def run_sass_precompiler():
+  input_files = [f for f in os.listdir("css") if f.endswith(".scss")]
+  if not len(input_files):
+    return None
+  return subprocess.call(shlex.split("sass --watch css:css"))
+
+def run_http_server():
+  if sys.version_info[0] < 3:
+    return subprocess.call(shlex.split("python -m SimpleHTTPServer 8000"))
+  else:
+    # Uses port 8000 by default.
+    return subprocess.call(shlex.split("python -m http.server"))
+
+try:
+  threads = []
+  http = threading.Thread(target=run_http_server)
+  sass = threading.Thread(target=run_sass_precompiler)
+  http.start()
+  sass.start()
+  http.join()
+  sass.join()
+
+except KeyboardInterrupt as e:
+  print("Shutting down...")
+
