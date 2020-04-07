@@ -64,7 +64,7 @@
 
         <h2>News and Publications</h2>
         <ul>
-          <li><a href="https://www.independent.co.uk/voices/coronavirus-covid-19-pandemic-outbreak-data-research-cdc-who-a9406281.html">I’m a researcher who’s helped change how we tackle pandemics like coronavirus forever – this is what we’ve learned</a> • Independant</li>
+          <li><a href="https://www.independent.co.uk/voices/coronavirus-covid-19-pandemic-outbreak-data-research-cdc-who-a9406281.html">I’m a researcher who’s helped change how we tackle pandemics like coronavirus forever – this is what we’ve learned</a> • Independent</li>
           <li><a href="https://www.thelancet.com/journals/laninf/article/PIIS1473-3099(20)30119-5/fulltext">Open access epidemiological data from the COVID-19 outbreak</a> • The Lancet</li>
         </ul>
 
@@ -151,9 +151,10 @@
       };
     }
 
-    var dataUrl = './dailies.geojson?nocache=' + (new Date()).getTime();
-    var latestCountsUrl = './latestCounts.json?nocache=' + (new Date()).getTime();
-    var whoUrl = './who.json?nocache=' + (new Date()).getTime();
+    const timeStamp = (new Date()).getTime();
+    var dataUrl = './dailies.geojson?nocache=' + timestamp;
+    var latestCountsUrl = './latestCounts.json?nocache=' + timestamp;
+    var whoUrl = './who.json?nocache=' + timestamp;
 
     var dates = [];
     var timeControl = document.getElementById("slider");
@@ -206,24 +207,16 @@
         label = li[i].getElementsByClassName('label')[0];
         txtValue = label.textContent || label.innerText;
         // show/hide clear filter button
-        if (filter !== '') {
-          clearFilter.classList.add('is-visible');
-        } else {
-          clearFilter.classList.remove('is-visible');
-        }
+        clearFilter.classList.toggle('is-visible', filter != '');
         // show/hide list items
-        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-          li[i].classList.remove('is-hidden');
-        } else {
-          li[i].classList.add('is-hidden');
-        }
+        li[i].classList.toggle('is-hidden',
+                               txtValue.toUpperCase().indexOf(filter) <= -1);
       }
     }
 
     // clear filter
     function clearFilter() {
-      var input = document.getElementById('location-filter');
-      input.value = '';
+      document.getElementById('location-filter').value = '';
       filterList();
     }
 
@@ -349,12 +342,6 @@
           closeOnClick: false
         });
 
-        // Create a popup, but don't add it to the map yet.
-        var popup = new mapboxgl.Popup({
-          closeButton: false,
-          closeOnClick: false
-        });
-
         map.on('mouseenter', 'totals', function (e) {
           // Change the cursor style as a UI indicator.
           map.getCanvas().style.cursor = 'pointer';
@@ -387,10 +374,6 @@
           map.getCanvas().style.cursor = '';
           popup.remove();
         });
-
-        // fetch(totalsUrl).then(res => res.json()).then(res => {
-        //     map.getSource('cumulative').setData(res);
-        // });
 
         fetch(dataUrl)
         .then(function(res) { return res.json(); })
