@@ -271,7 +271,6 @@
       }
 
       window.handleFlyTo = function(lat, lon, zoom, item) {
-        console.log(item)
         map.flyTo({ center: [lat, lon], zoom: zoom })
         window.scrollTo({
           top: 0,
