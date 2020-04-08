@@ -3,11 +3,57 @@ import pickle
 import os.path
 import configparser
 import pandas as pd
+import re
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from datetime import datetime, timedelta
 from shutil import copyfile
+
+class GoogleSheet(object):
+    '''
+    Simple object to help organizing.
+    Attributes: 
+    :spreadsheetid:-> str, Google Spreadsheet ID (from link). 
+    :name: -> list or str, sheet name (list when multiple sheets in 1 spreadsheet).
+    :ID: -> str, code for ID column in sheets (specific to region). 
+    '''
+
+    def __init__(self, *args):
+        self.spreadsheetid = args[0]
+        self.name = args[1]
+        self.ID = args[2]
+
+def get_GoogleSheets(config: configparser.ConfigParser) -> GoogleSheet:
+    '''
+    Fetch info for the different sheets. 
+    '''
+
+    # fetch for original sheet (temporary as things will get migrated)
+    sheet0 = config['ORIGINAL_SHEET']
+    name1 = sheet0.get('NAME1')
+    name2 = sheet0.get('NAME2')
+    sid = sheet0.get('SID')
+    ID  = sheet0.get('ID')
+    s1 = GoogleSheet(sid, name1, ID)
+    s2 = GoogleSheet(sid, name2, ID)
+    
+    
+    sheets = [s1, s2] # change to blank when no longer using original.
+
+    # Fetch for Regional Sheets. 
+    pattern = '^SHEET\d*$'
+    sections = config.sections()
+    for s in sections:
+        if re.match(pattern, s):
+            id_ = config[s]['ID']
+            sid = config[s]['SID']
+            name = config[s]['NAME']
+            googlesheet = GoogleSheet(sid, name, id_)
+            sheets.append(googlesheet)
+
+    return sheets
+
 
 def log_message(message: str, config: configparser.ConfigParser) -> None:
     logfile = config['FILES'].get('LOG', './logfile')
@@ -22,17 +68,18 @@ def savedata(data: list, outfile: str) -> None:
     dave data to file.
     '''  
     with open(outfile, 'w') as F:
-        json.dump(data, F, indent=4)
+        json.dump(data, F)
 
 
 
-def load_sheet(data_range: str, config: configparser.ConfigParser) -> pd.DataFrame:
+def load_sheet(Sheet: GoogleSheet, config: configparser.ConfigParser) -> pd.DataFrame:
     # Sheet Import Script adapted from : https://developers.google.com/sheets/api/quickstart/python
     scopes      = ['https://www.googleapis.com/auth/spreadsheets.readonly']
     creds       = None
     token       = config['SHEETS'].get('TOKEN', './token.pickle')
     credentials = config['SHEETS'].get('CREDENTIALS', './credentials.json')
-    spreadsheetid = config['SHEETS'].get('SPREADSHEETID')
+    spreadsheetid = Sheet.spreadsheetid
+    data_range    = f'{Sheet.name}!A:V'
 
     if os.path.exists(token):
         with open(token, 'rb') as t:
@@ -116,7 +163,9 @@ def load_sheet(data_range: str, config: configparser.ConfigParser) -> pd.DataFra
                     continue
                 else:
                     raise Err
-
+        for x, y in enumerate(columns):
+            if y.strip() == '' and columns[x-1] == 'province':
+                columns[x] = 'country'
         return pd.DataFrame(data=keep, columns=columns)
 
 def clean_data(data: pd.DataFrame, colnames: list) -> pd.DataFrame:
@@ -133,9 +182,7 @@ def clean_data(data: pd.DataFrame, colnames: list) -> pd.DataFrame:
     :colnames: list, list of columns we are keeping for final version
     '''
     df = data.copy()
-
-    # constants
-    name_cols = ['city', 'province', 'country']
+    df.rename({x: x.strip() for x in df.columns}, inplace=True, axis=1)
 
     # drop invalid lat/longs
     lat,lon     = df.latitude, df.longitude
@@ -147,14 +194,18 @@ def clean_data(data: pd.DataFrame, colnames: list) -> pd.DataFrame:
     # Only keep those that have a date_confirmation
     df['date_confirmation'] = df['date_confirmation'].str.strip() # some have empty spaces 
     dc = df.date_confirmation
-    valid_date = (dc != '') & ~(dc.isnull())
+    dc = dc.fillna('')
+    dc = dc.apply(lambda x: x.split('-')[1].strip() if '-'  in x else x.strip())
+    valid_date = (dc != '') & ~(dc.isnull()) & dc.str.match('.*\d{2}\.\d{2}\.\d{4}.*') 
     df = df[valid_date]
+    df['date_confirmation'] = df['date_confirmation'].str.strip()
 
     # Basic cleaning for strings
-    for c in name_cols:
+    for c in ['city', 'province', 'country']:
         df[c] = df[c].str.strip()
         df[c] = df[c].str.title()
         df[c] = df[c].str.replace('\xa0', ' ') # encoding for a space that was found in some entries.
+
 
     # Only keep the columns we want
     df = df[colnames]
@@ -232,22 +283,90 @@ def reduceToUnique(data: pd.DataFrame) -> list:
             d = {
                     'latitude': lat,
                     'longitude': lon,
-                    'city': '',
-                    'province': '',
-                    'country': '',
+                    'city': city,
+                    'province': province,
+                    'country': country,
                     'age': '',
                     'sex': '',
                     'symptoms': '',
                     'source': '',
                     'date_confirmation' : '',
                     'cases': count,
-                    'geo_resolution': ''
+                    'geo_resolution': geo_resolution
                 }
             results.append(d)
 
     return results
 
-def animation_formating(infile: str, outfile: str, groupby: str = 'week') -> None:
+def animation_formating(infile):
+    '''
+    Read from "full-data" and convert to something usable for the animation. 
+    '''
+
+    with open(infile, 'r') as F:
+        data = json.load(F)
+
+    data = data['data']
+    data = pd.DataFrame(data)
+    data = data[['latitude', 'longitude', 'date_confirmation']]
+
+    # drop #REF! in case they are propagated here :
+    data = data[data.latitude != '#REF!']
+    data = data[data.longitude != '#REF!']
+    data = data[data.date_confirmation != '#REF!']
+
+    data['date']  = pd.to_datetime(data.date_confirmation, errors='coerce', format='%d.%m.%Y')
+    data['coord'] = data.apply(lambda s: str('{}|{}'.format(s['latitude'], s['longitude'])), axis=1)
+#    data.drop(['date_confirmation', 'latitude', 'longitude'], inplace=True, axis=1)
+    data.dropna(inplace=True)
+
+    # Sort so that results are in order (might be important for animation)
+    data.sort_values(by='date', inplace=True)
+
+    sums    = {} # To store cumulative sums at each location
+    results = {}
+
+    # Loop through dates and coordinates and count
+    for date in data.date.unique():
+        datestr = pd.to_datetime(date).strftime('%Y-%m-%d') # unique coverts to np.datetime64, which doesn't have strftime.
+
+        if datestr not in results.keys():
+            results[datestr] = []
+
+        subset = data[data.date == date]
+        for coord in subset.coord.unique():
+            N_cases = len(subset[subset.coord == coord])
+
+            if coord not in sums.keys():
+                sums[coord] = N_cases
+            else:
+                sums[coord] += N_cases
+
+
+            lat, long = coord.split('|')
+            results[datestr].append({'caseCount': sums[coord],
+                                     'latitude': lat,
+                                     'longitude': long})
+
+            if sums[coord] < 10:
+                pin = 'pin4.svg'
+            elif sums[coord] >= 10 and sums[coord] < 25:
+                pin = 'pin3.svg'
+            elif sums[coord] >= 25 and sums[coord] < 50:
+                pin = 'pin2.svg'
+            else:
+                pin = 'pin1.svg'
+
+            results[datestr][-1]['pin'] = pin
+
+    # Reformatting data to fit with animation script : 
+    dates = results.keys()
+    array = [{d: results[d]} for d in dates]
+    
+    return array
+
+
+def animation_formating_geo(infile: str, outfile: str, groupby: str = 'week') -> None:
     '''
     Read from full data file, and reformat for animation. 
     Currently grouping on a weekly basis, but subject to change as 
@@ -256,11 +375,13 @@ def animation_formating(infile: str, outfile: str, groupby: str = 'week') -> Non
     with open(infile, 'r') as F:
         data = json.load(F)
 
-    df1  = pd.DataFrame(data['outside_Hubei'], dtype=str)
-    df2  = pd.DataFrame(data['Hubei'], dtype=str)
-    full = pd.concat([df1, df2], ignore_index=True)
+    full = pd.DataFrame(data['data'])
+
     full.fillna('', inplace=True)
     full['geoid']  = full.apply(lambda s: s['latitude'] + '|' + s['longitude'], axis=1) # To reference locations by a key
+    full['date_confirmation'] = full.date_confirmation.apply(lambda x: x.split('-')[0].strip())
+    
+
     full['date']   = pd.to_datetime(full['date_confirmation'], format="%d.%m.%Y")  # to ensure sorting is done by date value (not str)
     
     if groupby == 'week':
@@ -349,4 +470,51 @@ def animation_formating(infile: str, outfile: str, groupby: str = 'week') -> Non
     with open(outfile, 'w') as F:
         json.dump(animation, F)
 
+
+
+def convert_to_geojson(infile, outfile):
+    '''
+    Convert aggregated file to geojson.
+    '''
+    geojson_format = {'type': 'Feature', 'geometry': 
+            {"type": "Point", 
+                "coordinates": None}, 
+            'properties': {'age': 'age', 'city': 'city',
+                'province': 'province', 
+                'country': 'country', 
+                'date': 'date_confirmation', 'sex': 'sex', 'source': 'source', 'symptoms': 'symptoms'}}
+    geojson_data = []   
+
+
+    with open(infile, 'r') as F:
+        data = json.load(F)
+    df = pd.DataFrame(data['data'])
+
+    for i, row in df.iterrows():
+        d = geojson_format.copy()
+        entry = {
+                'type' : 'Feature',
+                'geometry': {
+                    'type': 'Point',
+                    'coordinates': [float(row['longitude']), float(row['latitude'])]
+                    },
+                'properties': {
+                    'age': row['age'],
+                    'sex': row['sex'],
+                    'city': row['city'],
+                    'province': row['province'],
+                    'country': row['country'],
+                    'date': row['date_confirmation'],
+                    'source': row['source'],
+                    'symptoms': row['symptoms'],
+                    'cases': row['cases'],
+                    'geo_resolution': row['geo_resolution']
+                }
+                }
+        geojson_data.append(entry)
+    final = {'type': 'FeatureCollection', 
+            'features': geojson_data}
+
+    with open(outfile, 'w') as F:
+        json.dump(final, F)
 
