@@ -6,6 +6,11 @@ import subprocess
 import sys
 import threading
 
+DATA_FILES = [
+  "dailies.geojson",
+  "who.json",
+]
+
 # Returns True if everything we need is here, False otherwise
 def check_dependencies():
   try:
@@ -14,6 +19,12 @@ def check_dependencies():
     print("Please install 'sass' first.")
     return False
   return True
+
+def download_data():
+  for f in DATA_FILES:
+    if not os.path.exists(f):
+      print("We don't have '" + f + "', downloading it...")
+      os.system("curl 'https://www.healthmap.org/covid-19/" + f + "' > " + f)
 
 def run_sass_precompiler():
   input_files = [f for f in os.listdir("css") if f.endswith(".scss")]
@@ -30,6 +41,8 @@ def run_http_server():
 
 if not check_dependencies():
   sys.exit(1)
+
+download_data()
 
 try:
   threads = []
