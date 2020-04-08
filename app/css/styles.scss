@@ -44,6 +44,12 @@ a:focus, a:hover, a:active {
   color: #999;
 }
 
+.list-reset {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
 button {
   font-family: $font-family;
   text-decoration: none;
@@ -70,7 +76,7 @@ input[type=text] {
   font-size: .9rem;
   color: #ccc;
   background-color: $sidebar-bgcolor;
-  border-radius: .2rem;
+  border-radius: $box-corner;
   border: 1px solid #666;
   &::-ms-expand {
     background-color: transparent;
@@ -94,7 +100,6 @@ input[type=text] {
   }
 }
 
-
 h1 {
   margin: 0 0 0 .6rem;
   padding-left: .6rem;
@@ -110,23 +115,24 @@ h1 {
 .sidebar {
   display: flex;
   flex-direction: column;
-  padding: 1.5rem 1.5rem 0 1.5rem;
+  position: absolute;
+  width: 100%;
+  height: 100vh;
+  margin-top: $mobile-map-height;
+  padding: .6rem 1.5rem 0 1.5rem;
   color: $text-color-dark;
+  border-top-left-radius: .75rem;
+  border-top-right-radius: .75rem;
+  background-color: $sidebar-bgcolor-mobile;
+  box-shadow: 0 -10px 12px -9px rgba(0,0,0,0.10);
   backdrop-filter: blur(.5rem);
   -webkit-backdrop-filter: blur(.5rem);
+  overflow: hidden;
+  z-index: 3;
 }
 
 .sidebar-header {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  h1 {
-    flex: 1;
-    font-size: 1.4rem;
-  }
-  img {
-    width: 9rem;
-  }
+  display: none;
 }
 
 .mobile-header {
@@ -142,7 +148,6 @@ h1 {
   }
   h1 {
     font-size: 1.1rem;
-    display: none;
   }
 }
 
@@ -151,7 +156,7 @@ h1 {
   left: 50%;
   width: 5rem;
   height: .3rem;
-  margin-bottom: .75rem;
+  margin-bottom: 1rem;
   background-color: #C4C4C4;
   border-radius: .5rem;
   transform: translateX(-50%);
@@ -160,9 +165,12 @@ h1 {
 .reported-cases {
   display: flex;
   justify-content: center;
+  align-items: center;
   width: 100%;
+  margin-bottom: .25rem;
+  padding: .25rem 0 .5rem 0;
   color: #fff;
-  border-radius: .3rem;
+  border-radius: $box-corner;
   transition: all .3s ease;
   cursor: pointer;
   &:focus, &:hover, &:active, &.is-active {
@@ -170,14 +178,20 @@ h1 {
   }
 }
 
+.reported-cases-subtext {
+  margin-left: 1rem;
+}
+
 .reported-cases-num {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  font-size: 1.7rem;
   font-weight: 600;
 }
 
 .reported-cases-label {
+  font-size: .8rem;
   font-weight: 200;
   line-height: 1;
 }
@@ -192,7 +206,7 @@ h1 {
 .location-filter-wrapper {
   position: relative;
   width: 100%;
-  padding: 1rem 0;
+  padding-bottom: .5rem;
   border-bottom: 1px solid #666;
 }
 
@@ -217,12 +231,10 @@ h1 {
 
 .location-list {
   flex: 1;
-  list-style: none;
-  margin: 0;
-  padding: 0;
+  overflow: auto;
   li {
     width: 100%;
-    margin: .8rem 0;
+    margin: .5rem 0;
     &.is-hidden {
       display: none;
     }
@@ -230,14 +242,13 @@ h1 {
   button {
     display: flex;
     justify-content: space-between;
-    margin: 0;
     padding: .75rem;
     width: 100%;
     font-size: .9rem;
     color: #ccc;
     background-color: #333;
     border: 1px solid rgba(255,255,255,0.1);
-    border-radius: .2rem;
+    border-radius: $box-corner;
     box-shadow: 0px 3px 5px rgba(0,0,0,0.05);
     transition: all .3s ease;
     cursor: pointer;
@@ -257,7 +268,6 @@ h1 {
   .num {
     display: flex;
     align-items: center;
-    font-size: .9rem;
     font-weight: normal;
     color: #ccc;
     &:after {
@@ -278,52 +288,50 @@ h1 {
 }
 
 .map-wrapper {
+  position: fixed;
+  top: 0;
   width: 100%;
+  height: $mobile-map-height;
 }
 
 #map {
+  position: absolute;
+  top: 0;
   width: 100%;
+  height: 100%;
   z-index: 1;
 }
 
 .legend {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 6em;
-  height: 9rem;
+  top: 0;
+  right: 0;
+  padding: .5rem .25rem;
+  background-color: rgba(70,70,70,.8);
+  border-bottom-left-radius: $box-corner;
   z-index: 4;
   ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     li {
-      position: absolute;
-      right: 0;
-      bottom: 2rem;
       display: flex;
-      flex-direction: row-reverse;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: .5rem;
     }
     .circle {
       display: block;
       opacity: .85;
+      width: .8rem;
+      height: .8rem;
+      border-radius: 50%;
     }
     .label {
-      position: absolute;
-      top: 0;
-      display: flex;
-      &:after {
-        content: '';
-        display: block;
-        width: 20px;
-        height: 0;
-        border-top: 1px dotted #fff;
-      }
+      line-height: 1;
     }
     .label-val {
-      margin-top: -.7em;
-      margin-right: .3rem;
-      font-size: .7rem;
+      font-size: .6rem;
       line-height: 1;
       color: #fff;
     }
@@ -332,54 +340,25 @@ h1 {
 
 .legend-header {
   width: 100%;
+  margin-bottom: .5rem;
   font-size: .7rem;
   font-weight: 600;
   text-transform: uppercase;
-  text-align: right;
-}
-
-.new-cases {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 3.5rem;
-  display: flex;
-  flex-direction: row-reverse;
-  font-size: .7rem;
-  .circle {
-    display: block;
-    width: 12px !important;
-    height: 12px !important;
-    border-radius: 50%;
-    opacity: .85;
-  }
-  .label {
-    position: absolute;
-    top: 0;
-    display: flex;
-    align-items: center;
-    text-transform: uppercase;
-    line-height: 1;
-    &:after {
-      content: '';
-      display: block;
-      width: 8px;
-      height: 0;
-      margin-right: .8rem;
-      border-top: 1px dotted #fff;
-    }
-  }
-  .label-val {
-    margin-right: .3rem;
-    font-size: .65rem;
-    line-height: 1;
-    color: #fff;
-  }
+  text-align: center;
 }
 
 .mapboxgl-popup {
   max-width: 400px;
   color: #222;
+}
+
+// move zoom controls above range slider
+.mapboxgl-ctrl-top-right {
+  top: auto !important;
+  bottom: 6rem !important;
+  .mapboxgl-ctrl {
+    margin-right: 1rem !important;
+  }
 }
 
 .map-container {
@@ -391,22 +370,19 @@ h1 {
 }
 
 .credit {
-  position: fixed;
-  width: 100%;
-  bottom: 2.5rem;
+  position: absolute;
+  left: 1rem;
+  right: 4rem;
+  bottom: 5.5rem;
   padding: .4rem .5rem;
+  font-size: .8rem;
   color: #cccc;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: .7rem;
+  line-height: 1.4;
+  text-align: center;
   z-index: 8;
-  span {
-    line-height: 1.3;
-    text-align: center;
-  }
   a {
-    margin-left: .5rem;
+    display: inline-block;
+    padding: 0 .5rem;
     &:link, &:visited {
       color: #ccc;
       transition: all .3s ease;
@@ -415,7 +391,12 @@ h1 {
       color: #999;
     }
   }
+  a + a {
+    border-left: 1px solid #ccc;
+  }
 }
+
+.credit-text { display: none }
 
 /* modal */
 
@@ -559,12 +540,6 @@ h1 {
 .tsinghua-logo { width: 60px; }
 .ihme-logo { width: 100px; }
 
-#toggle-modal {
-  position: fixed;
-  right: .5rem;
-  bottom: 8.5rem;
-}
-
 /* range slider */
 
 #spread {
@@ -575,24 +550,22 @@ h1 {
   font-size: .7rem;
   text-transform: uppercase;
   background-color: #66cc66;
-  border-radius: .3rem;
+  border-radius: $box-corner;
   transition: all .3s ease;
   cursor: pointer;
+  .spread-label {
+    display: none;
   }
-
-#spread .spread-label {
-  display: none;
-}
-
-#spread:hover {
-  background-color: #44aa44;
+  &:hover {
+    background-color: #44aa44;
+  }
 }
 
 .range-slider {
   position: absolute;
-  left: 1rem;
-  right: 1rem;
-  bottom: 3rem;
+  left: .5rem;
+  right: .5rem;
+  bottom: 2.75rem;
   padding: .25rem .5rem;
   display: flex;
   align-items: center;
@@ -600,7 +573,7 @@ h1 {
   font-size: .8rem;
   color: #fff;
   line-height: 1;
-  border-radius: .2rem;
+  border-radius: $box-corner;
   background-color: rgba(70,70,70,.8);
   z-index: 3;
 }

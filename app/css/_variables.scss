@@ -13,21 +13,20 @@ $body-bgcolor: #242424;
 $text-color-light: #fff;
 $text-color-dark: #333;
 
+$box-corner: .2rem;
+
 $mobile-map-height: 70vh;
-
-//$breakpoint-sm-max: 411px;
-$breakpoint-xl-min: 500px;
-$breakpoint-sm-max: $breakpoint-xl-min - 1px;
-
-$breakpoint-sm-max-landscape: 667px;
-
-$breakpoint-legend-style-max-portrait: 414px;
-$breakpoint-legend-style-min-portrait: $breakpoint-legend-style-max-portrait + 1px;
-$breakpoint-legend-style-max-landscape: 823px;
-$breakpoint-legend-style-min-landscape: $breakpoint-legend-style-max-landscape + 1px;
 
 $legend-group-10: #67009E;
 $legend-group-100: #921694;
 $legend-group-500: #D34d60;
 $legend-group-2000: #FB9533;
 $legend-group-default: #EDF91C;
+
+$breakpoint-portrait-sm-max: 568px;
+$breakpoint-portrait-md-min: $breakpoint-portrait-sm-max + 1px;
+$breakpoint-landscape-sm-max: 414px;
+$breakpoint-landscape-md-min: $breakpoint-landscape-sm-max + 1px;
+$breakpoint-md-min: 500px;
+$breakpoint-md-max: 899px;
+$breakpoint-lg-min: $breakpoint-md-max + 1px;
