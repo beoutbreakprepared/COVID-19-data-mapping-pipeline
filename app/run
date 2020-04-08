@@ -6,10 +6,12 @@ import subprocess
 import sys
 import threading
 
-DATA_FILES = [
-  "dailies.geojson",
-  "who.json",
-]
+# A map from the data file we expect to where we can fetch it
+DATA_FILES = {
+  "dailies.geojson": "https://www.healthmap.org/covid-19/dailies.geojson",
+  "who.json": "https://www.healthmap.org/covid-19/who.json",
+  "full-data.json": "https://www.dl.dropboxusercontent.com/s/f252ndhraqy7nmt/full-data.json",
+}
 
 # Returns True if everything we need is here, False otherwise
 def check_dependencies():
@@ -24,7 +26,7 @@ def download_data():
   for f in DATA_FILES:
     if not os.path.exists(f):
       print("We don't have '" + f + "', downloading it...")
-      os.system("curl 'https://www.healthmap.org/covid-19/" + f + "' > " + f)
+      os.system("curl '" + DATA_FILES[f] + "' > " + f)
 
 def run_sass_precompiler():
   input_files = [f for f in os.listdir("css") if f.endswith(".scss")]
@@ -43,6 +45,7 @@ if not check_dependencies():
   sys.exit(1)
 
 download_data()
+
 
 try:
   threads = []
