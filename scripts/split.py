@@ -33,12 +33,12 @@ def split_by_day(data, out_dir):
     print("I was expecting to find a '" + TOPLEVEL_KEY + "' key in the data")
 
   for date in daily_splits:
-    daily_slice_file_path = os.path.join(out_dir, date + ".json")
+    daily_slice_file_path = os.path.join(out_dir, date + ".geojson")
     if os.path.exists(daily_slice_file_path):
       print("I will not clobber '" + daily_slice_file_path + "', "
             "please delete it first")
       continue
-    with open(os.path.join(out_dir, date + ".json"), "w") as f:
+    with open(daily_slice_file_path), "w") as f:
       f.write(json.dumps(daily_splits[date]))
       f.close()
 
