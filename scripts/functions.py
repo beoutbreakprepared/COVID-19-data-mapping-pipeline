@@ -4,9 +4,6 @@ import os.path
 import configparser
 import pandas as pd
 import re
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
 from datetime import datetime, timedelta
 from shutil import copyfile
 
@@ -73,6 +70,10 @@ def savedata(data: list, outfile: str) -> None:
 
 
 def load_sheet(Sheet: GoogleSheet, config: configparser.ConfigParser) -> pd.DataFrame:
+    from googleapiclient.discovery import build
+    from google_auth_oauthlib.flow import InstalledAppFlow
+    from google.auth.transport.requests import Request
+
     # Sheet Import Script adapted from : https://developers.google.com/sheets/api/quickstart/python
     scopes      = ['https://www.googleapis.com/auth/spreadsheets.readonly']
     creds       = None
