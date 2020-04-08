@@ -38,7 +38,7 @@ def split_by_day(data, out_dir):
       print("I will not clobber '" + daily_slice_file_path + "', "
             "please delete it first")
       continue
-    with open(daily_slice_file_path), "w") as f:
+    with open(daily_slice_file_path, "w") as f:
       f.write(json.dumps(daily_splits[date]))
       f.close()
 
