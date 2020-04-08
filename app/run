@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import os
 import shlex
@@ -6,14 +6,23 @@ import subprocess
 import sys
 import threading
 
-# A map from the data file we expect to where we can fetch it
+sys.path.append("../scripts")
+import split
+
+# The directory where JSON files for daily data are expected to be.
+DAILIES_DIR = "dailies"
+
+# The file containing all the data we need.
+FULL_DATA_FILE = "full-data.json"
+
+# A map from the data file we expect to where we can fetch it.
 DATA_FILES = {
   "dailies.geojson": "https://www.healthmap.org/covid-19/dailies.geojson",
   "who.json": "https://www.healthmap.org/covid-19/who.json",
-  "full-data.json": "https://www.dl.dropboxusercontent.com/s/f252ndhraqy7nmt/full-data.json",
+  FULL_DATA_FILE: "https://www.dl.dropboxusercontent.com/s/f252ndhraqy7nmt/full-data.json",
 }
 
-# Returns True if everything we need is here, False otherwise
+# Returns True if everything we need is here, False otherwise.
 def check_dependencies():
   try:
     subprocess.check_call(shlex.split("sass --version"))
@@ -28,6 +37,12 @@ def download_data():
       print("We don't have '" + f + "', downloading it...")
       os.system("curl '" + DATA_FILES[f] + "' > " + f)
 
+def split_data(FULL_DATA_FILE, out_dir):
+  if sys.version_info[0] < 3:
+    print("Sorry, but I need Python 3 to work")
+    sys.exit(1)
+  split.split_full_data_to_daily_slices(FULL_DATA_FILE, DAILIES_DIR)
+
 def run_sass_precompiler():
   input_files = [f for f in os.listdir("css") if f.endswith(".scss")]
   if not len(input_files):
@@ -35,17 +50,23 @@ def run_sass_precompiler():
   return subprocess.call(shlex.split("sass --watch css:css"))
 
 def run_http_server():
-  if sys.version_info[0] < 3:
-    return subprocess.call(shlex.split("python -m SimpleHTTPServer 8000"))
-  else:
-    # Uses port 8000 by default.
-    return subprocess.call(shlex.split("python -m http.server"))
+  # Uses port 8000 by default.
+  return subprocess.call(shlex.split("python3 -m http.server"))
 
 if not check_dependencies():
   sys.exit(1)
 
 download_data()
-
+if not os.path.exists(DAILIES_DIR):
+  os.mkdir(DAILIES_DIR)
+dailies = os.listdir(DAILIES_DIR)
+if len(dailies) > 0:
+  print("I found some daily data ready to use. To re-generate, empty "
+        "the '" + DAILIES_DIR + "' directory and start me again.")
+else:
+  print("I need to generate the daily slices, this is going to take "
+        "a few minutes...")
+  split_data(FULL_DATA_FILE, DAILIES_DIR)
 
 try:
   threads = []

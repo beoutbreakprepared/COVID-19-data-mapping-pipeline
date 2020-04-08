@@ -45,6 +45,17 @@ def split_by_day(data, out_dir):
 def convert_to_geojson(file_path):
   functions.animation_formating_geo(file_path, TEMP_GEOJSON, 'day')
 
+def split_full_data_to_daily_slices(full_data_file_path, out_dir):
+  # TODO: Support passinng data directly instead of writing to and
+  # re-reading from disk.
+  print("Converting to 'geojson' format...")
+  convert_to_geojson(full_data_file_path)
+  print("Splitting...")
+  with open(TEMP_GEOJSON) as f:
+    split_by_day(json.loads(f.read()), out_dir)
+    f.close()
+  os.remove(TEMP_GEOJSON)
+
 def main():
   if sys.version_info[0] < 3:
     print("Sorry but I need Python 3 to work")
@@ -53,16 +64,7 @@ def main():
     print("I need the path of the file to parse as an argument")
     return
 
-  # TODO: Support passinng data directly instead of writing to and
-  # re-reading from disk.
-  print("Converting to 'geojson' format...")
-  convert_to_geojson(sys.argv[1])
-  print("Splitting...")
-  with open(TEMP_GEOJSON) as f:
-    split_by_day(json.loads(f.read()), ".")
-    f.close()
-
-  os.remove(TEMP_GEOJSON)
+  split_full_data_to_daily_slices(sys.argv[1], ".")
 
 if __name__ == '__main__':
     main()
