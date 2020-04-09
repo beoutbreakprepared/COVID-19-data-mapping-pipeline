@@ -141,6 +141,23 @@
     </div>
   </div>
   <script>
+
+    // Globals
+    const timestamp = (new Date()).getTime();
+    var latestCountsUrl = './latestCounts.json?nocache=' + timestamp;
+    var whoUrl = './who.json?nocache=' + timestamp;
+
+    var dates = [];
+    var map;
+    var timeControl = document.getElementById("slider");
+
+    var totalCases = document.getElementById("total-cases");
+    var lastUpdatedDate = document.getElementById("last-updated-date");
+
+    var modalWrapper = document.getElementById("modal-wrapper");
+    var modal = document.getElementById("modal");
+    var playButton = document.getElementById("spread");
+
     // polyfill for array.includes()
     if (!Array.prototype.includes) {
       Array.prototype.includes = function (search, start) {
@@ -154,20 +171,61 @@
       };
     }
 
-    const timestamp = (new Date()).getTime();
-    var latestCountsUrl = './latestCounts.json?nocache=' + timestamp;
-    var whoUrl = './who.json?nocache=' + timestamp;
+    function filterBy(isodate) {
+      var filters = ['==', 'date', isodate];
+      map.setFilter('daily', filters);
+      map.setFilter('totals', filters);
+    }
 
-    var dates = [];
-    var timeControl = document.getElementById("slider");
-    var timeLabel = document.getElementById("date");
+    function setTimeControlLabel(date) {
+      document.getElementById("date").innerText = dates[date];
+    }
 
-    var totalCases = document.getElementById("total-cases");
-    var lastUpdatedDate = document.getElementById("last-updated-date");
+    function buildTimeControl() {
+      timeControl.setAttribute("max", dates.length - 1)
+      timeControl.setAttribute("value", dates.length - 1);
+      setTimeControlLabel(dates.length - 1);
+    }
 
-    var modalWrapper = document.getElementById("modal-wrapper");
-    var modal = document.getElementById("modal");
-    var playButton = document.getElementById("spread");
+    function animateMap() {
+      var i = 0;
+      var stepMap = setInterval(function() {
+        timeControl.value = i;
+        filterBy(dates[i]);
+        setTimeControlLabel(i);
+        i++;
+        if(i === dates.length) {
+          clearInterval(stepMap);
+        }
+      }, 500);
+    }
+
+    function fetchDailySlice(dateString) {
+      dateString = dateString || 'latest';
+
+      fetch('dailies/' + dateString + '.geojson')
+          .then(function(response) { return response.json(); })
+          .then(function(jsonData) {
+            if (!jsonData.features) {
+              // Wrap the data to match the way the map expects it.
+              jsonData = {'type': 'FeatureCollection', 'features': jsonData};
+            }
+            var datesUnsorted = [];
+            jsonData.features.forEach(function(feature) {
+              var date = feature.properties.date;
+              if (!datesUnsorted.includes(date)) {
+                datesUnsorted.push(date);
+              }
+            });
+            dates = datesUnsorted.sort();
+            buildTimeControl();
+            map.getSource('counts').setData(jsonData);
+            filterBy(dates[dates.length - 1]);
+            playButton.addEventListener("click", function () {
+              animateMap();
+            });
+      });
+    }
 
     // load latest counts from scraper
     fetch(latestCountsUrl)
@@ -244,26 +302,13 @@
 
     function initMap() {
       mapboxgl.accessToken = 'pk.eyJ1IjoiaGVhbHRobWFwIiwiYSI6ImNrOGl1NGNldTAyYXYzZnBqcnBmN3RjanAifQ.H377pe4LPPcymeZkUBiBtg';
-      var map = new mapboxgl.Map({
+      map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/healthmap/ck7o47dgs1tmb1ilh5b1ro1vn',
         center: [10, 0],
         zoom: 1,
         // hash: true
       }).addControl(new mapboxgl.NavigationControl());
-
-      var animateMap = function() {
-        var i = 0;
-        var stepMap = setInterval(function() {
-          timeControl.value = i;
-          filterBy(dates[i]);
-          setTimeControlLabel(i);
-          i++;
-          if(i === dates.length) {
-            clearInterval(stepMap);
-          }
-        }, 500);
-      }
 
       window.handleFlyTo = function(lat, lon, zoom, item) {
         map.flyTo({ center: [lat, lon], zoom: zoom })
@@ -273,22 +318,6 @@
           behavior: 'smooth'
         });
       }
-
-      function filterBy(isodate) {
-        var filters = ['==', 'date', isodate];
-        map.setFilter('daily', filters);
-        map.setFilter('totals', filters);
-      }
-
-      function setTimeControlLabel(date) {
-        timeLabel.innerText = dates[date];
-      };
-
-      function buildTimeControl() {
-        timeControl.setAttribute("max", dates.length - 1)
-        timeControl.setAttribute("value", dates.length - 1);
-        setTimeControlLabel(dates.length - 1);
-      };
 
       timeControl.addEventListener("input", function() {
         setTimeControlLabel(timeControl.value);
@@ -376,28 +405,7 @@
           popup.remove();
         });
 
-        fetch('dailies/latest.geojson')
-        .then(function(response) { return response.json(); })
-        .then(function(jsonData) {
-          if (!jsonData.features) {
-            // Wrap the data to match the way the map expects it.
-            jsonData = {'type': 'FeatureCollection', 'features': jsonData};
-          }
-          var datesUnsorted = [];
-          jsonData.features.forEach(function(feature) {
-            var date = feature.properties.date;
-            if (!datesUnsorted.includes(date)) {
-              datesUnsorted.push(date);
-            }
-          });
-          dates = datesUnsorted.sort();
-          buildTimeControl();
-          map.getSource('counts').setData(jsonData);
-          filterBy(dates[dates.length - 1]);
-          playButton.addEventListener("click", function () {
-            animateMap();
-          });
-        });
+        fetchDailySlice();
 
       });
     }
