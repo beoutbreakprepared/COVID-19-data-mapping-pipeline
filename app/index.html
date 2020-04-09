@@ -378,10 +378,10 @@
         });
 
         fetch(dataUrl)
-        .then(function(res) { return res.json(); })
-        .then(function(res) {
+        .then(function(response) { return response.json(); })
+        .then(function(jsonData) {
           var datesUnsorted = [];
-          res.features.forEach(function(feature) {
+          jsonData.features.forEach(function(feature) {
             var date = feature.properties.date;
             if (!datesUnsorted.includes(date)) {
               datesUnsorted.push(date)
@@ -389,7 +389,7 @@
           });
           dates = datesUnsorted.sort();
           buildTimeControl();
-          map.getSource('counts').setData(res);
+          map.getSource('counts').setData(jsonData);
           filterBy(dates[dates.length - 1]);
           playButton.addEventListener("click", function () {
             animateMap();
