@@ -18,6 +18,12 @@ def normalize_date(date):
     date_parts.reverse()
   return ".".join(date_parts)
 
+def process_feature(feature):
+  # The "geo_resolution" property isn't used.
+  if "properties" in feature and "geo_resolution" in feature["properties"]:
+    feature["properties"]["geo_resolution"] = ""
+  return feature
+
 def split_by_day(data, out_dir):
   # A dictionary from each date to a list of corresponding features
   daily_splits = {}
@@ -25,6 +31,7 @@ def split_by_day(data, out_dir):
     for feature in data["features"]:
       if "properties" in feature and "date" in feature["properties"]:
         date = normalize_date(feature["properties"]["date"])
+        feature = process_feature(feature)
         if date in daily_splits:
           daily_splits[date].append(feature)
         else:
