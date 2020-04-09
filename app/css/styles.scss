@@ -561,7 +561,7 @@ h1 {
   }
 }
 
-.range-slider {
+#range-slider {
   position: absolute;
   left: .5rem;
   right: .5rem;
@@ -578,7 +578,7 @@ h1 {
   z-index: 3;
 }
 
-.range-slider label {
+#range-slider label {
   display: flex;
   align-items: baseline;
   font-size: .7rem;
@@ -588,7 +588,7 @@ h1 {
   min-width: 4.5rem;
 }
 
-.range-slider label span {
+#range-slider label span {
   display: inline-block;
   flex: 1;
   margin-left: .3rem;

@@ -59,7 +59,7 @@
     bottom: 0;
     height: auto;
   }
-  .range-slider {
+  #range-slider {
     left: $sidebar-width-sm + .5rem;
     right: .5rem;
   }
@@ -114,7 +114,7 @@
   .location-filter-wrapper {
     padding: 1rem 0;
   }
-  .range-slider {
+  #range-slider {
     left: $sidebar-width + 1rem;
     right: 1rem;
   }

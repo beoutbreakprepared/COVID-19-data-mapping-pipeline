@@ -132,7 +132,7 @@
           </li>
         </ul>
       </div>
-      <div class="range-slider">
+      <div id="range-slider" style="display: none;">
     	  <div id="spread"><img src="./img/play.svg" width="20" height="20" alt="Play" /><span class="spread-label">Play</span></div>
         <input id="slider" type="range" value="1000" min="0" max="1000" step="1" />
         <label><span id="date"></span></label>
@@ -185,6 +185,7 @@
     }
 
     function buildTimeControl() {
+      document.getElementById('range-slider').style.display = 'flex';
       timeControl.setAttribute("max", dates.length - 1)
       timeControl.setAttribute("value", dates.length - 1);
       setTimeControlLabel(dates.length - 1);
@@ -234,9 +235,21 @@
     function fetchDailySlice(dateString) {
       dateString = dateString || 'latest';
 
-      fetch('dailies/' + dateString + '.geojson')
-          .then(function(response) { return response.json(); })
+      fetch('dailies/' + dateString.replace(/-/g, '.') + '.geojson')
+          .then(function(response) {
+            console.log(response.status);
+            if (response.status == 200) {
+              return response.json();
+            } else {
+              // We're done downloading data.
+              console.log('Finished!');
+              onAllDailySlicesFetched();
+            }
+          })
           .then(function(jsonData) {
+            if (!jsonData) {
+              return;
+            }
             // We assume all features in this slice have the same date, let's
             // just get the first one.
             var currentDate;
@@ -250,15 +263,17 @@
             }
             featuresByDay.unshift(jsonData);
 
-            buildTimeControl();
-            map.getSource('counts').setData(jsonData);
-            filterBy(dates[dates.length - 1]);
-            playButton.addEventListener("click", function () {
-              animateMap();
-            });
-            var yesterday = oneDayBefore(currentDate);
-            // TODO: fetch the next slice.
+            if (dateString == 'latest') {
+              map.getSource('counts').setData(jsonData);
+            }
+            // filterBy(dates[dates.length - 1]);
+            fetchDailySlice(oneDayBefore(currentDate));
       });
+    }
+
+    function onAllDailySlicesFetched() {
+      buildTimeControl();
+      playButton.addEventListener("click", animateMap);
     }
 
     // load latest counts from scraper
