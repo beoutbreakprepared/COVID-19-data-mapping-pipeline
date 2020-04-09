@@ -6,6 +6,9 @@ import sys
 TEMP_GEOJSON = "temp.geojson"
 TOPLEVEL_KEY = "data"
 
+# Geo properties that the client doesn't use and that we can prune out.
+PROPERTIES_TO_PRUNE = ["geo_resolution", "city"]
+
 def normalize_date(date):
   date = date.replace("-", ".")
   if len(date) == len("D.MM.YYYY"):
@@ -19,9 +22,10 @@ def normalize_date(date):
   return ".".join(date_parts)
 
 def process_feature(feature):
-  # The "geo_resolution" property isn't used.
-  if "properties" in feature and "geo_resolution" in feature["properties"]:
-    feature["properties"]["geo_resolution"] = ""
+  if "properties" in feature:
+    for prop in PROPERTIES_TO_PRUNE:
+      if prop in feature["properties"]:
+        del feature["properties"][prop]
   return feature
 
 def split_by_day(data, out_dir):
