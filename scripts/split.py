@@ -43,6 +43,9 @@ def split_by_day(data, out_dir):
   else:
     print("I was expecting to find a '" + TOPLEVEL_KEY + "' key in the data")
 
+  dates = list(daily_splits.keys())
+  for i in range(len(dates)):
+    date = "latest" if i == len(dates) - 1 else dates[i]
   for date in daily_splits:
     daily_slice_file_path = os.path.join(out_dir, date + ".geojson")
     if os.path.exists(daily_slice_file_path):

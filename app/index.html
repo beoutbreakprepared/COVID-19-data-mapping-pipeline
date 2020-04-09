@@ -135,7 +135,7 @@
       <div class="range-slider">
     	  <div id="spread"><img src="./img/play.svg" width="20" height="20" alt="Play" /><span class="spread-label">Play</span></div>
         <input id="slider" type="range" value="1000" min="0" max="1000" step="1" />
-        <label>Week of <span id="date"></span></label>
+        <label><span id="date"></span></label>
       </div>
       <div id="map"></div>
     </div>
@@ -155,7 +155,6 @@
     }
 
     const timestamp = (new Date()).getTime();
-    var dataUrl = './dailies.geojson?nocache=' + timestamp;
     var latestCountsUrl = './latestCounts.json?nocache=' + timestamp;
     var whoUrl = './who.json?nocache=' + timestamp;
 
@@ -377,9 +376,13 @@
           popup.remove();
         });
 
-        fetch(dataUrl)
+        fetch('dailies/latest.geojson')
         .then(function(response) { return response.json(); })
         .then(function(jsonData) {
+          if (!jsonData.features) {
+            // Wrap the data to match the way the map expects it.
+            jsonData = {'type': 'FeatureCollection', 'features': jsonData};
+          }
           var datesUnsorted = [];
           jsonData.features.forEach(function(feature) {
             var date = feature.properties.date;
