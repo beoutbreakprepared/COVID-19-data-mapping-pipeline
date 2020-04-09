@@ -152,6 +152,8 @@
     // An array where each element is a JSON object corresponding to a single
     // day.
     var featuresByDay = [];
+    // A flattened array of all features.
+    var allFeatures = [];
     var timeControl = document.getElementById("slider");
 
     var totalCases = document.getElementById("total-cases");
@@ -237,12 +239,10 @@
 
       fetch('dailies/' + dateString.replace(/-/g, '.') + '.geojson')
           .then(function(response) {
-            console.log(response.status);
             if (response.status == 200) {
               return response.json();
             } else {
               // We're done downloading data.
-              console.log('Finished!');
               onAllDailySlicesFetched();
             }
           })
@@ -257,22 +257,30 @@
               currentDate = jsonData[0].properties.date;
             }
             dates.unshift(currentDate);
+            allFeatures = allFeatures.concat(jsonData);
+            console.log('Total features ' + allFeatures.length);
             if (!jsonData.features) {
               // Wrap the data to match the way the map expects it.
               jsonData = {'type': 'FeatureCollection', 'features': jsonData};
             }
             featuresByDay.unshift(jsonData);
 
+            // Only use the latest data for the map until we're done downloading
+            // everything.
             if (dateString == 'latest') {
               map.getSource('counts').setData(jsonData);
             }
-            // filterBy(dates[dates.length - 1]);
             fetchDailySlice(oneDayBefore(currentDate));
       });
     }
 
     function onAllDailySlicesFetched() {
       buildTimeControl();
+      // Now replace today's data in the map with everything, but still only
+      // show today's data until the timelapse feature is used.
+      let allData = {'type': 'FeatureCollection', 'features': allFeatures};
+      map.getSource('counts').setData(allData);
+      filterBy(dates[dates.length - 1]);
       playButton.addEventListener("click", animateMap);
     }
 
