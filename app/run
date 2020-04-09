@@ -62,7 +62,8 @@ if not os.path.exists(DAILIES_DIR):
 dailies = os.listdir(DAILIES_DIR)
 if len(dailies) > 0:
   print("I found some daily data ready to use. To re-generate, empty "
-        "the '" + DAILIES_DIR + "' directory and start me again.")
+        "the '" + DAILIES_DIR + "' directory (or run './clean') and start me "
+        "again.")
 else:
   print("I need to generate the daily slices, this is going to take "
         "a few minutes...")

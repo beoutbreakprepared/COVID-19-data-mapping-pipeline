@@ -7,7 +7,9 @@ TEMP_GEOJSON = "temp.geojson"
 TOPLEVEL_KEY = "data"
 
 # Geo properties that the client doesn't use and that we can prune out.
-PROPERTIES_TO_PRUNE = ["geo_resolution", "city"]
+PROPERTIES_TO_PRUNE = [
+  "geo_resolution",
+]
 
 def normalize_date(date):
   date = date.replace("-", ".")
@@ -43,11 +45,10 @@ def split_by_day(data, out_dir):
   else:
     print("I was expecting to find a '" + TOPLEVEL_KEY + "' key in the data")
 
-  dates = list(daily_splits.keys())
+  dates = sorted(list(daily_splits.keys()))
   for i in range(len(dates)):
-    date = "latest" if i == len(dates) - 1 else dates[i]
-  for date in daily_splits:
-    daily_slice_file_path = os.path.join(out_dir, date + ".geojson")
+    date = dates[i]
+    daily_slice_file_path = os.path.join(out_dir, ("latest" if i == len(data) - 1 else date) + ".geojson")
     if os.path.exists(daily_slice_file_path):
       print("I will not clobber '" + daily_slice_file_path + "', "
             "please delete it first")
