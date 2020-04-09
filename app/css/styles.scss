@@ -82,6 +82,9 @@ input[type=text] {
     background-color: transparent;
     border: 0;
   }
+  &::-ms-clear {
+    display: none;
+  }
   &::placeholder {
     color: #ababab;
     // Override Firefox's unusual default opacity; see https://github.com/twbs/bootstrap/pull/11526.

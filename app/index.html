@@ -108,7 +108,7 @@
         <ul class="list-reset">
           <li>
             <span class="circle" style="background-color: #EDF91C;"></span>
-            <span class="label"><span class="label-val">>2000</span></span>
+            <span class="label"><span class="label-val">&gt;2000</span></span>
           </li>
           <li>
             <span class="circle" style="background-color: #FB9533;"></span>
@@ -124,7 +124,7 @@
           </li>
           <li>
             <span class="circle" style="background-color: #67009E;"></span>
-            <span class="label"><span class="label-val"><=10</span></span>
+            <span class="label"><span class="label-val">&lt;=10</span></span>
           </li>
           <li>
             <span class="circle" style="background-color: cornflowerblue;"></span>
@@ -184,8 +184,8 @@
       .then(function(res) {
         var obj = res.features
         list = '';
-        for (let key in obj) {
-          let location = obj[key];
+        for (var i=0, n=obj.length; i < n; ++i ) {
+          var location = obj[i];
           var name, lat, lon, cumConf, legendGroup;
           name = location.attributes.ADM0_NAME ? location.attributes.ADM0_NAME : '';
           lat = location.centroid.x ? location.centroid.x : 0;
@@ -206,14 +206,22 @@
       li = ul.getElementsByTagName('li');
       clearFilter = document.getElementById('clear-filter');
       // Loop through all list items, and hide those who don't match the search query
+      for (var i=0, n=obj.length; i < n; ++i ) {
       for (i = 0; i < li.length; i++) {
         label = li[i].getElementsByClassName('label')[0];
         txtValue = label.textContent || label.innerText;
         // show/hide clear filter button
-        clearFilter.classList.toggle('is-visible', filter != '');
+        if (filter != '') {
+          clearFilter.classList.add('is-visible');
+        } else {
+          clearFilter.classList.remove('is-visible');
+        }
         // show/hide list items
-        li[i].classList.toggle('is-hidden',
-                               txtValue.toUpperCase().indexOf(filter) <= -1);
+        if (txtValue.toUpperCase().indexOf(filter) <= -1) {
+          li[i].classList.add('is-hidden')
+        } else {
+          li[i].classList.remove('is-hidden')
+        }
       }
     }
 
