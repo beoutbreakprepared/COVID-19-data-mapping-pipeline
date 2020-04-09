@@ -1,0 +1,10 @@
+#!/usr/bin/python3
+
+import glob
+import os
+
+os.remove("full-data.json")
+os.remove("who.json")
+
+for daily in glob.glob("dailies/*.geojson"):
+  os.remove(daily)
