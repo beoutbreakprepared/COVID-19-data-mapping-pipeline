@@ -172,17 +172,17 @@
 
     // load latest counts from scraper
     fetch(latestCountsUrl)
-      .then(function(res) { return res.json(); })
-      .then(function(res) {
-        totalCases.innerText = res[0].caseCount
-        lastUpdatedDate.innerText = res[0].date
+      .then(function(response) { return response.json(); })
+      .then(function(jsonData) {
+        totalCases.innerText = jsonData[0].caseCount
+        lastUpdatedDate.innerText = jsonData[0].date
       });
 
     // build list of locations with counts
     fetch(whoUrl)
-      .then(function(res) { return res.json(); })
-      .then(function(res) {
-        var obj = res.features
+      .then(function(response) { return response.json(); })
+      .then(function(jsonData) {
+        var obj = jsonData.features;
         list = '';
         for (let key in obj) {
           let location = obj[key];
@@ -384,7 +384,7 @@
           jsonData.features.forEach(function(feature) {
             var date = feature.properties.date;
             if (!datesUnsorted.includes(date)) {
-              datesUnsorted.push(date)
+              datesUnsorted.push(date);
             }
           });
           dates = datesUnsorted.sort();
