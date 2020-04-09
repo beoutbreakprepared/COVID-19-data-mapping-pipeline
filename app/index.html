@@ -149,6 +149,9 @@
 
     var dates = [];
     var map;
+    // An array where each element is a JSON object corresponding to a single
+    // day.
+    var featuresByDay = [];
     var timeControl = document.getElementById("slider");
 
     var totalCases = document.getElementById("total-cases");
@@ -200,30 +203,61 @@
       }, 500);
     }
 
+    /**
+     * Fills with leading zeros to the desired width.
+     */
+    function zfill(n, width) {
+      n = n + '';
+      return n.length >= width ? n : new Array(width - n.length + 1).join('0') + n;
+    }
+
+    /**
+     * Returns a date string corresponding to the day before the passed in
+     * date.
+     */
+    function oneDayBefore(dateString) {
+      var parts = dateString.split('-');
+
+      // Month is 0-based.
+      var date = new Date(parts[0], parseInt(parts[1]) - 1, parts[2]);
+      // Backtrack one day.
+      date.setDate(date.getDate() - 1);
+      return [date.getFullYear(),
+              zfill(date.getMonth() + 1, 2),
+              zfill(date.getDate(), 2)].join('-');
+    }
+
+    /**
+     * Fetches the next daily slice of data we need. If no argument is provided,
+     * fetches the latest slice first.
+     */
     function fetchDailySlice(dateString) {
       dateString = dateString || 'latest';
 
       fetch('dailies/' + dateString + '.geojson')
           .then(function(response) { return response.json(); })
           .then(function(jsonData) {
+            // We assume all features in this slice have the same date, let's
+            // just get the first one.
+            var currentDate;
+            if (!!jsonData.length) {
+              currentDate = jsonData[0].properties.date;
+            }
+            dates.unshift(currentDate);
             if (!jsonData.features) {
               // Wrap the data to match the way the map expects it.
               jsonData = {'type': 'FeatureCollection', 'features': jsonData};
             }
-            var datesUnsorted = [];
-            jsonData.features.forEach(function(feature) {
-              var date = feature.properties.date;
-              if (!datesUnsorted.includes(date)) {
-                datesUnsorted.push(date);
-              }
-            });
-            dates = datesUnsorted.sort();
+            featuresByDay.unshift(jsonData);
+
             buildTimeControl();
             map.getSource('counts').setData(jsonData);
             filterBy(dates[dates.length - 1]);
             playButton.addEventListener("click", function () {
               animateMap();
             });
+            var yesterday = oneDayBefore(currentDate);
+            // TODO: fetch the next slice.
       });
     }
 
