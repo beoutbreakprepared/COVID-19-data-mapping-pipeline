@@ -206,8 +206,7 @@
       li = ul.getElementsByTagName('li');
       clearFilter = document.getElementById('clear-filter');
       // Loop through all list items, and hide those who don't match the search query
-      for (var i=0, n=obj.length; i < n; ++i ) {
-      for (i = 0; i < li.length; i++) {
+      for (var i=0, n=li.length; i < n; ++i ) {
         label = li[i].getElementsByClassName('label')[0];
         txtValue = label.textContent || label.innerText;
         // show/hide clear filter button
@@ -218,9 +217,9 @@
         }
         // show/hide list items
         if (txtValue.toUpperCase().indexOf(filter) <= -1) {
-          li[i].classList.add('is-hidden')
+          li[i].classList.add('is-hidden');
         } else {
-          li[i].classList.remove('is-hidden')
+          li[i].classList.remove('is-hidden');
         }
       }
     }
