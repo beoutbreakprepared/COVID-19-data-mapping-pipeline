@@ -142,8 +142,11 @@
   </div>
   <script>
 
-    // Globals
+    // Constants
     const timestamp = (new Date()).getTime();
+    const animationFrameDurationMs = 400;
+
+    // Globals
     var latestCountsUrl = './latestCounts.json?nocache=' + timestamp;
     var whoUrl = './who.json?nocache=' + timestamp;
 
@@ -203,7 +206,7 @@
         if(i === dates.length) {
           clearInterval(stepMap);
         }
-      }, 500);
+      }, animationFrameDurationMs);
     }
 
     /**
@@ -258,7 +261,6 @@
             }
             dates.unshift(currentDate);
             allFeatures = allFeatures.concat(jsonData);
-            console.log('Total features ' + allFeatures.length);
             if (!jsonData.features) {
               // Wrap the data to match the way the map expects it.
               jsonData = {'type': 'FeatureCollection', 'features': jsonData};
