@@ -132,15 +132,40 @@
           </li>
         </ul>
       </div>
-      <div class="range-slider">
+      <div id="range-slider" style="display: none;">
     	  <div id="spread"><img src="./img/play.svg" width="20" height="20" alt="Play" /><span class="spread-label">Play</span></div>
         <input id="slider" type="range" value="1000" min="0" max="1000" step="1" />
-        <label>Week of <span id="date"></span></label>
+        <label><span id="date"></span></label>
       </div>
       <div id="map"></div>
     </div>
   </div>
-  <script type="text/javascript">
+  <script>
+
+    // Constants
+    const timestamp = (new Date()).getTime();
+    const animationFrameDurationMs = 500;
+
+    // Globals
+    var latestCountsUrl = './latestCounts.json?nocache=' + timestamp;
+    var whoUrl = './who.json?nocache=' + timestamp;
+
+    var dates = [];
+    var map;
+    // An array where each element is a JSON object corresponding to a single
+    // day.
+    var featuresByDay = [];
+    // A flattened array of all features.
+    var allFeatures = [];
+    var timeControl = document.getElementById("slider");
+
+    var totalCases = document.getElementById("total-cases");
+    var lastUpdatedDate = document.getElementById("last-updated-date");
+
+    var modalWrapper = document.getElementById("modal-wrapper");
+    var modal = document.getElementById("modal");
+    var playButton = document.getElementById("spread");
+
     // polyfill for array.includes()
     if (!Array.prototype.includes) {
       Array.prototype.includes = function (search, start) {
@@ -154,35 +179,126 @@
       };
     }
 
-    const timestamp = (new Date()).getTime();
-    var dataUrl = './dailies.geojson?nocache=' + timestamp;
-    var latestCountsUrl = './latestCounts.json?nocache=' + timestamp;
-    var whoUrl = './who.json?nocache=' + timestamp;
+    function filterBy(isodate) {
+      var filters = ['==', 'date', isodate];
+      map.setFilter('daily', filters);
+      map.setFilter('totals', filters);
+    }
 
-    var dates = [];
-    var timeControl = document.getElementById("slider");
-    var timeLabel = document.getElementById("date");
+    function setTimeControlLabel(date) {
+      document.getElementById("date").innerText = dates[date];
+    }
 
-    var totalCases = document.getElementById("total-cases");
-    var lastUpdatedDate = document.getElementById("last-updated-date");
+    function buildTimeControl() {
+      document.getElementById('range-slider').style.display = 'flex';
+      timeControl.setAttribute("max", dates.length - 1)
+      timeControl.setAttribute("value", dates.length - 1);
+      setTimeControlLabel(dates.length - 1);
+    }
 
-    var modalWrapper = document.getElementById("modal-wrapper");
-    var modal = document.getElementById("modal");
-    var playButton = document.getElementById("spread");
+    function animateMap() {
+      var i = 0;
+      var stepMap = setInterval(function() {
+        timeControl.value = i;
+        filterBy(dates[i]);
+        setTimeControlLabel(i);
+        i++;
+        if(i === dates.length) {
+          clearInterval(stepMap);
+        }
+      }, animationFrameDurationMs);
+    }
+
+    /**
+     * Fills with leading zeros to the desired width.
+     */
+    function zfill(n, width) {
+      n = n + '';
+      return n.length >= width ? n : new Array(width - n.length + 1).join('0') + n;
+    }
+
+    /**
+     * Returns a date string corresponding to the day before the passed in
+     * date.
+     */
+    function oneDayBefore(dateString) {
+      var parts = dateString.split('-');
+
+      // Month is 0-based.
+      var date = new Date(parts[0], parseInt(parts[1]) - 1, parts[2]);
+      // Backtrack one day.
+      date.setDate(date.getDate() - 1);
+      return [date.getFullYear(),
+              zfill(date.getMonth() + 1, 2),
+              zfill(date.getDate(), 2)].join('-');
+    }
+
+    /**
+     * Fetches the next daily slice of data we need. If no argument is provided,
+     * fetches the latest slice first.
+     */
+    function fetchDailySlice(dateString) {
+      dateString = dateString || 'latest';
+
+      fetch('dailies/' + dateString.replace(/-/g, '.') + '.geojson')
+          .then(function(response) {
+            if (response.status == 200) {
+              return response.json();
+            } else {
+              // We're done downloading data.
+              onAllDailySlicesFetched();
+            }
+          })
+          .then(function(jsonData) {
+            if (!jsonData) {
+              return;
+            }
+            // We assume all features in this slice have the same date, let's
+            // just get the first one.
+            var currentDate;
+            if (!!jsonData.length) {
+              currentDate = jsonData[0].properties.date;
+            }
+            dates.unshift(currentDate);
+            allFeatures = allFeatures.concat(jsonData);
+            if (!jsonData.features) {
+              // Wrap the data to match the way the map expects it.
+              jsonData = {'type': 'FeatureCollection', 'features': jsonData};
+            }
+            featuresByDay.unshift(jsonData);
+
+            // Only use the latest data for the map until we're done downloading
+            // everything.
+            if (dateString == 'latest') {
+              map.getSource('counts').setData(jsonData);
+            }
+            fetchDailySlice(oneDayBefore(currentDate));
+      });
+    }
+
+    function onAllDailySlicesFetched() {
+      buildTimeControl();
+      // Now replace today's data in the map with everything, but still only
+      // show today's data until the timelapse feature is used.
+      let allData = {'type': 'FeatureCollection', 'features': allFeatures};
+      map.getSource('counts').setData(allData);
+      filterBy(dates[dates.length - 1]);
+      playButton.addEventListener("click", animateMap);
+    }
 
     // load latest counts from scraper
     fetch(latestCountsUrl)
-      .then(function(res) { return res.json(); })
-      .then(function(res) {
-        totalCases.innerText = res[0].caseCount
-        lastUpdatedDate.innerText = res[0].date
+      .then(function(response) { return response.json(); })
+      .then(function(jsonData) {
+        totalCases.innerText = jsonData[0].caseCount
+        lastUpdatedDate.innerText = jsonData[0].date
       });
 
     // build list of locations with counts
     fetch(whoUrl)
-      .then(function(res) { return res.json(); })
-      .then(function(res) {
-        var obj = res.features
+      .then(function(response) { return response.json(); })
+      .then(function(jsonData) {
+        var obj = jsonData.features;
         list = '';
         for (var i=0, n=obj.length; i < n; ++i ) {
           var location = obj[i];
@@ -252,26 +368,13 @@
 
     function initMap() {
       mapboxgl.accessToken = 'pk.eyJ1IjoiaGVhbHRobWFwIiwiYSI6ImNrOGl1NGNldTAyYXYzZnBqcnBmN3RjanAifQ.H377pe4LPPcymeZkUBiBtg';
-      var map = new mapboxgl.Map({
+      map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/healthmap/ck7o47dgs1tmb1ilh5b1ro1vn',
         center: [10, 0],
         zoom: 1,
         // hash: true
       }).addControl(new mapboxgl.NavigationControl());
-
-      var animateMap = function() {
-        var i = 0;
-        var stepMap = setInterval(function() {
-          timeControl.value = i;
-          filterBy(dates[i]);
-          setTimeControlLabel(i);
-          i++;
-          if(i === dates.length) {
-            clearInterval(stepMap);
-          }
-        }, 500);
-      }
 
       window.handleFlyTo = function(lat, lon, zoom, item) {
         map.flyTo({ center: [lat, lon], zoom: zoom })
@@ -281,22 +384,6 @@
           behavior: 'smooth'
         });
       }
-
-      function filterBy(isodate) {
-        var filters = ['==', 'date', isodate];
-        map.setFilter('daily', filters);
-        map.setFilter('totals', filters);
-      }
-
-      function setTimeControlLabel(date) {
-        timeLabel.innerText = dates[date];
-      };
-
-      function buildTimeControl() {
-        timeControl.setAttribute("max", dates.length - 1)
-        timeControl.setAttribute("value", dates.length - 1);
-        setTimeControlLabel(dates.length - 1);
-      };
 
       timeControl.addEventListener("input", function() {
         setTimeControlLabel(timeControl.value);
@@ -384,24 +471,7 @@
           popup.remove();
         });
 
-        fetch(dataUrl)
-        .then(function(res) { return res.json(); })
-        .then(function(res) {
-          var datesUnsorted = [];
-          res.features.forEach(function(feature) {
-            var date = feature.properties.date;
-            if (!datesUnsorted.includes(date)) {
-              datesUnsorted.push(date)
-            }
-          });
-          dates = datesUnsorted.sort();
-          buildTimeControl();
-          map.getSource('counts').setData(res);
-          filterBy(dates[dates.length - 1]);
-          playButton.addEventListener("click", function () {
-            animateMap();
-          });
-        });
+        fetchDailySlice();
 
       });
     }
