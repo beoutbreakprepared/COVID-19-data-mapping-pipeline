@@ -1,7 +1,7 @@
+If you want to run this server locally, you will need the following:
 
-If you want to run this server locally, you will need the following dependencies 
-(in parentheses are the Debian/Ubuntu package names):
-
-* Python 3 (python3)
-* Pandas (python3-pandas)
-* SASS (ruby-sass)
+|Name|Why|Debian/Ubuntu package|
+|--|--|--|
+|Python 3|Run the server|`python3`|
+|Pandas|Massage the data for server ingestion|`python3-pandas`|
+|SASS|Generate CSS from SCSS|`ruby-sass`|
