@@ -404,7 +404,7 @@ def animation_formating_geo(infile: str, outfile: str, groupby: str = 'week') ->
 
 
 def animation_formatting_geo_in_memory(in_data: str, groupby: str = 'week') -> None:
-    # Give the caller an idea of the process we're making.
+    # Give the caller an idea of the progress we're making.
     print(".", end="", flush=True)
     full = pd.DataFrame(in_data)
 
