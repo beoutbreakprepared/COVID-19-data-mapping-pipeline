@@ -374,9 +374,16 @@ def animation_formating_geo(infile: str, outfile: str, groupby: str = 'week') ->
     new cases come in (produces large files). 
     '''
     with open(infile, 'r') as F:
-        data = json.load(F)
+        in_data = json.load(F)
 
-    full = pd.DataFrame(data['data'])
+    out_data = animation_formating_geo_in_memory(in_data, groupby)
+    with open(outfile, 'w') as F:
+        json.dump(out_data, F)
+
+
+def animation_formating_geo_in_memory(in_data: str, groupby: str = 'week') -> None:
+
+    full = pd.DataFrame(in_data['data'])
 
     full.fillna('', inplace=True)
     full['geoid']  = full.apply(lambda s: s['latitude'] + '|' + s['longitude'], axis=1) # To reference locations by a key
@@ -466,11 +473,8 @@ def animation_formating_geo(infile: str, outfile: str, groupby: str = 'week') ->
             
     assert len(geoids) == len(has_entry), "Grouping failed"
 
-    # Put in feature collection and save
-    animation = {"type": "FeatureCollection", "features": timeline}
-    with open(outfile, 'w') as F:
-        json.dump(animation, F)
-
+    # Put in feature collection and return
+    return {"type": "FeatureCollection", "features": timeline}
 
 
 def convert_to_geojson(infile, outfile):
