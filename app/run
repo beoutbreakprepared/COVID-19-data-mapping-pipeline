@@ -19,7 +19,7 @@ FULL_DATA_FILE = "full-data.json"
 DATA_FILES = {
   "dailies.geojson": "https://www.healthmap.org/covid-19/dailies.geojson",
   "who.json": "https://www.healthmap.org/covid-19/who.json",
-  FULL_DATA_FILE: "https://www.dl.dropboxusercontent.com/s/f252ndhraqy7nmt/full-data.json",
+  FULL_DATA_FILE: "https://www.dl.dropboxusercontent.com/s/t48xylj81vaw25g/full-data.json",
 }
 
 # Returns True if everything we need is here, False otherwise.
