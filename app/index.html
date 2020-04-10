@@ -152,9 +152,9 @@
 
     var dates = [];
     var map;
-    // An array where each element is a JSON object corresponding to a single
-    // day.
-    var featuresByDay = [];
+    // An object mapping dates to JSON objects with the correspondinig data.
+    // for that day.
+    var featuresByDay = {};
     var timeControl = document.getElementById("slider");
 
     var totalCases = document.getElementById("total-cases");
