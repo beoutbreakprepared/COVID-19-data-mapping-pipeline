@@ -144,7 +144,7 @@
 
     // Constants
     const timestamp = (new Date()).getTime();
-    const animationFrameDurationMs = 500;
+    const animationFrameDurationMs = 300;
 
     // Globals
     var latestCountsUrl = './latestCounts.json?nocache=' + timestamp;
@@ -152,11 +152,9 @@
 
     var dates = [];
     var map;
-    // An array where each element is a JSON object corresponding to a single
-    // day.
-    var featuresByDay = [];
-    // A flattened array of all features.
-    var allFeatures = [];
+    // An object mapping dates to JSON objects with the correspondinig data.
+    // for that day.
+    var featuresByDay = {};
     var timeControl = document.getElementById("slider");
 
     var totalCases = document.getElementById("total-cases");
@@ -179,10 +177,8 @@
       };
     }
 
-    function filterBy(isodate) {
-      var filters = ['==', 'date', isodate];
-      map.setFilter('daily', filters);
-      map.setFilter('totals', filters);
+    function showDataAtDate(isodate) {
+      map.getSource('counts').setData({'type': 'FeatureCollection', 'features':featuresByDay[isodate]});
     }
 
     function setTimeControlLabel(date) {
@@ -200,7 +196,7 @@
       var i = 0;
       var stepMap = setInterval(function() {
         timeControl.value = i;
-        filterBy(dates[i]);
+        showDataAtDate(dates[i]);
         setTimeControlLabel(i);
         i++;
         if(i === dates.length) {
@@ -260,29 +256,24 @@
               currentDate = jsonData[0].properties.date;
             }
             dates.unshift(currentDate);
-            allFeatures = allFeatures.concat(jsonData);
-            if (!jsonData.features) {
-              // Wrap the data to match the way the map expects it.
-              jsonData = {'type': 'FeatureCollection', 'features': jsonData};
-            }
-            featuresByDay.unshift(jsonData);
+            featuresByDay[currentDate] = jsonData;
 
             // Only use the latest data for the map until we're done downloading
             // everything.
             if (dateString == 'latest') {
+              if (!jsonData.features) {
+                // Wrap the data to match the way the map expects it.
+                jsonData = {'type': 'FeatureCollection', 'features': jsonData};
+              }
               map.getSource('counts').setData(jsonData);
             }
+            // Now fetch the next (older) slice of data.
             fetchDailySlice(oneDayBefore(currentDate));
       });
     }
 
     function onAllDailySlicesFetched() {
       buildTimeControl();
-      // Now replace today's data in the map with everything, but still only
-      // show today's data until the timelapse feature is used.
-      let allData = {'type': 'FeatureCollection', 'features': allFeatures};
-      map.getSource('counts').setData(allData);
-      filterBy(dates[dates.length - 1]);
       playButton.addEventListener("click", animateMap);
     }
 
@@ -387,7 +378,7 @@
 
       timeControl.addEventListener("input", function() {
         setTimeControlLabel(timeControl.value);
-        filterBy(dates[timeControl.value]);
+        showDataAtDate(dates[timeControl.value]);
       });
 
       map.on('load', function () {
