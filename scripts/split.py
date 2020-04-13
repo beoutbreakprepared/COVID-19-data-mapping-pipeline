@@ -52,7 +52,6 @@ def split_by_day(data, out_dir):
   for i in range(len(dates)):
     date = dates[i]
     daily_slice_file_path = os.path.join(out_dir, ("latest" if i == len(dates) - 1 else date) + ".geojson")
-    print("Writing " + daily_slice_file_path + "...")
     if os.path.exists(daily_slice_file_path):
       print("I will not clobber '" + daily_slice_file_path + "', "
             "please delete it first")
