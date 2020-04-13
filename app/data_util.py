@@ -18,6 +18,9 @@ DATA_FILES = {
 }
 
 def prepare_for_local_development():
+  if not os.path.exists(DAILIES_DIR):
+    os.mkdir(DAILIES_DIR)
+
   # Download the data we don't yet have.
   for f in DATA_FILES:
     if not os.path.exists(f):
@@ -40,8 +43,6 @@ def split_data(FULL_DATA_FILE, out_dir):
   split.split_full_data_to_daily_slices(FULL_DATA_FILE, DAILIES_DIR)
 
 def generate_daily_slices(full_data_file_path):
-  if not os.path.exists(DAILIES_DIR):
-    os.mkdir(DAILIES_DIR)
   print("I need to generate the daily slices, this is going to take "
         "a few minutes...")
   split_data(FULL_DATA_FILE, DAILIES_DIR)
