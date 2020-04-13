@@ -1,0 +1,12 @@
+#!/usr/bin/python3
+
+import sys
+
+sys.path.append("../scripts")
+import split
+
+import data_util
+
+data_util.prepare_for_deployment()
+
+print("All done.")

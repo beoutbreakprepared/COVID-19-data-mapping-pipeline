@@ -1,11 +1,13 @@
+import glob
 import os
 import sys
 
 sys.path.append("../scripts")
 import split
 
-# The file containing all the data we need.
+# The file containing all the data we need, and where to get it.
 FULL_DATA_FILE = "full-data.json"
+FULL_DATA_FILE_URL = "https://www.dl.dropboxusercontent.com/s/t48xylj81vaw25g/full-data.json"
 
 # The directory where JSON files for daily data are expected to be.
 DAILIES_DIR = "dailies"  
@@ -14,7 +16,7 @@ DAILIES_DIR = "dailies"
 DATA_FILES = {
   "dailies.geojson": "https://www.healthmap.org/covid-19/dailies.geojson",
   "who.json": "https://www.healthmap.org/covid-19/who.json",
-  FULL_DATA_FILE: "https://www.dl.dropboxusercontent.com/s/t48xylj81vaw25g/full-data.json",
+  FULL_DATA_FILE: FULL_DATA_FILE_URL,
 }
 
 def prepare_for_local_development():
@@ -35,6 +37,28 @@ def prepare_for_local_development():
   else:
     generate_daily_slices(FULL_DATA_FILE)
   return False
+
+def prepare_for_deployment():
+  self_dir = os.path.dirname(os.path.realpath(__file__))
+  os.chdir(self_dir)
+  # For deployment, we check the presence of the data we need, but we don't
+  # automatically download it.
+  have_all = True
+  for f in DATA_FILES:
+    if not os.path.exists(f):
+      print("Please get the latest '" + f + "' file and place "
+            "it in '" + self_dir + "', then call me again.")
+      print("If you don't have the latest version, try this "
+            "link: '" + DATA_FILES[f] + "'")
+      have_all = False
+  if not have_all:
+    sys.exit(1)
+  if not os.path.exists(DAILIES_DIR):
+    os.mkdir(DAILIES_DIR)
+  # Clean whatever is left over.
+  for daily in glob.glob("dailies/*.geojson"):
+    os.remove(daily)
+  generate_daily_slices(FULL_DATA_FILE)
 
 def split_data(FULL_DATA_FILE, out_dir):
   if sys.version_info[0] < 3:
