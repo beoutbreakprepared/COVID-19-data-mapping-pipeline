@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import os
+import subprocess
 import sys
 
 sys.path.append("../scripts")
@@ -7,6 +9,36 @@ import split
 
 import data_util
 
+def has_analytics_code():
+  return os.system("grep 'google-analytics.com' index.html") == 0
+
+def insert_analytics_code():
+  main_page = ""
+  with open("analytics.js") as f:
+    code = f.read()
+    f.close()
+  inserted = False
+  with open("index.html") as f:
+    for line in f:
+      if not inserted and "<script" in line:
+        main_page += code
+        inserted = True
+      main_page += line
+    f.close()
+
+  # Remove the file and re-write it
+  os.remove("index.html")
+  with open("index.html", "w") as f:
+    f.write(main_page)
+    f.close()
+
 data_util.prepare_for_deployment()
+
+if has_analytics_code():
+  print("Analytics code is already present, skipping that step.")
+else:
+  insert_analytics_code()
+  print("You might want to remove the analytics code again "
+        "after deployment.")
 
 print("All done.")
