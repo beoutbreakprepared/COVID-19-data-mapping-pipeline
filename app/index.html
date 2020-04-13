@@ -236,7 +236,11 @@
     function fetchDailySlice(dateString) {
       dateString = dateString || 'latest';
 
-      fetch('dailies/' + dateString.replace(/-/g, '.') + '.geojson')
+      let url = 'dailies/' + dateString.replace(/-/g, '.') + '.geojson';
+      if (dateString == 'latest') {
+        url += '?nocache=' + timestamp;
+      }
+      fetch(url)
           .then(function(response) {
             if (response.status == 200) {
               return response.json();
