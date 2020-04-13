@@ -1,12 +1,12 @@
-import json
-import pickle
-import os.path
 import configparser
+import itertools
+import json
+import multiprocessing
+import os.path
 import pandas as pd
+import pickle
 import re
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
+
 from datetime import datetime, timedelta
 from shutil import copyfile
 
@@ -73,6 +73,10 @@ def savedata(data: list, outfile: str) -> None:
 
 
 def load_sheet(Sheet: GoogleSheet, config: configparser.ConfigParser) -> pd.DataFrame:
+    from googleapiclient.discovery import build
+    from google_auth_oauthlib.flow import InstalledAppFlow
+    from google.auth.transport.requests import Request
+
     # Sheet Import Script adapted from : https://developers.google.com/sheets/api/quickstart/python
     scopes      = ['https://www.googleapis.com/auth/spreadsheets.readonly']
     creds       = None
@@ -365,22 +369,48 @@ def animation_formating(infile):
     
     return array
 
+CHUNK_SIZE = 1000
+def chunks(all_features):
+    '''
+    Yields successive equal-sized chunks from the input list.
+    '''
+    for i in range(0, len(all_features), CHUNK_SIZE):
+        yield all_features[i:i + CHUNK_SIZE]
 
-def animation_formating_geo(infile: str, outfile: str, groupby: str = 'week') -> None:
+def animation_formating_geo(infile: str, outfile: str, groupby: str = 'day') -> None:
     '''
     Read from full data file, and reformat for animation. 
     Currently grouping on a weekly basis, but subject to change as 
     new cases come in (produces large files). 
     '''
+    print("Reading file...")
     with open(infile, 'r') as F:
-        data = json.load(F)
+        in_data = json.load(F)
 
-    full = pd.DataFrame(data['data'])
+    n_cpus = multiprocessing.cpu_count()
+    all_features = in_data["data"]
+    print("Processing " + str(len(all_features)) + " "
+          "features in chunks of " + str(int(len(all_features) / CHUNK_SIZE)) + " "
+          "with " + str(n_cpus) + " threads...")
+    pool = multiprocessing.Pool(n_cpus)
+    out_slices = pool.map(animation_formatting_geo_in_memory, chunks(all_features))
+    # Concatenate everybody.
+    out_data = list(itertools.chain.from_iterable(out_slices))
+
+    # Wrap in feature collection and write to disk
+    print("Writing result...")
+    with open(outfile, 'w') as F:
+        json.dump({"type": "FeatureCollection", "features": out_data}, F)
+
+
+def animation_formatting_geo_in_memory(in_data: str, groupby: str = 'day') -> None:
+    # Give the caller an idea of the progress we're making.
+    print(".", end="", flush=True)
+    full = pd.DataFrame(in_data)
 
     full.fillna('', inplace=True)
     full['geoid']  = full.apply(lambda s: s['latitude'] + '|' + s['longitude'], axis=1) # To reference locations by a key
-    full['date_confirmation'] = full.date_confirmation.apply(lambda x: x.split('-')[0].strip())
-    
+    full['date_confirmation'] = full.date_confirmation.apply(lambda x: x.split('-')[0].strip())    
 
     full['date']   = pd.to_datetime(full['date_confirmation'], format="%d.%m.%Y")  # to ensure sorting is done by date value (not str)
     
@@ -394,10 +424,8 @@ def animation_formating_geo(infile: str, outfile: str, groupby: str = 'week') ->
     dmax   = full.date.max()
     drange = pd.date_range(dmin, dmax, freq=freq)
 
-
     geoids  = full.geoid.unique()
     counts  = full.groupby(['date', 'geoid']).count()[['ID']]
-
 
     # Build reference table (to plug back in city/province/country later)
     reference = pd.DataFrame(columns = ['geoid', 'city', 'province', 'country', 'geo_resolution'])
@@ -406,7 +434,6 @@ def animation_formating_geo(infile: str, outfile: str, groupby: str = 'week') ->
         reference = reference.append({'geoid': i, 'city': arow['city'], 'province': arow['province'],
                                       'country': arow['country'], 'geo_resolution': arow['geo_resolution']}, ignore_index=True)
     reference.set_index('geoid', inplace=True)
-
 
     timeline      = []
     has_entry     = []
@@ -461,15 +488,10 @@ def animation_formating_geo(infile: str, outfile: str, groupby: str = 'week') ->
             timeline.append(entry)
             if geoid not in has_entry:
                 has_entry.append(geoid)
-
             
     assert len(geoids) == len(has_entry), "Grouping failed"
 
-    # Put in feature collection and save
-    animation = {"type": "FeatureCollection", "features": timeline}
-    with open(outfile, 'w') as F:
-        json.dump(animation, F)
-
+    return timeline
 
 
 def convert_to_geojson(infile, outfile):
