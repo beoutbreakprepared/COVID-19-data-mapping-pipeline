@@ -377,7 +377,7 @@ def chunks(all_features):
     for i in range(0, len(all_features), CHUNK_SIZE):
         yield all_features[i:i + CHUNK_SIZE]
 
-def animation_formating_geo(infile: str, outfile: str, groupby: str = 'week') -> None:
+def animation_formating_geo(infile: str, outfile: str, groupby: str = 'day') -> None:
     '''
     Read from full data file, and reformat for animation. 
     Currently grouping on a weekly basis, but subject to change as 
@@ -403,7 +403,7 @@ def animation_formating_geo(infile: str, outfile: str, groupby: str = 'week') ->
         json.dump({"type": "FeatureCollection", "features": out_data}, F)
 
 
-def animation_formatting_geo_in_memory(in_data: str, groupby: str = 'week') -> None:
+def animation_formatting_geo_in_memory(in_data: str, groupby: str = 'day') -> None:
     # Give the caller an idea of the progress we're making.
     print(".", end="", flush=True)
     full = pd.DataFrame(in_data)

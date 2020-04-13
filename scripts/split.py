@@ -42,13 +42,17 @@ def split_by_day(data, out_dir):
           daily_splits[date].append(feature)
         else:
           daily_splits[date] = [feature]
+      else:
+        print("Warning: unexpected object '" + str(feature) + "'")
   else:
     print("I was expecting to find a '" + TOPLEVEL_KEY + "' key in the data")
 
   dates = sorted(list(daily_splits.keys()))
+  print("Date range: " + str(dates[0]) + " to " + dates[-1])
   for i in range(len(dates)):
     date = dates[i]
     daily_slice_file_path = os.path.join(out_dir, ("latest" if i == len(dates) - 1 else date) + ".geojson")
+    print("Writing " + daily_slice_file_path + "...")
     if os.path.exists(daily_slice_file_path):
       print("I will not clobber '" + daily_slice_file_path + "', "
             "please delete it first")
@@ -58,7 +62,7 @@ def split_by_day(data, out_dir):
       f.close()
 
 def convert_to_geojson(file_path):
-  functions.animation_formating_geo(file_path, TEMP_GEOJSON, 'day')
+  functions.animation_formating_geo(file_path, TEMP_GEOJSON)
 
 def split_full_data_to_daily_slices(full_data_file_path, out_dir):
   # TODO: Support passinng data directly instead of writing to and
