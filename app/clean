@@ -3,8 +3,14 @@
 import glob
 import os
 
-os.remove("full-data.json")
-os.remove("who.json")
+FILES_TO_REMOVE = [
+  "full-data.json",
+  "who.json",
+]
+
+for f in FILES_TO_REMOVE:
+  if os.path.exists(f):
+    os.remove(f)
 
 for daily in glob.glob("dailies/*.geojson"):
   os.remove(daily)
