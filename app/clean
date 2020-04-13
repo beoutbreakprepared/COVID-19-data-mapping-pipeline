@@ -1,0 +1,16 @@
+#!/usr/bin/python3
+
+import glob
+import os
+
+FILES_TO_REMOVE = [
+  "full-data.json",
+  "who.json",
+]
+
+for f in FILES_TO_REMOVE:
+  if os.path.exists(f):
+    os.remove(f)
+
+for daily in glob.glob("dailies/*.geojson"):
+  os.remove(daily)
