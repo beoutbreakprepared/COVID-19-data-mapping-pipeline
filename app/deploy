@@ -38,5 +38,7 @@ if has_analytics_code():
   print("Analytics code is already present, skipping that step.")
 else:
   insert_analytics_code()
+  print("You might want to remove the analytics code again "
+        "after deployment.")
 
 print("All done.")
