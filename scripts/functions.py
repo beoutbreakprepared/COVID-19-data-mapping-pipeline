@@ -369,11 +369,12 @@ def animation_formating(infile):
     
     return array
 
-CHUNK_SIZE = 1000
 def chunks(all_features):
     '''
     Yields successive equal-sized chunks from the input list.
     '''
+    # TODO: Do proper parallelization while keeping accurate total counts.
+    CHUNK_SIZE = len(all_features)
     for i in range(0, len(all_features), CHUNK_SIZE):
         yield all_features[i:i + CHUNK_SIZE]
 
@@ -389,8 +390,7 @@ def animation_formating_geo(infile: str, outfile: str, groupby: str = 'day') -> 
 
     n_cpus = multiprocessing.cpu_count()
     all_features = in_data["data"]
-    print("Processing " + str(len(all_features)) + " "
-          "features in chunks of " + str(int(len(all_features) / CHUNK_SIZE)) + " "
+    print("Processing " + str(len(all_features)) + " features "
           "with " + str(n_cpus) + " threads...")
     pool = multiprocessing.Pool(n_cpus)
     out_slices = pool.map(animation_formatting_geo_in_memory, chunks(all_features))
