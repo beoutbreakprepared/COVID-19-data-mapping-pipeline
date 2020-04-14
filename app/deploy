@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import datetime
 import os
 import subprocess
 import sys
@@ -8,6 +9,18 @@ sys.path.append("../scripts")
 import split
 
 import data_util
+
+if len(sys.argv) < 2:
+  print("Please give me the target path as an argument. "
+        "For instance:\n\n\t" + sys.argv[0] + " /var/www/html/covid-19\n")
+  sys.exit(1)
+
+src_path = os.path.dirname(os.path.realpath(__file__))
+os.chdir(src_path)
+target_path = sys.argv[1]
+if not os.path.exists(target_path):
+  print("Target '" + target_path + "' doesn't seem to exist.")
+  sys.exit(1)
 
 def has_analytics_code():
   return os.system("grep 'google-analytics.com' index.html") == 0
@@ -32,13 +45,30 @@ def insert_analytics_code():
     f.write(main_page)
     f.close()
 
-data_util.prepare_for_deployment()
+# Returns whether the backup operation succeeded
+def backup_current_version(target_path):
+  timestamp = datetime.datetime.now().strftime("%Y.%m.%d_%H.%M.%S")
+  print("Backing up current version...")
+  return os.system("cp -a " + target_path + " backup_" + timestamp) == 0
 
+def deploy(target_path):
+  print("Replacing target contents with new version...")
+  # TODO: Use 'rsync' if it's available.
+  # TODO: Exclude some files we don't need to copy over.
+  os.system("rm -rf " + target_path + "/* && cp -a * " + target_path)
+
+data_util.prepare_for_deployment()
 if has_analytics_code():
   print("Analytics code is already present, skipping that step.")
 else:
   insert_analytics_code()
+  # TODO: Restore previous version of index.html automatically.
   print("You might want to remove the analytics code again "
         "after deployment.")
+
+if not backup_current_version(target_path):
+  print("I could not back up the current version, bailing out.")
+  sys.exit(1)
+deploy(target_path)
 
 print("All done.")
