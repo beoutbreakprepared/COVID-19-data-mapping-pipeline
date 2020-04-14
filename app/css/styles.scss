@@ -1,0 +1,656 @@
+@import 'variables';
+@import 'mixins';
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+@at-root {
+  @-moz-viewport      { width: device-width; }
+  @-ms-viewport       { width: device-width; }
+  @-o-viewport        { width: device-width; }
+  @-webkit-viewport   { width: device-width; }
+  @viewport           { width: device-width; }
+}
+
+[tabindex="-1"]:focus {
+  outline: none !important;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+
+body {
+  font-family: 'OpenSans', sans-serif;
+  line-height: 1.4;
+  color: $text-color-light;
+  background-color: $body-bgcolor;
+}
+
+a, a:visited {
+  color: #666;
+  transition: all .3s ease;
+}
+
+a:focus, a:hover, a:active {
+  color: #999;
+}
+
+.list-reset {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+button {
+  font-family: $font-family;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  background-color: transparent;
+  transition: all .3s ease;
+  &:hover, &:focus, &.focus {
+    background-image: none;
+    outline: 0;
+    text-decoration: none;
+  }
+  &:active,
+  &.is-active {
+    background-image: none;
+    outline: 0;
+  }
+}
+
+input[type=text] {
+  width: 100%;
+  padding: .5rem 1rem;
+  font-family: inherit;
+  font-size: .9rem;
+  color: #ccc;
+  background-color: $sidebar-bgcolor;
+  border-radius: $box-corner;
+  border: 1px solid #666;
+  &::-ms-expand {
+    background-color: transparent;
+    border: 0;
+  }
+  &::-ms-clear {
+    display: none;
+  }
+  &::placeholder {
+    color: #ababab;
+    // Override Firefox's unusual default opacity; see https://github.com/twbs/bootstrap/pull/11526.
+    opacity: 1;
+  }
+  &:focus {
+    &::-webkit-input-placeholder {
+      color: transparent;
+    }
+    &::-moz-input-placeholder {
+      color: transparent;
+    }
+    &::placeholder {
+      color: transparent;
+    }
+  }
+}
+
+h1 {
+  margin: 0 0 0 .6rem;
+  padding-left: .6rem;
+  font-weight: 200;
+  color: #ececec;
+  border-left: 1px solid #ccc;
+}
+
+.page-wrapper {
+  width: 100vw;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  width: 100%;
+  height: 100vh;
+  margin-top: $mobile-map-height;
+  padding: .6rem 1.5rem 0 1.5rem;
+  color: $text-color-dark;
+  border-top-left-radius: .75rem;
+  border-top-right-radius: .75rem;
+  background-color: $sidebar-bgcolor-mobile;
+  box-shadow: 0 -10px 12px -9px rgba(0,0,0,0.10);
+  backdrop-filter: blur(.5rem);
+  -webkit-backdrop-filter: blur(.5rem);
+  overflow: hidden;
+  z-index: 3;
+}
+
+.sidebar-header {
+  display: none;
+}
+
+.mobile-header {
+  position: fixed;
+  top: .8rem;
+  left: .8rem;
+  z-index: 5;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  img {
+    width: 8rem;
+  }
+  h1 {
+    font-size: 1.1rem;
+  }
+}
+
+.pullbar {
+  position: relative;
+  left: 50%;
+  width: 5rem;
+  height: .3rem;
+  margin-bottom: 1rem;
+  background-color: #C4C4C4;
+  border-radius: .5rem;
+  transform: translateX(-50%);
+}
+
+.reported-cases {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: .25rem;
+  padding: .25rem 0 .5rem 0;
+  color: #fff;
+  border-radius: $box-corner;
+  transition: all .3s ease;
+  cursor: pointer;
+  &:focus, &:hover, &:active, &.is-active {
+    background-color: #454545;
+  }
+}
+
+.reported-cases-subtext {
+  margin-left: 1rem;
+}
+
+.reported-cases-num {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.7rem;
+  font-weight: 600;
+}
+
+.reported-cases-label {
+  font-size: .8rem;
+  font-weight: 200;
+  line-height: 1;
+}
+
+.last-updated-date {
+  display: block;
+  font-size: .7rem;
+  font-style: italic;
+  color: #ccc;
+}
+
+.location-filter-wrapper {
+  position: relative;
+  width: 100%;
+  padding-bottom: .5rem;
+  border-bottom: 1px solid #666;
+}
+
+.clear-filter {
+  display: none;
+  position: absolute;
+  top: 50%;
+  right: .75rem;
+  transform: translateY(-50%);
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  cursor: pointer;
+  transition: all .3s ease;
+  &:hover, &:focus {
+    transform: translateY(-50%) rotate(-90deg);
+  }
+  &.is-visible {
+    display: flex;
+  }
+}
+
+.location-list {
+  flex: 1;
+  overflow: auto;
+  li {
+    width: 100%;
+    margin: .5rem 0;
+    &.is-hidden {
+      display: none;
+    }
+  }
+  button {
+    display: flex;
+    justify-content: space-between;
+    padding: .75rem;
+    width: 100%;
+    font-size: .9rem;
+    color: #ccc;
+    background-color: #333;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: $box-corner;
+    box-shadow: 0px 3px 5px rgba(0,0,0,0.05);
+    transition: all .3s ease;
+    cursor: pointer;
+    &:focus, &:hover, &:active, &.is-active {
+      background-color: #454545;
+    }
+    &.is-active {
+      border-color: $legend-group-10;
+    }
+  }
+  .label {
+    margin-right: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .num {
+    display: flex;
+    align-items: center;
+    font-weight: normal;
+    color: #ccc;
+    &:after {
+      content: '';
+      display: block;
+      width: .5rem;
+      height: .5rem;
+      margin-left: .65rem;
+      border-radius: 50%;
+      border: 1px solid;
+    }
+    &.legend-group-10:after { background-color: $legend-group-10; border-color: darken($legend-group-10, 5%); }
+    &.legend-group-100:after { background-color: $legend-group-100; border-color: darken($legend-group-100, 5%);  }
+    &.legend-group-500:after { background-color: $legend-group-500; border-color: darken($legend-group-500, 5%); }
+    &.legend-group-2000:after { background-color: $legend-group-2000; border-color: darken($legend-group-2000, 5%); }
+    &.legend-group-default:after { background-color: darken($legend-group-default, 7%); border-color: darken($legend-group-default, 10%); }
+  }
+}
+
+.map-wrapper {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: $mobile-map-height;
+}
+
+#map {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.legend {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: .5rem .25rem;
+  background-color: rgba(70,70,70,.8);
+  border-bottom-left-radius: $box-corner;
+  z-index: 4;
+  ul {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    li {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: .5rem;
+    }
+    .circle {
+      display: block;
+      opacity: .85;
+      width: .8rem;
+      height: .8rem;
+      border-radius: 50%;
+    }
+    .label {
+      line-height: 1;
+    }
+    .label-val {
+      font-size: .6rem;
+      line-height: 1;
+      color: #fff;
+    }
+  }
+}
+
+.legend-header {
+  width: 100%;
+  margin-bottom: .5rem;
+  font-size: .7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.mapboxgl-popup {
+  max-width: 400px;
+  color: #222;
+}
+
+// move zoom controls above range slider
+.mapboxgl-ctrl-top-right {
+  top: auto !important;
+  bottom: 6rem !important;
+  .mapboxgl-ctrl {
+    margin-right: 1rem !important;
+  }
+}
+
+.map-container {
+  position: absolute;
+  top: 0;
+  bottom: 0rem;
+  padding-top: 3rem;
+  width: 100%;
+}
+
+.credit {
+  position: absolute;
+  left: 1rem;
+  right: 4rem;
+  bottom: 5.5rem;
+  padding: .4rem .5rem;
+  font-size: .8rem;
+  color: #cccc;
+  line-height: 1.4;
+  text-align: center;
+  z-index: 8;
+  a {
+    display: inline-block;
+    padding: 0 .5rem;
+    &:link, &:visited {
+      color: #ccc;
+      transition: all .3s ease;
+    }
+    &:focus, &:hover, &:active {
+      color: #999;
+    }
+  }
+  a + a {
+    border-left: 1px solid #ccc;
+  }
+}
+
+.credit-text { display: none }
+
+/* modal */
+
+.modal-wrapper {
+  display: none;
+  position: relative;
+  opacity: 0;
+  -webkit-transition: opacity 400ms ease;
+  -moz-transition: opacity 400ms ease;
+  -o-transition: opacity 400ms ease;
+  -ms-transition: opacity 400ms ease;
+  transition: opacity 400ms ease;
+  z-index: 15;
+}
+
+.modal-wrapper.is-block {
+  display: block;
+}
+
+.modal-wrapper.is-visible {
+  opacity: 1;
+}
+
+.modal {
+  display: none;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  bottom: 0;
+  background-color: #fff;
+  overflow: hidden;
+  z-index: 17;
+  user-select: none;
+}
+
+.modal.is-flex {
+  display: flex;
+}
+
+.modal.is-visible {
+  opacity: 1;
+  margin-top: 0;
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 16;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  height: 4rem;
+  justify-content: space-between;
+  border-bottom: 1px solid #dedede;
+}
+
+.modal-title {
+  flex: 1;
+  color: #333;
+  padding: 0 0 0 1rem;
+  font-size: 1.5rem;
+  font-weight: 200;
+}
+
+.modal-title strong {
+  font-weight: 600;
+  user-select: none;
+}
+
+.modal-cancel {
+  position: relative;
+  width: 4rem;
+  height: 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.modal-body {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  min-height: 10rem;
+  padding: 1.5rem 1rem;
+  font-size: .8rem;
+  line-height: 1.6;
+  color: #454545;
+  overflow: auto;
+}
+
+.modal-body h2 {
+  margin: 1.25rem 0 .75rem 0;
+  font-size: 1.3rem;
+  font-weight: 200;
+  color: #921694;
+}
+
+.modal-body ul {
+  margin: 1rem 0 1.25rem 1rem;
+  padding: 0;
+}
+
+.modal-body li {
+  margin: 0 0 .8rem;
+  padding: 0;
+}
+
+.modal-body p {
+  margin: 1rem 0 1.25rem 0;
+}
+
+.logos {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.logos img {
+  display: block;
+  margin: 1rem 0;
+  flex: none;
+}
+
+.oxford-logo { width: 60px; }
+.hm-logo { width: 185px; }
+.hms-logo { width: 120px; }
+.bch-logo { width: 110px; }
+.netsi-logo { width: 200px; }
+.oxford-martin-logo { width: 80px; }
+.tsinghua-logo { width: 60px; }
+.ihme-logo { width: 100px; }
+
+/* range slider */
+
+#spread {
+  display: flex;
+  align-items: center;
+  padding: .2rem;
+  color: #fff;
+  font-size: .7rem;
+  text-transform: uppercase;
+  background-color: #66cc66;
+  border-radius: $box-corner;
+  transition: all .3s ease;
+  cursor: pointer;
+  .spread-label {
+    display: none;
+  }
+  &:hover {
+    background-color: #44aa44;
+  }
+}
+
+#range-slider {
+  position: absolute;
+  left: .5rem;
+  right: .5rem;
+  bottom: 2.75rem;
+  padding: .25rem .5rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: .8rem;
+  color: #fff;
+  line-height: 1;
+  border-radius: $box-corner;
+  background-color: rgba(70,70,70,.8);
+  z-index: 3;
+}
+
+#range-slider label {
+  display: flex;
+  align-items: baseline;
+  font-size: .7rem;
+  color: #dedede;
+  line-height: 1rem;
+  text-transform: uppercase;
+  min-width: 4.5rem;
+}
+
+#range-slider label span {
+  display: inline-block;
+  flex: 1;
+  margin-left: .3rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+input[type=range] {
+  flex: 1;
+  margin: 0 .5rem;
+  background: transparent;
+  -webkit-appearance: none;
+  cursor: ew-resize;
+}
+
+input[type=range]:focus {
+  outline: none;
+}
+
+/* webkit */
+input[type=range]::-webkit-slider-runnable-track {
+  @include sharedRangeSliderTrack;
+}
+input[type=range]::-webkit-slider-thumb {
+  @include sharedRangeSliderThumb;
+  margin-top: -.5rem;
+  -webkit-appearance: none;
+}
+input[type=range]:focus::-webkit-slider-runnable-track {
+  background: #fff;
+}
+
+/* moz */
+input[type=range]::-moz-range-track {
+  @include sharedRangeSliderTrack;
+}
+input[type=range]::-moz-range-thumb {
+  @include sharedRangeSliderThumb;
+  margin-top: -.55;
+}
+
+/* ie */
+input[type=range]::-ms-track {
+  @include sharedRangeSliderTrack;
+}
+input[type=range]::-ms-fill-lower {
+  background: #fff;
+  border-radius: 50%;
+}
+input[type=range]::-ms-fill-upper {
+  background: #fff;
+  border-radius: 50%;
+}
+input[type=range]::-ms-thumb {
+  @include sharedRangeSliderThumb;
+  margin-top: 0;
+}
+input[type=range]::-ms-tooltip {
+  display:none;
+}
+
+@import 'media-queries';

@@ -1,6 +1,16 @@
 # COVID-19 data and mapping pipeline
 Resource hub for code related to data processing and mapping piepline
 
+# Usage
+Make sure dependencies in `app/prerequisites.md` are met. Then, to run the
+application locally:
+
+`cd app && ./run`
+
+For deployment in a server environment:
+
+`cd app && ./deploy`
+
 # Contributions
 
 The workflow for contributing to this project is a pull request based workflow. If you are unfamilliar with pull requests you can read more about it here: https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests
