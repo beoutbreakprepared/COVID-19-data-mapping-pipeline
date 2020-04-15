@@ -8,6 +8,7 @@ TOPLEVEL_KEY = "data"
 
 # Geo properties that the client doesn't use and that we can prune out.
 PROPERTIES_TO_PRUNE = [
+  "date",
   "geo_resolution",
 ]
 
@@ -36,12 +37,14 @@ def split_by_day(data, out_dir):
   if "features" in data:
     for feature in data["features"]:
       if "properties" in feature and "date" in feature["properties"]:
-        date = normalize_date(feature["properties"]["date"])
+        iso_date = feature["properties"]["date"]
+        date = normalize_date(iso_date)
+        # Remove the date from each feature and place it only once at the top-level.
         feature = process_feature(feature)
         if date in daily_splits:
-          daily_splits[date].append(feature)
+          daily_splits[date]["features"].append(feature)
         else:
-          daily_splits[date] = [feature]
+          daily_splits[date] = {"date": iso_date, "features": [feature]}
       else:
         print("Warning: unexpected object '" + str(feature) + "'")
   else:
