@@ -369,6 +369,33 @@ def animation_formating(infile):
     
     return array
 
+
+def latlong_to_geo_id(latitude, longitude):
+  '''
+  Returns a string key from a latitude and longitude.
+  '''
+  # TODO: Consider cropping some of the precision for shorter, but still
+  # unique, IDs.
+  return str(latitude) + "|" + str(longitude)
+
+def compile_location_info(in_file: str):
+  '''
+  Returns a dictionary where each key is the unique geo ID and the value
+  is a list of the corresponding (country, province, city).
+  '''
+  print("Reading file...")
+  with open(in_file, 'r') as f:
+    in_data = json.load(f)
+    f.close()
+  all_data = in_data["data"]
+  location_info = {}
+  for item in all_data:
+    geo_id = latlong_to_geo_id(item["latitude"], item["longitude"])
+    if geo_id not in location_info:
+      location_info[geo_id] = [(str(item[key]) if str(item[key]) != "nan" else "")
+          for key in ["country", "province", "city"]]
+  return location_info
+
 def chunks(all_features):
     '''
     Yields successive equal-sized chunks from the input list.
@@ -385,8 +412,9 @@ def animation_formating_geo(infile: str, outfile: str, groupby: str = 'day') -> 
     new cases come in (produces large files). 
     '''
     print("Reading file...")
-    with open(infile, 'r') as F:
-        in_data = json.load(F)
+    with open(infile, 'r') as f:
+        in_data = json.load(f)
+        f.close()
 
     n_cpus = multiprocessing.cpu_count()
     all_features = in_data["data"]
@@ -409,7 +437,8 @@ def animation_formatting_geo_in_memory(in_data: str, groupby: str = 'day') -> No
     full = pd.DataFrame(in_data)
 
     full.fillna('', inplace=True)
-    full['geoid']  = full.apply(lambda s: s['latitude'] + '|' + s['longitude'], axis=1) # To reference locations by a key
+    full['geoid']  = full.apply(
+        lambda s: latlong_to_geo_id(s['latitude'], s['longitude']), axis=1)
     full['date_confirmation'] = full.date_confirmation.apply(lambda x: x.split('-')[0].strip())    
 
     full['date']   = pd.to_datetime(full['date_confirmation'], format="%d.%m.%Y")  # to ensure sorting is done by date value (not str)

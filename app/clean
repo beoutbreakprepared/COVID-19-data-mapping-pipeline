@@ -5,6 +5,7 @@ import os
 
 FILES_TO_REMOVE = [
   "full-data.json",
+  "location_info.data",
   "who.json",
 ]
 

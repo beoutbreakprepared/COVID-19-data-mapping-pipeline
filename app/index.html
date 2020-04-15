@@ -150,6 +150,7 @@
     var latestCountsUrl = './latestCounts.json?nocache=' + timestamp;
     var whoUrl = './who.json?nocache=' + timestamp;
 
+    var location_info = {};
     var dates = [];
     var map;
     // An object mapping dates to JSON objects with the correspondinig data.
@@ -280,6 +281,17 @@
       buildTimeControl();
       playButton.addEventListener("click", animateMap);
     }
+
+    // Load the location data (geo names from latitude and longitude).
+    fetch('location_info.data')
+      .then(function(response) { return response.text(); })
+      .then(function(responseText) {
+        let lines = responseText.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+          let parts = lines[i].split(':');
+          location_info[parts[0]] = parts[1];
+        }
+      });
 
     // load latest counts from scraper
     fetch(latestCountsUrl)
