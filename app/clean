@@ -13,5 +13,5 @@ for f in FILES_TO_REMOVE:
   if os.path.exists(f):
     os.remove(f)
 
-for daily in glob.glob("dailies/*.geojson"):
+for daily in glob.glob("dailies/*.json"):
   os.remove(daily)

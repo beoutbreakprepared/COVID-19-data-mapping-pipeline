@@ -3,7 +3,7 @@ import functions
 import os
 import sys
 
-TEMP_GEOJSON = "temp.geojson"
+TEMP_JSON = "temp.json"
 TOPLEVEL_KEY = "data"
 
 # Geo properties that the client doesn't use and that we can prune out.
@@ -51,7 +51,7 @@ def split_by_day(data, out_dir):
   print("Date range: " + str(dates[0]) + " to " + dates[-1])
   for i in range(len(dates)):
     date = dates[i]
-    daily_slice_file_path = os.path.join(out_dir, ("latest" if i == len(dates) - 1 else date) + ".geojson")
+    daily_slice_file_path = os.path.join(out_dir, ("latest" if i == len(dates) - 1 else date) + ".json")
     if os.path.exists(daily_slice_file_path):
       print("I will not clobber '" + daily_slice_file_path + "', "
             "please delete it first")
@@ -60,8 +60,8 @@ def split_by_day(data, out_dir):
       f.write(json.dumps(daily_splits[date]))
       f.close()
 
-def convert_to_geojson(file_path):
-  functions.animation_formating_geo(file_path, TEMP_GEOJSON)
+def convert_to_client_format(file_path):
+  functions.animation_formating_geo(file_path, TEMP_JSON)
 
 def compile_location_info(in_file_path, out_file_path):
   location_info = functions.compile_location_info(in_file_path)
@@ -75,13 +75,13 @@ def compile_location_info(in_file_path, out_file_path):
 def split_full_data_to_daily_slices(full_data_file_path, out_dir):
   # TODO: Support passinng data directly instead of writing to and
   # re-reading from disk.
-  print("Converting to 'geojson' format...")
-  convert_to_geojson(full_data_file_path)
+  print("Converting to format for sending to the browser...")
+  convert_to_client_format(full_data_file_path)
   print("Splitting...")
-  with open(TEMP_GEOJSON) as f:
+  with open(TEMP_JSON) as f:
     split_by_day(json.loads(f.read()), out_dir)
     f.close()
-  os.remove(TEMP_GEOJSON)
+  os.remove(TEMP_JSON)
 
 def main():
   if sys.version_info[0] < 3:
