@@ -489,10 +489,6 @@ def animation_formatting_geo_in_memory(in_data: str, groupby: str = 'day') -> No
                     "type": "Feature",
                     "geometry": {
                         "type": "Point",
-                        "coordinates": [
-                            float(lon),
-                            float(lat)
-                        ]
                     },
                     "properties": {
                         "geoid": geoid,

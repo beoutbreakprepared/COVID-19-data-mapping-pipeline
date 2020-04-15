@@ -260,6 +260,14 @@
             if (!!jsonData.length) {
               currentDate = jsonData[0].properties.date;
             }
+            // Expand some geographical properties from the geo ID.
+            for (let i = 0; i < jsonData.length; i++) {
+              let feature = jsonData[i];
+              let coords = feature.properties.geoid.split('|');
+              // Flip latitude and longitude.
+              feature.geometry.coordinates = [coords[1], coords[0]];
+            }
+
             dates.unshift(currentDate);
             featuresByDay[currentDate] = jsonData;
 
@@ -449,13 +457,11 @@
           // Change the cursor style as a UI indicator.
           map.getCanvas().style.cursor = 'pointer';
 
-          var coordinates = e.features[0].geometry.coordinates.slice();
           var props = e.features[0].properties;
           var geo_id = props.geoid;
-          if (!geo_id) {
-            // Can't do much without a geo id.
-            return;
-          }
+          var coordinatesString = geo_id.split('|');
+          var lat = parseFloat(coordinatesString[0]);
+          var lng = parseFloat(coordinatesString[1]);
           // Country, province, city
           var location = location_info[geo_id].split(',');
           // Remove empty strings
@@ -467,14 +473,14 @@
           // Ensure that if the map is zoomed out such that multiple
           // copies of the feature are visible, the popup appears
           // over the copy being pointed to.
-          while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+          while (Math.abs(e.lngLat.lng - lng) > 180) {
+            lng += e.lngLat.lng > lng ? 360 : -360;
           }
 
           // Populate the popup and set its coordinates
           // based on the feature found.
           popup
-            .setLngLat(coordinates)
+            .setLngLat([lng, lat])
             .setHTML(description)
             .addTo(map);
         });
