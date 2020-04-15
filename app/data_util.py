@@ -63,7 +63,8 @@ def prepare_for_deployment():
   # Clean whatever is left over.
   for daily in glob.glob("dailies/*.geojson"):
     os.remove(daily)
-  os.remove(LOCATION_INFO_PATH)
+  if os.path.exists(LOCATION_INFO_PATH):
+    os.remove(LOCATION_INFO_PATH)
   print("Generating location info data...")
   split.compile_location_info(FULL_DATA_FILE, LOCATION_INFO_PATH)
 
