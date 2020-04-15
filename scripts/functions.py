@@ -381,7 +381,7 @@ def latlong_to_geo_id(latitude, longitude):
 def compile_location_info(in_file: str):
   '''
   Returns a dictionary where each key is the unique geo ID and the value
-  is a list of the corresponding (country, province, city).
+  is a list of the corresponding (city, province, country).
   '''
   print("Reading file...")
   with open(in_file, 'r') as f:
@@ -393,7 +393,7 @@ def compile_location_info(in_file: str):
     geo_id = latlong_to_geo_id(item["latitude"], item["longitude"])
     if geo_id not in location_info:
       location_info[geo_id] = [(str(item[key]) if str(item[key]) != "nan" else "")
-          for key in ["country", "province", "city"]]
+          for key in ["city", "province", "country"]]
   return location_info
 
 def chunks(all_features):

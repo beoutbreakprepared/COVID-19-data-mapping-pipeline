@@ -451,11 +451,17 @@
 
           var coordinates = e.features[0].geometry.coordinates.slice();
           var props = e.features[0].properties;
-          var city = props.city ? props.city + ', ' : '';
-          var province = props.province ? props.province + ', ' : '';
-          var country = props.country ? props.country : '';
+          var geo_id = props.geoid;
+          if (!geo_id) {
+            // Can't do much without a geo id.
+            return;
+          }
+          // Country, province, city
+          var location = location_info[geo_id].split(',');
+          // Remove empty strings
+          location = location.filter(function (el) { return el != ''; });
           var description =
-            '<h3 class="popup-header">' + city + province + country + '</h3>' +
+            '<h3 class="popup-header">' + location.join(', ') + '</h3>' +
             '<div>' + '<strong>Number of Cases: </strong>' + props.total + '</div>';
 
           // Ensure that if the map is zoomed out such that multiple
