@@ -456,14 +456,6 @@ def animation_formatting_geo_in_memory(in_data: str, groupby: str = 'day') -> No
     geoids  = full.geoid.unique()
     counts  = full.groupby(['date', 'geoid']).count()[['ID']]
 
-    # Build reference table (to plug back in city/province/country later)
-    reference = pd.DataFrame(columns = ['geoid', 'city', 'province', 'country', 'geo_resolution'])
-    for i in full.geoid.unique():
-        arow = full[full.geoid==i].iloc[0]
-        reference = reference.append({'geoid': i, 'city': arow['city'], 'province': arow['province'],
-                                      'country': arow['country'], 'geo_resolution': arow['geo_resolution']}, ignore_index=True)
-    reference.set_index('geoid', inplace=True)
-
     timeline      = []
     has_entry     = []
     latest_counts = {geoid: 0 for geoid in geoids}
@@ -493,7 +485,6 @@ def animation_formatting_geo_in_memory(in_data: str, groupby: str = 'day') -> No
                 raise Exception('This shouldn\'t be possible')
 
             lat, lon = geoid.split('|')
-            ref = reference.loc[geoid]
             entry = {
                     "type": "Feature",
                     "geometry": {
@@ -504,13 +495,10 @@ def animation_formatting_geo_in_memory(in_data: str, groupby: str = 'day') -> No
                         ]
                     },
                     "properties": {
+                        "geoid": geoid,
                         "date": d.strftime('%Y-%m-%d'),
                         "new": N_new,
                         "total": total,
-                        "city": ref['city'],
-                        "province": ref['province'],
-                        "country": ref['country'],
-                        "geo_resolution" : ref['geo_resolution']
                     }
             }
 
