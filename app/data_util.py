@@ -16,7 +16,6 @@ LOCATION_INFO_PATH = "location_info.data"
 
 # A map from the data file we expect to where we can fetch it.                           
 DATA_FILES = {
-  "dailies.geojson": "https://www.healthmap.org/covid-19/dailies.geojson",
   "who.json": "https://www.healthmap.org/covid-19/who.json",
   FULL_DATA_FILE: FULL_DATA_FILE_URL,
 }
