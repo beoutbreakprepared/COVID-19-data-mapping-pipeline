@@ -179,7 +179,7 @@
     }
 
     function showDataAtDate(isodate) {
-      map.getSource('counts').setData({'type': 'FeatureCollection', 'features':featuresByDay[isodate]});
+      map.getSource('counts').setData(featuresByDay[isodate]);
     }
 
     function setTimeControlLabel(date) {
@@ -254,10 +254,9 @@
             if (!jsonData) {
               return;
             }
-            // We assume all features in this slice have the same date, let's
-            // just get the first one.
             var currentDate = jsonData.date;
             // "Re-hydrate" the features into objects ingestable by the map.
+            jsonData.type = 'FeatureCollection';
             for (let i = 0; i < jsonData.features.length; i++) {
               let feature = jsonData.features[i];
               feature.type = 'Feature';
@@ -272,8 +271,6 @@
             // Only use the latest data for the map until we're done downloading
             // everything.
             if (dateString == 'latest') {
-              // Wrap the data to match the way the map expects it.
-              jsonData.type = 'FeatureCollection';
               map.getSource('counts').setData(jsonData);
             }
             // Now fetch the next (older) slice of data.
