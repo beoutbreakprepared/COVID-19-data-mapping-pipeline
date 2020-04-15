@@ -150,6 +150,7 @@
     var latestCountsUrl = './latestCounts.json?nocache=' + timestamp;
     var whoUrl = './who.json?nocache=' + timestamp;
 
+    var location_info = {};
     var dates = [];
     var map;
     // An object mapping dates to JSON objects with the correspondinig data.
@@ -259,6 +260,14 @@
             if (!!jsonData.length) {
               currentDate = jsonData[0].properties.date;
             }
+            // Expand some geographical properties from the geo ID.
+            for (let i = 0; i < jsonData.length; i++) {
+              let feature = jsonData[i];
+              let coords = feature.properties.geoid.split('|');
+              // Flip latitude and longitude.
+              feature.geometry.coordinates = [coords[1], coords[0]];
+            }
+
             dates.unshift(currentDate);
             featuresByDay[currentDate] = jsonData;
 
@@ -280,6 +289,17 @@
       buildTimeControl();
       playButton.addEventListener("click", animateMap);
     }
+
+    // Load the location data (geo names from latitude and longitude).
+    fetch('location_info.data')
+      .then(function(response) { return response.text(); })
+      .then(function(responseText) {
+        let lines = responseText.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+          let parts = lines[i].split(':');
+          location_info[parts[0]] = parts[1];
+        }
+      });
 
     // load latest counts from scraper
     fetch(latestCountsUrl)
@@ -437,26 +457,30 @@
           // Change the cursor style as a UI indicator.
           map.getCanvas().style.cursor = 'pointer';
 
-          var coordinates = e.features[0].geometry.coordinates.slice();
           var props = e.features[0].properties;
-          var city = props.city ? props.city + ', ' : '';
-          var province = props.province ? props.province + ', ' : '';
-          var country = props.country ? props.country : '';
+          var geo_id = props.geoid;
+          var coordinatesString = geo_id.split('|');
+          var lat = parseFloat(coordinatesString[0]);
+          var lng = parseFloat(coordinatesString[1]);
+          // Country, province, city
+          var location = location_info[geo_id].split(',');
+          // Remove empty strings
+          location = location.filter(function (el) { return el != ''; });
           var description =
-            '<h3 class="popup-header">' + city + province + country + '</h3>' +
+            '<h3 class="popup-header">' + location.join(', ') + '</h3>' +
             '<div>' + '<strong>Number of Cases: </strong>' + props.total + '</div>';
 
           // Ensure that if the map is zoomed out such that multiple
           // copies of the feature are visible, the popup appears
           // over the copy being pointed to.
-          while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+          while (Math.abs(e.lngLat.lng - lng) > 180) {
+            lng += e.lngLat.lng > lng ? 360 : -360;
           }
 
           // Populate the popup and set its coordinates
           // based on the feature found.
           popup
-            .setLngLat(coordinates)
+            .setLngLat([lng, lat])
             .setHTML(description)
             .addTo(map);
         });
