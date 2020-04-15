@@ -260,12 +260,13 @@
             if (!!jsonData.length) {
               currentDate = jsonData[0].properties.date;
             }
-            // Expand some geographical properties from the geo ID.
+            // "Re-hydrate" the features into objects ingestable by the map.
             for (let i = 0; i < jsonData.length; i++) {
               let feature = jsonData[i];
+              feature.type = 'Feature';
               let coords = feature.properties.geoid.split('|');
               // Flip latitude and longitude.
-              feature.geometry.coordinates = [coords[1], coords[0]];
+              feature.geometry = {'type': 'Point', 'coordinates': [coords[1], coords[0]]};
             }
 
             dates.unshift(currentDate);
