@@ -4,4 +4,5 @@ css/styles.css.map
 dailies/
 dailies.geojson
 full-data.json
+location_info.data
 who.json

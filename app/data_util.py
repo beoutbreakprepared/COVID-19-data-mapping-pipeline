@@ -12,9 +12,10 @@ FULL_DATA_FILE_URL = "https://www.dl.dropboxusercontent.com/s/t48xylj81vaw25g/fu
 # The directory where JSON files for daily data are expected to be.
 DAILIES_DIR = "dailies"  
 
+LOCATION_INFO_PATH = "location_info.data"
+
 # A map from the data file we expect to where we can fetch it.                           
 DATA_FILES = {
-  "dailies.geojson": "https://www.healthmap.org/covid-19/dailies.geojson",
   "who.json": "https://www.healthmap.org/covid-19/who.json",
   FULL_DATA_FILE: FULL_DATA_FILE_URL,
 }
@@ -28,6 +29,10 @@ def prepare_for_local_development():
     if not os.path.exists(f):
       print("We don't have '" + f + "', downloading it...")
       os.system("curl '" + DATA_FILES[f] + "' > " + f)
+
+  if not os.path.exists(LOCATION_INFO_PATH):
+    print("Generating location info data...")
+    split.compile_location_info(FULL_DATA_FILE, LOCATION_INFO_PATH)
 
   dailies = os.listdir(DAILIES_DIR)
   if len(dailies) > 0:
@@ -58,6 +63,10 @@ def prepare_for_deployment():
   # Clean whatever is left over.
   for daily in glob.glob("dailies/*.geojson"):
     os.remove(daily)
+  os.remove(LOCATION_INFO_PATH)
+  print("Generating location info data...")
+  split.compile_location_info(FULL_DATA_FILE, LOCATION_INFO_PATH)
+
   generate_daily_slices(FULL_DATA_FILE)
 
 def split_data(FULL_DATA_FILE, out_dir):
