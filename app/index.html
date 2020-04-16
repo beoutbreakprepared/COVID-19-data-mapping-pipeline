@@ -147,9 +147,6 @@
     const animationFrameDurationMs = 300;
 
     // Globals
-    var latestCountsUrl = './latestCounts.json?nocache=' + timestamp;
-    var whoUrl = './who.json?nocache=' + timestamp;
-
     var location_info = {};
     var dates = [];
     var map;
@@ -157,13 +154,6 @@
     // for that day.
     var featuresByDay = {};
     var timeControl = document.getElementById("slider");
-
-    var totalCases = document.getElementById("total-cases");
-    var lastUpdatedDate = document.getElementById("last-updated-date");
-
-    var modalWrapper = document.getElementById("modal-wrapper");
-    var modal = document.getElementById("modal");
-    var playButton = document.getElementById("spread");
 
     function showDataAtDate(isodate) {
       map.getSource('counts').setData(featuresByDay[isodate]);
@@ -267,7 +257,7 @@
 
     function onAllDailySlicesFetched() {
       buildTimeControl();
-      playButton.addEventListener("click", animateMap);
+      document.getElementById("spread").addEventListener("click", animateMap);
     }
 
     // Load the location data (geo names from latitude and longitude).
@@ -282,15 +272,15 @@
       });
 
     // load latest counts from scraper
-    fetch(latestCountsUrl)
+    fetch('latestCounts.json?nocache=' + timestamp)
       .then(function(response) { return response.json(); })
       .then(function(jsonData) {
-        totalCases.innerText = jsonData[0].caseCount
-        lastUpdatedDate.innerText = jsonData[0].date
+        document.getElementById("total-cases").innerText = jsonData[0].caseCount;
+        document.getElementById("last-updated-date").innerText = jsonData[0].date;
       });
 
     // build list of locations with counts
-    fetch(whoUrl)
+    fetch('who.json?nocache=' + timestamp)
       .then(function(response) { return response.json(); })
       .then(function(jsonData) {
         var obj = jsonData.features;
@@ -321,17 +311,10 @@
         label = li[i].getElementsByClassName('label')[0];
         txtValue = label.textContent || label.innerText;
         // show/hide clear filter button
-        if (filter != '') {
-          clearFilter.classList.add('is-visible');
-        } else {
-          clearFilter.classList.remove('is-visible');
-        }
+        clearFilter.classList.toggle('is-visible', !!filter);
+
         // show/hide list items
-        if (txtValue.toUpperCase().indexOf(filter) <= -1) {
-          li[i].classList.add('is-hidden');
-        } else {
-          li[i].classList.remove('is-hidden');
-        }
+        li[i].classList.toggle('is-hidden', txtValue.toUpperCase().indexOf(filter) <= -1);
       }
     }
 
@@ -342,6 +325,8 @@
     }
 
     var handleShowModal = function () {
+      var modal = document.getElementById("modal");
+      var modalWrapper = document.getElementById('modal-wrapper');
       // switch elements to have 'display' value (block, flex) but keep hidden via opacity
       modalWrapper.classList.add('is-block');
       modal.classList.add('is-flex');
