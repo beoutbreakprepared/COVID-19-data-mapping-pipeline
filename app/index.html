@@ -179,7 +179,7 @@
     }
 
     function showDataAtDate(isodate) {
-      map.getSource('counts').setData({'type': 'FeatureCollection', 'features':featuresByDay[isodate]});
+      map.getSource('counts').setData(featuresByDay[isodate]);
     }
 
     function setTimeControlLabel(date) {
@@ -237,7 +237,7 @@
     function fetchDailySlice(dateString) {
       dateString = dateString || 'latest';
 
-      let url = 'dailies/' + dateString.replace(/-/g, '.') + '.geojson';
+      let url = 'dailies/' + dateString.replace(/-/g, '.') + '.json';
       if (dateString == 'latest') {
         url += '?nocache=' + timestamp;
       }
@@ -254,18 +254,15 @@
             if (!jsonData) {
               return;
             }
-            // We assume all features in this slice have the same date, let's
-            // just get the first one.
-            var currentDate;
-            if (!!jsonData.length) {
-              currentDate = jsonData[0].properties.date;
-            }
-            // Expand some geographical properties from the geo ID.
-            for (let i = 0; i < jsonData.length; i++) {
-              let feature = jsonData[i];
+            var currentDate = jsonData.date;
+            // "Re-hydrate" the features into objects ingestable by the map.
+            jsonData.type = 'FeatureCollection';
+            for (let i = 0; i < jsonData.features.length; i++) {
+              let feature = jsonData.features[i];
+              feature.type = 'Feature';
               let coords = feature.properties.geoid.split('|');
               // Flip latitude and longitude.
-              feature.geometry.coordinates = [coords[1], coords[0]];
+              feature.geometry = {'type': 'Point', 'coordinates': [coords[1], coords[0]]};
             }
 
             dates.unshift(currentDate);
@@ -274,10 +271,6 @@
             // Only use the latest data for the map until we're done downloading
             // everything.
             if (dateString == 'latest') {
-              if (!jsonData.features) {
-                // Wrap the data to match the way the map expects it.
-                jsonData = {'type': 'FeatureCollection', 'features': jsonData};
-              }
               map.getSource('counts').setData(jsonData);
             }
             // Now fetch the next (older) slice of data.

@@ -61,7 +61,7 @@ def prepare_for_deployment():
   if not os.path.exists(DAILIES_DIR):
     os.mkdir(DAILIES_DIR)
   # Clean whatever is left over.
-  for daily in glob.glob("dailies/*.geojson"):
+  for daily in glob.glob("dailies/*.json"):
     os.remove(daily)
   if os.path.exists(LOCATION_INFO_PATH):
     os.remove(LOCATION_INFO_PATH)
