@@ -150,7 +150,7 @@
     var location_info = {};
     var dates = [];
     var map;
-    // An object mapping dates to JSON objects with the correspondinig data.
+    // An object mapping dates to JSON objects with the corresponding data.
     // for that day.
     var featuresByDay = {};
     var timeControl = document.getElementById("slider");
@@ -177,15 +177,13 @@
         showDataAtDate(dates[i]);
         setTimeControlLabel(i);
         i++;
-        if(i === dates.length) {
+        if (i === dates.length) {
           clearInterval(stepMap);
         }
       }, animationFrameDurationMs);
     }
 
-    /**
-     * Fills with leading zeros to the desired width.
-     */
+    /** Fills with leading zeros to the desired width. */
     function zfill(n, width) {
       n = n + '';
       return n.length >= width ? n : new Array(width - n.length + 1).join('0') + n;
@@ -271,7 +269,7 @@
         }
       });
 
-    // load latest counts from scraper
+    // Load latest counts from scraper
     fetch('latestCounts.json?nocache=' + timestamp)
       .then(function(response) { return response.json(); })
       .then(function(jsonData) {
@@ -279,7 +277,7 @@
         document.getElementById("last-updated-date").innerText = jsonData[0].date;
       });
 
-    // build list of locations with counts
+    // Build list of locations with counts
     fetch('who.json?nocache=' + timestamp)
       .then(function(response) { return response.json(); })
       .then(function(jsonData) {
@@ -298,7 +296,7 @@
         document.getElementById('location-list').innerHTML = list;
       });
 
-    // filter list of locations
+    // Filter list of locations
     function filterList() {
       var input, filter, ul, li, label, i, txtValue, clearFilter;
       input = document.getElementById('location-filter');
@@ -307,13 +305,13 @@
       li = ul.getElementsByTagName('li');
       clearFilter = document.getElementById('clear-filter');
       // Loop through all list items, and hide those who don't match the search query
-      for (var i=0, n=li.length; i < n; ++i ) {
+      for (var i = 0, n = li.length; i < n; ++i) {
         label = li[i].getElementsByClassName('label')[0];
         txtValue = label.textContent || label.innerText;
         // show/hide clear filter button
         clearFilter.classList.toggle('is-visible', !!filter);
 
-        // show/hide list items
+        // Show/hide list items
         li[i].classList.toggle('is-hidden', txtValue.toUpperCase().indexOf(filter) <= -1);
       }
     }
