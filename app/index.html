@@ -147,36 +147,13 @@
     const animationFrameDurationMs = 300;
 
     // Globals
-    var latestCountsUrl = './latestCounts.json?nocache=' + timestamp;
-    var whoUrl = './who.json?nocache=' + timestamp;
-
     var location_info = {};
     var dates = [];
     var map;
-    // An object mapping dates to JSON objects with the correspondinig data.
+    // An object mapping dates to JSON objects with the corresponding data.
     // for that day.
     var featuresByDay = {};
     var timeControl = document.getElementById("slider");
-
-    var totalCases = document.getElementById("total-cases");
-    var lastUpdatedDate = document.getElementById("last-updated-date");
-
-    var modalWrapper = document.getElementById("modal-wrapper");
-    var modal = document.getElementById("modal");
-    var playButton = document.getElementById("spread");
-
-    // polyfill for array.includes()
-    if (!Array.prototype.includes) {
-      Array.prototype.includes = function (search, start) {
-        'use strict';
-
-        if (search instanceof RegExp) {
-          throw TypeError('first argument must not be a RegExp');
-        }
-        if (start === undefined) { start = 0; }
-        return this.indexOf(search, start) !== -1;
-      };
-    }
 
     function showDataAtDate(isodate) {
       map.getSource('counts').setData(featuresByDay[isodate]);
@@ -200,15 +177,13 @@
         showDataAtDate(dates[i]);
         setTimeControlLabel(i);
         i++;
-        if(i === dates.length) {
+        if (i === dates.length) {
           clearInterval(stepMap);
         }
       }, animationFrameDurationMs);
     }
 
-    /**
-     * Fills with leading zeros to the desired width.
-     */
+    /** Fills with leading zeros to the desired width. */
     function zfill(n, width) {
       n = n + '';
       return n.length >= width ? n : new Array(width - n.length + 1).join('0') + n;
@@ -280,7 +255,7 @@
 
     function onAllDailySlicesFetched() {
       buildTimeControl();
-      playButton.addEventListener("click", animateMap);
+      document.getElementById("spread").addEventListener("click", animateMap);
     }
 
     // Load the location data (geo names from latitude and longitude).
@@ -294,16 +269,16 @@
         }
       });
 
-    // load latest counts from scraper
-    fetch(latestCountsUrl)
+    // Load latest counts from scraper
+    fetch('latestCounts.json?nocache=' + timestamp)
       .then(function(response) { return response.json(); })
       .then(function(jsonData) {
-        totalCases.innerText = jsonData[0].caseCount
-        lastUpdatedDate.innerText = jsonData[0].date
+        document.getElementById("total-cases").innerText = jsonData[0].caseCount;
+        document.getElementById("last-updated-date").innerText = jsonData[0].date;
       });
 
-    // build list of locations with counts
-    fetch(whoUrl)
+    // Build list of locations with counts
+    fetch('who.json?nocache=' + timestamp)
       .then(function(response) { return response.json(); })
       .then(function(jsonData) {
         var obj = jsonData.features;
@@ -321,40 +296,33 @@
         document.getElementById('location-list').innerHTML = list;
       });
 
-    // filter list of locations
+    // Filter list of locations
     function filterList() {
-      var input, filter, ul, li, label, i, txtValue, clearFilter;
-      input = document.getElementById('location-filter');
-      filter = input.value.toUpperCase();
+      var filter = document.getElementById('location-filter').value.toUpperCase();
       ul = document.getElementById("location-list");
-      li = ul.getElementsByTagName('li');
-      clearFilter = document.getElementById('clear-filter');
+      var list_items = document.getElementById("location-list").getElementsByTagName('li');
+      var clearFilter = document.getElementById('clear-filter');
       // Loop through all list items, and hide those who don't match the search query
-      for (var i=0, n=li.length; i < n; ++i ) {
-        label = li[i].getElementsByClassName('label')[0];
-        txtValue = label.textContent || label.innerText;
-        // show/hide clear filter button
-        if (filter != '') {
-          clearFilter.classList.add('is-visible');
-        } else {
-          clearFilter.classList.remove('is-visible');
-        }
-        // show/hide list items
-        if (txtValue.toUpperCase().indexOf(filter) <= -1) {
-          li[i].classList.add('is-hidden');
-        } else {
-          li[i].classList.remove('is-hidden');
-        }
+      for (var i = 0; i < list_items.length; ++i) {
+        var label = list_items[i].getElementsByClassName('label')[0];
+        var txtValue = label.textContent || label.innerText;
+        // Show/hide the clear filter button.
+        clearFilter.style.display = !!filter ? 'flex' : 'none';
+
+        // Show/hide matching list items.
+        const show = txtValue.toUpperCase().indexOf(filter) != -1;
+        list_items[i].style.display = show ? 'list-item' : 'none';
       }
     }
 
-    // clear filter
     function clearFilter() {
       document.getElementById('location-filter').value = '';
       filterList();
     }
 
     var handleShowModal = function () {
+      var modal = document.getElementById("modal");
+      var modalWrapper = document.getElementById('modal-wrapper');
       // switch elements to have 'display' value (block, flex) but keep hidden via opacity
       modalWrapper.classList.add('is-block');
       modal.classList.add('is-flex');

@@ -227,9 +227,6 @@ h1 {
   &:hover, &:focus {
     transform: translateY(-50%) rotate(-90deg);
   }
-  &.is-visible {
-    display: flex;
-  }
 }
 
 .location-list {
@@ -237,10 +234,7 @@ h1 {
   overflow: auto;
   li {
     width: 100%;
-    margin: .5rem 0;
-    &.is-hidden {
-      display: none;
-    }
+    margin: .5rem 0 !important;
   }
   button {
     display: flex;
