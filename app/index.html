@@ -298,21 +298,20 @@
 
     // Filter list of locations
     function filterList() {
-      var input, filter, ul, li, label, i, txtValue, clearFilter;
-      input = document.getElementById('location-filter');
-      filter = input.value.toUpperCase();
+      var filter = document.getElementById('location-filter').value.toUpperCase();
       ul = document.getElementById("location-list");
-      li = ul.getElementsByTagName('li');
-      clearFilter = document.getElementById('clear-filter');
+      var list_items = document.getElementById("location-list").getElementsByTagName('li');
+      var clearFilter = document.getElementById('clear-filter');
       // Loop through all list items, and hide those who don't match the search query
-      for (var i = 0, n = li.length; i < n; ++i) {
-        label = li[i].getElementsByClassName('label')[0];
-        txtValue = label.textContent || label.innerText;
-        // show/hide clear filter button
-        clearFilter.classList.toggle('is-visible', !!filter);
+      for (var i = 0; i < list_items.length; ++i) {
+        var label = list_items[i].getElementsByClassName('label')[0];
+        var txtValue = label.textContent || label.innerText;
+        // Show/hide the clear filter button.
+        clearFilter.style.display = !!filter ? 'flex' : 'none';
 
-        // Show/hide list items
-        li[i].classList.toggle('is-hidden', txtValue.toUpperCase().indexOf(filter) <= -1);
+        // Show/hide matching list items.
+        const show = txtValue.toUpperCase().indexOf(filter) != -1;
+        list_items[i].style.display = show ? 'inline-block' : 'none';
       }
     }
 
