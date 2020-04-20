@@ -78,6 +78,10 @@ def deploy(target_path):
       f not in EXCLUDED and not f.startswith(BACKUP_DIR_PREFIX)]
   os.system("cp -a " + " ".join(to_copy) + " " + target_path + "/")
 
+if not data_util.retrieve_generable_data(src_path, should_overwrite=True):
+  print("I wasn't able to retrieve necessary data, aborting")
+  sys.exit(1)
+
 data_util.prepare_for_deployment()
 if has_analytics_code():
   print("Analytics code is already present, skipping that step.")

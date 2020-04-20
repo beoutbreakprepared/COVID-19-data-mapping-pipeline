@@ -10,6 +10,7 @@ import json
 from datetime import datetime
 import os
 
+# Returns whether the operation was a success
 def get_WHO(out_path):
     query = 'https://services.arcgis.com/5T5nSi527N4F7luB/ArcGIS/rest/services/COVID_19_CasesByCountry(pl)_VIEW/FeatureServer/0/query?where=1%3D1&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=0.0&units=esriSRUnit_Meter&returnGeodetic=true&outFields=cum_conf%2C+ADM0_NAME&returnGeometry=false&returnCentroid=true&featureEncoding=esriDefault&multipatchOption=xyFootprint&maxAllowableOffset=&geometryPrecision=&outSR=&datumTransformation=&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&returnExceededLimitFeatures=true&quantizationParameters=&sqlFormat=none&f=pjson&token='
     
@@ -49,9 +50,11 @@ def get_WHO(out_path):
     
         with open(out_path, 'w') as F:
             json.dump(features, F)
-    
-    
-    
+    else:
+        # Status code other than "ok"
+        return False
+
+    return True
 
 if __name__ == '__main__':
     self_dir = os.path.dirname(os.path.realpath(__file__))

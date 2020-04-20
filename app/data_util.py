@@ -20,6 +20,21 @@ DATA_FILES = {
   FULL_DATA_FILE: FULL_DATA_FILE_URL,
 }
 
+# Returns whether we were able to get the necessary data
+def retrieve_generable_data(out_dir, should_overwrite=False):
+  import get_WHO_data
+  import scrape_total_count
+
+  success = True
+  out_path = os.path.join(out_dir, "who.json")
+  if not os.path.exists(out_path) or should_overwrite:
+    success &= get_WHO_data.get_WHO(out_path)
+  out_path = os.path.join(out_dir, "latestCounts.json")
+  if not os.path.exists(out_path) or should_overwrite:
+    success &= scrape_total_count.scrape_total_count(out_path)
+
+  return success
+
 def prepare_for_local_development():
   if not os.path.exists(DAILIES_DIR):
     os.mkdir(DAILIES_DIR)
