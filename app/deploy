@@ -54,11 +54,14 @@ def insert_analytics_code():
       main_page += line
     f.close()
 
-  # Remove the file and re-write it
-  os.remove("index.html")
+  # Back-up the file write a modified version
+  os.system("mv index.html index.html.orig")
   with open("index.html", "w") as f:
     f.write(main_page)
     f.close()
+
+def restore_pristine_files():
+  os.system("mv index.html.orig index.html")
 
 # Returns whether the backup operation succeeded
 def backup_current_version(target_path):
@@ -80,13 +83,12 @@ if has_analytics_code():
   print("Analytics code is already present, skipping that step.")
 else:
   insert_analytics_code()
-  # TODO: Restore previous version of index.html automatically.
-  print("You might want to remove the analytics code again "
-        "after deployment.")
 
 if not backup_current_version(target_path):
   print("I could not back up the current version, bailing out.")
   sys.exit(1)
 deploy(target_path)
+
+restore_pristine_files()
 
 print("All done.")
