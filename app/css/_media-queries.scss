@@ -157,7 +157,7 @@ screen and (max-height: $breakpoint-portrait-sm-max) and (orientation: portrait)
 }
 
 @media only screen and (min-width: $breakpoint-portrait-md-min) and (min-height: $breakpoint-landscape-md-min) {
-  .modal {
+  #modal {
     top: 50%;
     left: 50%;
     bottom: auto;

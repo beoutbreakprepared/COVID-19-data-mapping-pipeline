@@ -397,7 +397,7 @@ h1 {
 
 /* modal */
 
-.modal-wrapper {
+#modal-wrapper {
   display: none;
   position: relative;
   opacity: 0;
@@ -409,15 +409,15 @@ h1 {
   z-index: 15;
 }
 
-.modal-wrapper.is-block {
+#modal-wrapper.is-block {
   display: block;
 }
 
-.modal-wrapper.is-visible {
+#modal-wrapper.is-visible {
   opacity: 1;
 }
 
-.modal {
+#modal {
   display: none;
   flex-direction: column;
   position: fixed;
@@ -431,11 +431,11 @@ h1 {
   user-select: none;
 }
 
-.modal.is-flex {
+#modal.is-flex {
   display: flex;
 }
 
-.modal.is-visible {
+#modal.is-visible {
   opacity: 1;
   margin-top: 0;
 }
