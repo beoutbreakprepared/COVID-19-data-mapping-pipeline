@@ -14,21 +14,33 @@ DAILIES_DIR = "dailies"
 
 LOCATION_INFO_PATH = "location_info.data"
 
-# A map from the data file we expect to where we can fetch it.                           
-DATA_FILES = {
-  "who.json": "https://www.healthmap.org/covid-19/who.json",
-  FULL_DATA_FILE: FULL_DATA_FILE_URL,
-}
+self_dir = os.path.dirname(os.path.realpath(__file__))
+
+# Returns whether we were able to get the necessary data
+def retrieve_generable_data(out_dir, should_overwrite=False):
+  import get_WHO_data
+  import scrape_total_count
+
+  success = True
+  out_path = os.path.join(out_dir, "who.json")
+  if not os.path.exists(out_path) or should_overwrite:
+    success &= get_WHO_data.get_WHO(out_path)
+  out_path = os.path.join(out_dir, "latestCounts.json")
+  if not os.path.exists(out_path) or should_overwrite:
+    success &= scrape_total_count.scrape_total_count(out_path)
+
+  return success
 
 def prepare_for_local_development():
   if not os.path.exists(DAILIES_DIR):
     os.mkdir(DAILIES_DIR)
 
-  # Download the data we don't yet have.
-  for f in DATA_FILES:
-    if not os.path.exists(f):
-      print("We don't have '" + f + "', downloading it...")
-      os.system("curl '" + DATA_FILES[f] + "' > " + f)
+  # Download the data if we don't yet have it.
+  if not os.path.exists(FULL_DATA_FILE):
+    print("We don't have '" + FULL_DATA_FILE + "', downloading it...")
+    os.system("curl '" + FULL_DATA_FILE_URL + "' > " + FULL_DATA_FILE)
+
+  retrieve_generable_data(self_dir, should_overwrite=False)
 
   if not os.path.exists(LOCATION_INFO_PATH):
     print("Generating location info data...")
@@ -44,20 +56,20 @@ def prepare_for_local_development():
   return False
 
 def prepare_for_deployment():
-  self_dir = os.path.dirname(os.path.realpath(__file__))
   os.chdir(self_dir)
-  # For deployment, we check the presence of the data we need, but we don't
+  # For deployment, we check the presence of the "full data", but we don't
   # automatically download it.
-  have_all = True
-  for f in DATA_FILES:
-    if not os.path.exists(f):
-      print("Please get the latest '" + f + "' file and place "
-            "it in '" + self_dir + "', then call me again.")
-      print("If you don't have the latest version, try this "
-            "link: '" + DATA_FILES[f] + "'")
-      have_all = False
-  if not have_all:
+  if not os.path.exists(FULL_DATA_FILE):
+    print("Please get the latest '" + FULL_DATA_FILE + "' file and place "
+          "it in '" + self_dir + "', then call me again.")
+    print("If you don't have the latest version, try this "
+          "link: '" + FULL_DATA_FILE_URL + "'")
     sys.exit(1)
+
+  if not retrieve_generable_data(self_dir, should_overwrite=True):
+    print("I wasn't able to retrieve necessary data, aborting")
+    sys.exit(1)
+
   if not os.path.exists(DAILIES_DIR):
     os.mkdir(DAILIES_DIR)
   # Clean whatever is left over.
