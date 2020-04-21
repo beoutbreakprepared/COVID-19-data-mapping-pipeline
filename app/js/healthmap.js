@@ -179,7 +179,13 @@ function clearFilter() {
   filterList();
 }
 
-function handleShowModal() {
+function fetchAboutPage() {
+  fetch('about.html')
+    .then(function(response) { return response.text(); })
+    .then(function(html) { handleShowModal(html); });
+}
+
+function handleShowModal(html) {
   let modal = document.getElementById('modal');
   let modalWrapper = document.getElementById('modal-wrapper');
   // switch elements to have 'display' value (block, flex) but keep hidden via opacity
@@ -190,6 +196,7 @@ function handleShowModal() {
     modalWrapper.classList.add('is-visible');
     modal.classList.add('is-visible');
   }, 40);
+  modal.innerHTML = html;
 }
 
 function handleHideModal() {
