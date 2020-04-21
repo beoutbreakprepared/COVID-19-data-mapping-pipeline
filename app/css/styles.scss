@@ -401,10 +401,6 @@ h1 {
   display: none;
   position: relative;
   opacity: 0;
-  -webkit-transition: opacity 400ms ease;
-  -moz-transition: opacity 400ms ease;
-  -o-transition: opacity 400ms ease;
-  -ms-transition: opacity 400ms ease;
   transition: opacity 400ms ease;
   z-index: 15;
 }

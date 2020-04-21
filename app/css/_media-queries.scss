@@ -167,13 +167,7 @@ screen and (max-height: $breakpoint-portrait-sm-max) and (orientation: portrait)
     transform: translate(-50%, -50%);
     border-radius: .3rem;
     opacity: 0;
-    -moz-box-shadow: 1px 1px 6px 0px rgba(0, 0, 0, 0.1);
-    -webkit-box-shadow: 1px 1px 6px 0px rgba(0, 0, 0, 0.1);
     box-shadow: 1px 1px 6px 0px rgba(0, 0, 0, 0.1);
-    -webkit-transition: all 400ms ease;
-    -moz-transition: all 400ms ease;
-    -o-transition: all 400ms ease;
-    -ms-transition: all 400ms ease;
     transition: all 400ms ease;
   }
 }
