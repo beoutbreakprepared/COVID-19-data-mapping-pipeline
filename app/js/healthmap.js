@@ -3,14 +3,14 @@ const timestamp = (new Date()).getTime();
 const animationFrameDurationMs = 300;
 
 // Globals
-var location_info = {};
-var dates = [];
-var map;
+let location_info = {};
+let dates = [];
+let map;
 
 // An object mapping dates to JSON objects with the corresponding data.
 // for that day.
-var featuresByDay = {};
-var timeControl = document.getElementById("slider");
+let featuresByDay = {};
+let timeControl = document.getElementById("slider");
 
 function showDataAtDate(isodate) {
   map.getSource('counts').setData(featuresByDay[isodate]);
@@ -28,8 +28,8 @@ function buildTimeControl() {
 }
 
 function animateMap() {
-  var i = 0;
-  var stepMap = setInterval(function() {
+  let i = 0;
+  let stepMap = setInterval(function() {
     timeControl.value = i;
     showDataAtDate(dates[i]);
     setTimeControlLabel(i);
@@ -52,9 +52,9 @@ function zfill(n, width) {
  */
 function oneDayBefore(dateString) {
 
-  var parts = dateString.split('-');
+  let parts = dateString.split('-');
    // Month is 0-based.
-  var date = new Date(parts[0], parseInt(parts[1]) - 1, parts[2]);
+  let date = new Date(parts[0], parseInt(parts[1]) - 1, parts[2]);
   // Backtrack one day.
   date.setDate(date.getDate() - 1);
   return [date.getFullYear(),
@@ -86,7 +86,7 @@ function fetchDailySlice(dateString) {
         if (!jsonData) {
           return;
         }
-        var currentDate = jsonData.date;
+        let currentDate = jsonData.date;
         // "Re-hydrate" the features into objects ingestable by the map.
         jsonData.type = 'FeatureCollection';
         for (let i = 0; i < jsonData.features.length; i++) {
@@ -138,11 +138,11 @@ fetch('latestCounts.json?nocache=' + timestamp)
 fetch('who.json?nocache=' + timestamp)
   .then(function(response) { return response.json(); })
   .then(function(jsonData) {
-    var obj = jsonData.features;
+    let obj = jsonData.features;
     list = '';
-    for (var i = 0; i < obj.length; ++i) {
-      var location = obj[i];
-      var name, lat, lon, cumConf, legendGroup;
+    for (let i = 0; i < obj.length; ++i) {
+      let location = obj[i];
+      let name, lat, lon, cumConf, legendGroup;
       name = location.attributes.ADM0_NAME ? location.attributes.ADM0_NAME : '';
       lat = location.centroid.x ? location.centroid.x : 0;
       lon = location.centroid.y ? location.centroid.y : 0;
@@ -155,14 +155,14 @@ fetch('who.json?nocache=' + timestamp)
 
 // Filter list of locations
 function filterList() {
-  var filter = document.getElementById('location-filter').value.toUpperCase();
+  let filter = document.getElementById('location-filter').value.toUpperCase();
   ul = document.getElementById("location-list");
-  var list_items = document.getElementById("location-list").getElementsByTagName('li');
-  var clearFilter = document.getElementById('clear-filter');
+  let list_items = document.getElementById("location-list").getElementsByTagName('li');
+  let clearFilter = document.getElementById('clear-filter');
   // Loop through all list items, and hide those who don't match the search query
-  for (var i = 0; i < list_items.length; ++i) {
-    var label = list_items[i].getElementsByClassName('label')[0];
-    var txtValue = label.textContent || label.innerText;
+  for (let i = 0; i < list_items.length; ++i) {
+    let label = list_items[i].getElementsByClassName('label')[0];
+    let txtValue = label.textContent || label.innerText;
     // Show/hide the clear filter button.
     clearFilter.style.display = !!filter ? 'flex' : 'none';
 
@@ -177,9 +177,9 @@ function clearFilter() {
   filterList();
 }
 
-var handleShowModal = function () {
-  var modal = document.getElementById("modal");
-  var modalWrapper = document.getElementById('modal-wrapper');
+let handleShowModal = function () {
+  let modal = document.getElementById("modal");
+  let modalWrapper = document.getElementById('modal-wrapper');
   // switch elements to have 'display' value (block, flex) but keep hidden via opacity
   modalWrapper.classList.add('is-block');
   modal.classList.add('is-flex');
@@ -190,7 +190,7 @@ var handleShowModal = function () {
   }, 40);
 }
 
-var handleHideModal = function () {
+let handleHideModal = function () {
   modalWrapper.classList.remove('is-visible');
   modal.classList.remove('is-visible');
   setTimeout(function () {
@@ -265,7 +265,7 @@ function initMap() {
     });
 
     // Create a popup, but don't add it to the map yet.
-    var popup = new mapboxgl.Popup({
+    let popup = new mapboxgl.Popup({
       closeButton: false,
       closeOnClick: false
     });
@@ -274,16 +274,16 @@ function initMap() {
       // Change the cursor style as a UI indicator.
       map.getCanvas().style.cursor = 'pointer';
 
-      var props = e.features[0].properties;
-      var geo_id = props.geoid;
-      var coordinatesString = geo_id.split('|');
-      var lat = parseFloat(coordinatesString[0]);
-      var lng = parseFloat(coordinatesString[1]);
+      let props = e.features[0].properties;
+      let geo_id = props.geoid;
+      let coordinatesString = geo_id.split('|');
+      let lat = parseFloat(coordinatesString[0]);
+      let lng = parseFloat(coordinatesString[1]);
       // Country, province, city
-      var location = location_info[geo_id].split(',');
+      let location = location_info[geo_id].split(',');
       // Remove empty strings
       location = location.filter(function (el) { return el != ''; });
-      var description =
+      let description =
         '<h3 class="popup-header">' + location.join(', ') + '</h3>' +
         '<div>' + '<strong>Number of Cases: </strong>' + props.total + '</div>';
 
