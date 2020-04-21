@@ -1,6 +1,8 @@
 // Constants
+const ANIMATION_FRAME_DURATION_MS = 300;
+
+// Runtime constants
 const timestamp = (new Date()).getTime();
-const animationFrameDurationMs = 300;
 
 // Globals
 let location_info = {};
@@ -37,7 +39,7 @@ function animateMap() {
     if (i === dates.length) {
       clearInterval(stepMap);
     }
-  }, animationFrameDurationMs);
+  }, ANIMATION_FRAME_DURATION_MS);
 }
 
 /** Fills with leading zeros to the desired width. */
