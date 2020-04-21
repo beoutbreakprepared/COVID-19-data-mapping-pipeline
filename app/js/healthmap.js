@@ -12,20 +12,20 @@ let map;
 // An object mapping dates to JSON objects with the corresponding data.
 // for that day.
 let featuresByDay = {};
-let timeControl = document.getElementById("slider");
+let timeControl = document.getElementById('slider');
 
 function showDataAtDate(isodate) {
   map.getSource('counts').setData(featuresByDay[isodate]);
 }
 
 function setTimeControlLabel(date) {
-  document.getElementById("date").innerText = dates[date];
+  document.getElementById('date').innerText = dates[date];
 }
 
 function buildTimeControl() {
   document.getElementById('range-slider').style.display = 'flex';
-  timeControl.setAttribute("max", dates.length - 1)
-  timeControl.setAttribute("value", dates.length - 1);
+  timeControl.setAttribute('max', dates.length - 1)
+  timeControl.setAttribute('value', dates.length - 1);
   setTimeControlLabel(dates.length - 1);
 }
 
@@ -114,7 +114,7 @@ function fetchDailySlice(dateString) {
 
 function onAllDailySlicesFetched() {
   buildTimeControl();
-  document.getElementById("spread").addEventListener("click", animateMap);
+  document.getElementById('spread').addEventListener('click', animateMap);
 }
 
 // Load the location data (geo names from latitude and longitude).
@@ -132,8 +132,8 @@ fetch('location_info.data')
 fetch('latestCounts.json?nocache=' + timestamp)
   .then(function(response) { return response.json(); })
   .then(function(jsonData) {
-    document.getElementById("total-cases").innerText = jsonData[0].caseCount;
-    document.getElementById("last-updated-date").innerText = jsonData[0].date;
+    document.getElementById('total-cases').innerText = jsonData[0].caseCount;
+    document.getElementById('last-updated-date').innerText = jsonData[0].date;
   });
 
 // Build list of locations with counts
@@ -158,8 +158,8 @@ fetch('who.json?nocache=' + timestamp)
 // Filter list of locations
 function filterList() {
   let filter = document.getElementById('location-filter').value.toUpperCase();
-  ul = document.getElementById("location-list");
-  let list_items = document.getElementById("location-list").getElementsByTagName('li');
+  ul = document.getElementById('location-list');
+  let list_items = document.getElementById('location-list').getElementsByTagName('li');
   let clearFilter = document.getElementById('clear-filter');
   // Loop through all list items, and hide those who don't match the search query
   for (let i = 0; i < list_items.length; ++i) {
@@ -180,7 +180,7 @@ function clearFilter() {
 }
 
 function handleShowModal() {
-  let modal = document.getElementById("modal");
+  let modal = document.getElementById('modal');
   let modalWrapper = document.getElementById('modal-wrapper');
   // switch elements to have 'display' value (block, flex) but keep hidden via opacity
   modalWrapper.classList.add('is-block');
@@ -220,7 +220,7 @@ function initMap() {
     });
   }
 
-  timeControl.addEventListener("input", function() {
+  timeControl.addEventListener('input', function() {
     setTimeControlLabel(timeControl.value);
     showDataAtDate(dates[timeControl.value]);
   });
