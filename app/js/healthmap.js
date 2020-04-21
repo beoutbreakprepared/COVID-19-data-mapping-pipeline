@@ -177,7 +177,7 @@ function clearFilter() {
   filterList();
 }
 
-let handleShowModal = function () {
+function handleShowModal() {
   let modal = document.getElementById("modal");
   let modalWrapper = document.getElementById('modal-wrapper');
   // switch elements to have 'display' value (block, flex) but keep hidden via opacity
@@ -190,7 +190,7 @@ let handleShowModal = function () {
   }, 40);
 }
 
-let handleHideModal = function () {
+function handleHideModal() {
   modalWrapper.classList.remove('is-visible');
   modal.classList.remove('is-visible');
   setTimeout(function () {
