@@ -37,8 +37,8 @@ def prepare_for_local_development():
 
   # Download the data if we don't yet have it.
   if not os.path.exists(FULL_DATA_FILE):
-    print("We don't have '" + f + "', downloading it...")
-    os.system("curl '" + FULL_DATA_FILE_URL + "' > " + f)
+    print("We don't have '" + FULL_DATA_FILE + "', downloading it...")
+    os.system("curl '" + FULL_DATA_FILE_URL + "' > " + FULL_DATA_FILE)
 
   retrieve_generable_data(self_dir, should_overwrite=False)
 
@@ -59,7 +59,7 @@ def prepare_for_deployment():
   os.chdir(self_dir)
   # For deployment, we check the presence of the "full data", but we don't
   # automatically download it.
-  if not os.path.exists(f):
+  if not os.path.exists(FULL_DATA_FILE):
     print("Please get the latest '" + FULL_DATA_FILE + "' file and place "
           "it in '" + self_dir + "', then call me again.")
     print("If you don't have the latest version, try this "
