@@ -193,6 +193,8 @@ function handleShowModal() {
 }
 
 function handleHideModal() {
+  let modal = document.getElementById('modal');
+  let modalWrapper = document.getElementById('modal-wrapper');
   modalWrapper.classList.remove('is-visible');
   modal.classList.remove('is-visible');
   setTimeout(function () {
