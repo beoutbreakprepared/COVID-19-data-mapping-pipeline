@@ -222,13 +222,14 @@ function handleHideModal() {
 function showLegend() {
   let list = document.getElementById('legend').getElementsByTagName('ul')[0];
   for (let i = 0; i < COLOR_MAP.length; i++) {
+    let color = COLOR_MAP[i];
     let item = document.createElement('li');
     let circle = document.createElement('span');
     circle.className = 'circle';
-    circle.style.backgroundColor = COLOR_MAP[i][0];
+    circle.style.backgroundColor = color[0];
     let label = document.createElement('span');
     label.className = 'label';
-    label.textContent = COLOR_MAP[i][1];
+    label.textContent = color[1];
     item.appendChild(circle);
     item.appendChild(label);
     list.appendChild(item);
@@ -266,28 +267,24 @@ function initMap() {
         'features': []
       }
     });
+    let circleColor = ['step', ['get', 'total']];
+    // Don't use the last color here (for new cases).
+    for (let i = 0; i < COLOR_MAP.length - 1; i++) {
+      let color = COLOR_MAP[i];
+      circleColor.push(color[0]);
+      if (color.length > 2) {
+        circleColor.push(color[2]);
+      }
+    }
     map.addLayer({
       'id': 'totals',
       'type': 'circle',
       'source': 'counts',
       'paint': {
         'circle-radius': [ 'case', ['<', 0, ['number', ['get', 'total']]], ['*', ['log10', ['sqrt', ['get', 'total']]], 10], 0 ],
-        'circle-color': [
-          'step',
-          ['get', 'total'],
-          '#67009E',
-          10,
-          '#921694',
-          100,
-          '#D34d60',
-          500,
-          '#FB9533',
-          2000,
-          '#EDF91C',
-        ],
+        'circle-color': circleColor,
         'circle-opacity': .6,
-      }
-    });
+    }});
     map.addLayer({
       'id': 'daily',
       'type': 'circle',
