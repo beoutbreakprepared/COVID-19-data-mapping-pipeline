@@ -1,5 +1,13 @@
 // Constants
 const ANIMATION_FRAME_DURATION_MS = 300;
+const COLOR_MAP = [
+  ['#67009e', '< 10', 10],
+  ['#921694', '11–100', 100],
+  ['#d34d60', '101–500', 500],
+  ['#fb9533', '501–2000', 2000],
+  ['#edf91c', '> 2000'],
+  ['cornflowerblue', 'New'],
+]
 
 // Runtime constants
 const timestamp = (new Date()).getTime();
@@ -211,6 +219,22 @@ function handleHideModal() {
   }, 400);
 }
 
+function showLegend() {
+  let list = document.getElementById('legend').getElementsByTagName('ul')[0];
+  for (let i = 0; i < COLOR_MAP.length; i++) {
+    let item = document.createElement('li');
+    let circle = document.createElement('span');
+    circle.className = 'circle';
+    circle.style.backgroundColor = COLOR_MAP[i][0];
+    let label = document.createElement('span');
+    label.className = 'label';
+    label.textContent = COLOR_MAP[i][1];
+    item.appendChild(circle);
+    item.appendChild(label);
+    list.appendChild(item);
+  }
+}
+
 function initMap() {
   mapboxgl.accessToken = 'pk.eyJ1IjoiaGVhbHRobWFwIiwiYSI6ImNrOGl1NGNldTAyYXYzZnBqcnBmN3RjanAifQ.H377pe4LPPcymeZkUBiBtg';
   map = new mapboxgl.Map({
@@ -319,5 +343,6 @@ function initMap() {
     });
 
     fetchDailySlice();
+    showLegend();
   });
 }
