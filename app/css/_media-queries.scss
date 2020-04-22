@@ -37,7 +37,7 @@
   .reported-cases-subtext {
     margin-left: 0;
   }
-  .reported-cases-num {
+  #total-cases {
     width: 100%;
     margin-bottom: .4rem;
     font-size: 1.3rem;
@@ -97,7 +97,7 @@
   .reported-cases {
     padding: .5rem 1.25rem 1.25rem 1.25rem;
   }
-  .reported-cases-num {
+  #total-cases {
     font-size: 2rem;
   }
   .reported-cases-label {
