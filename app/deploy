@@ -2,6 +2,7 @@
 
 import datetime
 import os
+import shlex
 import subprocess
 import sys
 
@@ -36,6 +37,15 @@ EXCLUDED = [
 ]
 
 BACKUP_DIR_PREFIX = "backup_"
+
+# Returns True if everything we need is here, False otherwise.
+def check_dependencies():
+  try:
+    subprocess.check_call(shlex.split("sass --version"))
+  except (subprocess.CalledProcessError, OSError):
+    print("Please install 'sass' first.")
+    return False
+  return True
 
 def has_analytics_code():
   return os.system("grep 'google-analytics.com' index.html") == 0
@@ -80,7 +90,9 @@ def deploy(target_path):
       and not f.endswith(".orig")]
   os.system("cp -a " + " ".join(to_copy) + " " + target_path + "/")
 
+check_dependencies()
 data_util.prepare_for_deployment()
+os.system("sass css/styles.scss css/styles.css")
 
 if has_analytics_code():
   print("Analytics code is already present, skipping that step.")
