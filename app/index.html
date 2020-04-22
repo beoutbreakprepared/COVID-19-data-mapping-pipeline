@@ -10,66 +10,9 @@
   <link rel="stylesheet" type="text/css" href="css/styles.css?c" />
 </head>
 <body>
-  <div class="modal-wrapper" id="modal-wrapper">
+  <div id="modal-wrapper">
     <div class="modal-backdrop"></div>
-    <div class="modal" id="modal">
-      <div class="modal-header">
-        <div class="modal-title">About this Map</div>
-        <div class="modal-cancel" onClick=handleHideModal()><img src="img/close-icon.svg" width="20" height="20" alt="Close" /></div>
-      </div>
-      <div class="modal-body">
-        <p>The Covid-19 map visualizes a deep and meticulous dataset that is freely accessible to anyone involved in coronavirus research; something that represents a completely new approach to how we collect data and make it readily available during an outbreak. The data changes the game in terms of how we respond to new global threats such as these.</p>
-        <h2>Data</h2>
-    	  <p>All data used to produce this map are exclusively collected from publicly available sources including government reports and news media.</p>
-        <p>Datasets and resources can be found in <a href="https://github.com/beoutbreakprepared/nCoV2019" target="new">GitHub</a>.</p>
-
-        <h2>Participating Institutions</h2>
-        <div class="logos">
-          <img src="img/oxford-blue.svg" class="oxford-logo" alt="University of Oxford" />
-          <img src="img/hm-logo-color.svg" class="hm-logo" alt="HealthMap" />
-          <img src="img/harvard-logo-color.svg" class="hms-logo" alt="Harvard Medical School" />
-          <img src="img/BCH_Primary_Logo.svg" class="bch-logo" alt="Boston Children's Hospital" />
-          <img src="img/netsi.png" class="netsi-logo" alt="Network Science Institute at Northeastern University" />
-          <img src="img/Oxford_Martin_School_Logo_color.png" class="oxford-martin-logo" alt="Oxford Martin School" />
-          <img src="img/Tsinghua_University.png" class="tsinghua-logo" alt="Tsinghua University" />
-          <img src="img/IHME_logo_acr_color_large.png" class="ihme-logo" alt="Institute for Health Metrics and Evaluation" />
-        </div>
-
-        <h2>Collaborators</h2>
-        <ul>
-      	  <li>Isha Berry, <a href="mailto:isha.berry@mail.utoronto.ca">isha.berry@mail.utoronto.ca</a></li>
-          <li>Thomas Brewer, <a href="mailto:Thomas.Brewer@childrens.harvard.edu">Thomas.Brewer@childrens.harvard.edu</a></li>
-          <li>John Brownstein, <a href="mailto:John.Brownstein@childrens.harvard.edu">John.Brownstein@childrens.harvard.edu</a></li>
-          <li>Emily Cohn, <a href="mailto:Emily.Cohn@childrens.harvard.edu">Emily.Cohn@childrens.harvard.edu</a></li>
-          <li>Lauren Goodwin, <a href="mailto:Lauren.Goodwin@childrens.harvard.edu">Lauren.Goodwin@childrens.harvard.edu</a></li>
-          <li>Bernardo Gutierrez, <a href="mailto:bernardo.gutierrez@zoo.ox.ac.uk">bernardo.gutierrez@zoo.ox.ac.uk</a></li>
-          <li>Sarah Hill, <a href="mailto:sarah.hill@zoo.ox.ac.uk">sarah.hill@zoo.ox.ac.uk</a></li>
-          <li>Erin Hulland, <a href="mailto:ehulland@uw.edu">ehulland@uw.edu</a></li>
-          <li>Moritz Kraemer, <a href="mailto:moritz.kraemer@zoo.ox.ac.uk">moritz.kraemer@zoo.ox.ac.uk</a></li>
-      		<li>Anastasia Lambrou, <a href="mailto:anastasia.lambrou@jhu.edu">anastasia.lambrou@jhu.edu</a></li>
-          <li>Sabrina Li, <a href="mailto:sabrina.li@ouce.ox.ac.uk">sabrina.li@ouce.ox.ac.uk</a></li>
-          <li>Alyssa Loskill, <a href="mailto:aloskill@bu.edu">aloskill@bu.edu</a></li>
-          <li>Sumiko Mekaru, <a href="mailto:srmekaru@gmail.com">srmekaru@gmail.com</a></li>
-          <li>Julia Morgan, <a href="mailto:morgaj5@uw.edu">morgaj5@uw.edu</a></li>
-          <li>Katelynn O'Brien, <a href="mailto:katelynn.obrien@childrens.harvard.edu">katelynn.obrien@childrens.harvard.edu</a></li>
-          <li>David Pigott, <a href="mailto:pigottdm@uw.edu">pigottdm@uw.edu</a></li>
-      		<li>Oliver Pybus, <a href="mailto:oliver.pybus@zoo.ox.ac.uk">oliver.pybus@zoo.ox.ac.uk</a></li>
-          <li>Sam Scarpino, <a href="mailto:s.scarpino@northeastern.edu">s.scarpino@northeastern.edu</a></li>
-          <li>Kara Sewalk, <a href="mailto:Kara.Sewalk@childrens.harvard.edu">Kara.Sewalk@childrens.harvard.edu</a></li>
-      		<li>Lin Wang, <a href="mailto:lin.wang@pasteur.fr">lin.wang@pasteur.fr</a></li>
-          <li>Jessie Wu, <a href="mailto:chiehhsi.wu@gmail.com">chiehhsi.wu@gmail.com</a></li>
-          <li>Bo Xu, <a href="mailto:xu-b15@mails.tsinghua.edu.cn">xu-b15@mails.tsinghua.edu.cn</a></li>
-          <li>Alex Zarebski, <a href="mailto:aezarebski@gmail.com">aezarebski@gmail.com</a></li>
-        </ul>
-
-        <h2>News and Publications</h2>
-        <ul>
-          <li><a href="https://www.independent.co.uk/voices/coronavirus-covid-19-pandemic-outbreak-data-research-cdc-who-a9406281.html">I’m a researcher who’s helped change how we tackle pandemics like coronavirus forever – this is what we’ve learned</a> • Independent</li>
-          <li><a href="https://www.thelancet.com/journals/laninf/article/PIIS1473-3099(20)30119-5/fulltext">Open access epidemiological data from the COVID-19 outbreak</a> • The Lancet</li>
-        </ul>
-
-      </div>
-    </div>
+    <div id="modal"></div>
   </div>
   <div class="page-wrapper">
     <div class="sidebar">
@@ -79,7 +22,7 @@
         <h1 class="sidebar-title">COVID-19</h1>
       </div>
       <div class="reported-cases" onClick="handleFlyTo(10, 0, 1)">
-        <div class="reported-cases-num" id="total-cases"></div>
+        <div id="total-cases"></div>
         <div class="reported-cases-subtext">
           <div class="reported-cases-label">Confirmed cases worldwide</div>
           <div class="last-updated-date">Updated <span id="last-updated-date"></span></div>
@@ -87,50 +30,25 @@
       </div>
       <div class="location-filter-wrapper">
         <input type="text" id="location-filter" name="location-filter" onkeyup="filterList()" placeholder="Filter country list" />
-        <div class="clear-filter" id="clear-filter" onClick="clearFilter()"><img src="img/close-icon.svg" width="12" height="12" alt="Clear" /></div>
+        <div id="clear-filter" onClick="clearFilter()"><img src="img/close-icon.svg" width="12" height="12" alt="Clear" /></div>
       </div>
-      <ul id="location-list" class="list-reset location-list"></ul>
+      <ul id="location-list" class="list-reset"></ul>
     </div>
     <div class="map-wrapper">
       <div class="credit">
         <span class="credit-text">In collaboration with the Open COVID-19 Data Curation Group</span>
         <span class="credit-links">
           <a href="https://github.com/beoutbreakprepared/nCoV2019/tree/master/latest_data" target="new">COVID-19 Dataset</a>
-          <a href="#" id="toggle-modal" onClick="handleShowModal()">About</a>
+          <a href="#" onClick="fetchAboutPage()">About</a>
         </span>
       </div>
       <div class="mobile-header">
         <img src="img/hm-logo-color-white-text.svg" alt="HealthMap" />
         <h1 class="mobile-title">COVID-19</h1>
       </div>
-      <div id="legend" class="legend">
+      <div id="legend">
         <div class="legend-header">Cases</div>
-        <ul class="list-reset">
-          <li>
-            <span class="circle" style="background-color: #EDF91C;"></span>
-            <span class="label"><span class="label-val">&gt;2000</span></span>
-          </li>
-          <li>
-            <span class="circle" style="background-color: #FB9533;"></span>
-            <span class="label"><span class="label-val">501–2000</span></span>
-          </li>
-          <li>
-            <span class="circle" style="background-color: #D34D60;"></span>
-            <span class="label"><span class="label-val">101–500</span></span>
-          </li>
-          <li>
-            <span class="circle" style="20px; background-color: #921694;"></span>
-            <span class="label"><span class="label-val">11–100</span></span>
-          </li>
-          <li>
-            <span class="circle" style="background-color: #67009E;"></span>
-            <span class="label"><span class="label-val">&lt;=10</span></span>
-          </li>
-          <li>
-            <span class="circle" style="background-color: cornflowerblue;"></span>
-            <span class="label"><span class="label-val">New</span></span>
-          </li>
-        </ul>
+        <ul class="list-reset"></ul>
       </div>
       <div id="range-slider" style="display: none;">
     	  <div id="spread"><img src="./img/play.svg" width="20" height="20" alt="Play" /><span class="spread-label">Play</span></div>
@@ -140,324 +58,7 @@
       <div id="map"></div>
     </div>
   </div>
-  <script>
-
-    // Constants
-    const timestamp = (new Date()).getTime();
-    const animationFrameDurationMs = 300;
-
-    // Globals
-    var location_info = {};
-    var dates = [];
-    var map;
-    // An object mapping dates to JSON objects with the corresponding data.
-    // for that day.
-    var featuresByDay = {};
-    var timeControl = document.getElementById("slider");
-
-    function showDataAtDate(isodate) {
-      map.getSource('counts').setData(featuresByDay[isodate]);
-    }
-
-    function setTimeControlLabel(date) {
-      document.getElementById("date").innerText = dates[date];
-    }
-
-    function buildTimeControl() {
-      document.getElementById('range-slider').style.display = 'flex';
-      timeControl.setAttribute("max", dates.length - 1)
-      timeControl.setAttribute("value", dates.length - 1);
-      setTimeControlLabel(dates.length - 1);
-    }
-
-    function animateMap() {
-      var i = 0;
-      var stepMap = setInterval(function() {
-        timeControl.value = i;
-        showDataAtDate(dates[i]);
-        setTimeControlLabel(i);
-        i++;
-        if (i === dates.length) {
-          clearInterval(stepMap);
-        }
-      }, animationFrameDurationMs);
-    }
-
-    /** Fills with leading zeros to the desired width. */
-    function zfill(n, width) {
-      n = n + '';
-      return n.length >= width ? n : new Array(width - n.length + 1).join('0') + n;
-    }
-
-    /**
-     * Returns a date string corresponding to the day before the passed in
-     * date.
-     */
-    function oneDayBefore(dateString) {
-      var parts = dateString.split('-');
-
-      // Month is 0-based.
-      var date = new Date(parts[0], parseInt(parts[1]) - 1, parts[2]);
-      // Backtrack one day.
-      date.setDate(date.getDate() - 1);
-      return [date.getFullYear(),
-              zfill(date.getMonth() + 1, 2),
-              zfill(date.getDate(), 2)].join('-');
-    }
-
-    /**
-     * Fetches the next daily slice of data we need. If no argument is provided,
-     * fetches the latest slice first.
-     */
-    function fetchDailySlice(dateString) {
-      dateString = dateString || 'latest';
-
-      let url = 'dailies/' + dateString.replace(/-/g, '.') + '.json';
-      if (dateString == 'latest') {
-        url += '?nocache=' + timestamp;
-      }
-      fetch(url)
-          .then(function(response) {
-            if (response.status == 200) {
-              return response.json();
-            } else {
-              // We're done downloading data.
-              onAllDailySlicesFetched();
-            }
-          })
-          .then(function(jsonData) {
-            if (!jsonData) {
-              return;
-            }
-            var currentDate = jsonData.date;
-            // "Re-hydrate" the features into objects ingestable by the map.
-            jsonData.type = 'FeatureCollection';
-            for (let i = 0; i < jsonData.features.length; i++) {
-              let feature = jsonData.features[i];
-              feature.type = 'Feature';
-              let coords = feature.properties.geoid.split('|');
-              // Flip latitude and longitude.
-              feature.geometry = {'type': 'Point', 'coordinates': [coords[1], coords[0]]};
-            }
-
-            dates.unshift(currentDate);
-            featuresByDay[currentDate] = jsonData;
-
-            // Only use the latest data for the map until we're done downloading
-            // everything.
-            if (dateString == 'latest') {
-              map.getSource('counts').setData(jsonData);
-            }
-            // Now fetch the next (older) slice of data.
-            fetchDailySlice(oneDayBefore(currentDate));
-      });
-    }
-
-    function onAllDailySlicesFetched() {
-      buildTimeControl();
-      document.getElementById("spread").addEventListener("click", animateMap);
-    }
-
-    // Load the location data (geo names from latitude and longitude).
-    fetch('location_info.data')
-      .then(function(response) { return response.text(); })
-      .then(function(responseText) {
-        let lines = responseText.split('\n');
-        for (let i = 0; i < lines.length; i++) {
-          let parts = lines[i].split(':');
-          location_info[parts[0]] = parts[1];
-        }
-      });
-
-    // Load latest counts from scraper
-    fetch('latestCounts.json?nocache=' + timestamp)
-      .then(function(response) { return response.json(); })
-      .then(function(jsonData) {
-        document.getElementById("total-cases").innerText = jsonData[0].caseCount;
-        document.getElementById("last-updated-date").innerText = jsonData[0].date;
-      });
-
-    // Build list of locations with counts
-    fetch('who.json?nocache=' + timestamp)
-      .then(function(response) { return response.json(); })
-      .then(function(jsonData) {
-        var obj = jsonData.features;
-        list = '';
-        for (var i=0, n=obj.length; i < n; ++i ) {
-          var location = obj[i];
-          var name, lat, lon, cumConf, legendGroup;
-          name = location.attributes.ADM0_NAME ? location.attributes.ADM0_NAME : '';
-          lat = location.centroid.x ? location.centroid.x : 0;
-          lon = location.centroid.y ? location.centroid.y : 0;
-          cumConf = location.attributes.cum_conf ? location.attributes.cum_conf : 0;
-          legendGroup = location.attributes.legendGroup ? location.attributes.legendGroup : '';
-          list += '<li><button onClick="handleFlyTo(' + lat + ',' + lon + ',' + 4 + ')"><span class="label">' + name + '</span><span class="num legend-group-' + legendGroup + '">' + cumConf + '</span></span></button></li>';
-        }
-        document.getElementById('location-list').innerHTML = list;
-      });
-
-    // Filter list of locations
-    function filterList() {
-      var filter = document.getElementById('location-filter').value.toUpperCase();
-      ul = document.getElementById("location-list");
-      var list_items = document.getElementById("location-list").getElementsByTagName('li');
-      var clearFilter = document.getElementById('clear-filter');
-      // Loop through all list items, and hide those who don't match the search query
-      for (var i = 0; i < list_items.length; ++i) {
-        var label = list_items[i].getElementsByClassName('label')[0];
-        var txtValue = label.textContent || label.innerText;
-        // Show/hide the clear filter button.
-        clearFilter.style.display = !!filter ? 'flex' : 'none';
-
-        // Show/hide matching list items.
-        const show = txtValue.toUpperCase().indexOf(filter) != -1;
-        list_items[i].style.display = show ? 'list-item' : 'none';
-      }
-    }
-
-    function clearFilter() {
-      document.getElementById('location-filter').value = '';
-      filterList();
-    }
-
-    var handleShowModal = function () {
-      var modal = document.getElementById("modal");
-      var modalWrapper = document.getElementById('modal-wrapper');
-      // switch elements to have 'display' value (block, flex) but keep hidden via opacity
-      modalWrapper.classList.add('is-block');
-      modal.classList.add('is-flex');
-      setTimeout(function () {
-        // for transition
-        modalWrapper.classList.add('is-visible');
-        modal.classList.add('is-visible');
-      }, 40);
-    }
-    var handleHideModal = function () {
-      modalWrapper.classList.remove('is-visible');
-      modal.classList.remove('is-visible');
-      setTimeout(function () {
-        // for transition
-        modalWrapper.classList.remove('is-block');
-        modal.classList.add('is-flex');
-      }, 400);
-    }
-
-    function initMap() {
-      mapboxgl.accessToken = 'pk.eyJ1IjoiaGVhbHRobWFwIiwiYSI6ImNrOGl1NGNldTAyYXYzZnBqcnBmN3RjanAifQ.H377pe4LPPcymeZkUBiBtg';
-      map = new mapboxgl.Map({
-        container: 'map',
-        style: 'mapbox://styles/healthmap/ck7o47dgs1tmb1ilh5b1ro1vn',
-        center: [10, 0],
-        zoom: 1,
-        // hash: true
-      }).addControl(new mapboxgl.NavigationControl());
-
-      window.handleFlyTo = function(lat, lon, zoom, item) {
-        map.flyTo({ center: [lat, lon], zoom: zoom })
-        window.scrollTo({
-          top: 0,
-          left: 0,
-          behavior: 'smooth'
-        });
-      }
-
-      timeControl.addEventListener("input", function() {
-        setTimeControlLabel(timeControl.value);
-        showDataAtDate(dates[timeControl.value]);
-      });
-
-      map.on('load', function () {
-        map.addSource('counts', {
-          'type': 'geojson',
-          'data': {
-            'type': 'FeatureCollection',
-            'features': []
-          }
-        });
-        map.addLayer({
-          'id': 'totals',
-          'type': 'circle',
-          'source': 'counts',
-          'paint': {
-            'circle-radius': [ 'case', ['<', 0, ['number', ['get', 'total']]], ['*', ['log10', ['sqrt', ['get', 'total']]], 10], 0 ],
-            //'circle-radius': ['*', ['log10', ['sqrt', ['get', 'total']]], 15],
-            'circle-color': [
-              'step',
-              ['get', 'total'],
-              '#67009E',
-              10,
-              '#921694',
-              100,
-              '#D34d60',
-              500,
-              '#FB9533',
-              2000,
-              '#EDF91C',
-            ],
-            'circle-opacity': .6,
-          }
-        });
-        map.addLayer({
-          'id': 'daily',
-          'type': 'circle',
-          'source': 'counts',
-          'paint': {
-            'circle-radius': [ 'case', ['<', 0, ['number', ['get', 'new']]], ['*', ['log10', ['sqrt', ['get', 'new']]], 10], 0 ],
-            'circle-color': 'cornflowerblue',
-            'circle-opacity': 0.6,
-          }
-        });
-
-        // Create a popup, but don't add it to the map yet.
-        var popup = new mapboxgl.Popup({
-          closeButton: false,
-          closeOnClick: false
-        });
-
-        map.on('mouseenter', 'totals', function (e) {
-          // Change the cursor style as a UI indicator.
-          map.getCanvas().style.cursor = 'pointer';
-
-          var props = e.features[0].properties;
-          var geo_id = props.geoid;
-          var coordinatesString = geo_id.split('|');
-          var lat = parseFloat(coordinatesString[0]);
-          var lng = parseFloat(coordinatesString[1]);
-          // Country, province, city
-          var location = location_info[geo_id].split(',');
-          // Remove empty strings
-          location = location.filter(function (el) { return el != ''; });
-          var description =
-            '<h3 class="popup-header">' + location.join(', ') + '</h3>' +
-            '<div>' + '<strong>Number of Cases: </strong>' + props.total + '</div>';
-
-          // Ensure that if the map is zoomed out such that multiple
-          // copies of the feature are visible, the popup appears
-          // over the copy being pointed to.
-          while (Math.abs(e.lngLat.lng - lng) > 180) {
-            lng += e.lngLat.lng > lng ? 360 : -360;
-          }
-
-          // Populate the popup and set its coordinates
-          // based on the feature found.
-          popup
-            .setLngLat([lng, lat])
-            .setHTML(description)
-            .addTo(map);
-        });
-
-        map.on('mouseleave', 'totals', function () {
-          map.getCanvas().style.cursor = '';
-          popup.remove();
-        });
-
-        fetchDailySlice();
-
-      });
-    }
-
-
-  </script>
+  <script src="js/healthmap.js"></script>
   <script async defer src="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js" onload="initMap()"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css" rel="stylesheet" />
 

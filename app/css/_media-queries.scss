@@ -37,7 +37,7 @@
   .reported-cases-subtext {
     margin-left: 0;
   }
-  .reported-cases-num {
+  #total-cases {
     width: 100%;
     margin-bottom: .4rem;
     font-size: 1.3rem;
@@ -46,7 +46,7 @@
     margin-bottom: .1rem;
     font-size: .7rem;
   }
-  .location-list {
+  #location-list {
     button {
       font-size: .8rem;
       padding: .5rem .75rem;
@@ -97,13 +97,13 @@
   .reported-cases {
     padding: .5rem 1.25rem 1.25rem 1.25rem;
   }
-  .reported-cases-num {
+  #total-cases {
     font-size: 2rem;
   }
   .reported-cases-label {
     font-size: .9rem;
   }
-  .location-list {
+  #location-list {
     button {
       font-size: .9rem;
       padding: .75rem;
@@ -131,7 +131,7 @@
   .mapboxgl-ctrl-bottom-left {
     margin-left: $sidebar-width + 1rem;
   }
-  .legend {
+  #legend {
     top: 1rem;
     right: 1rem;
     border-radius: $box-corner;
@@ -157,7 +157,7 @@ screen and (max-height: $breakpoint-portrait-sm-max) and (orientation: portrait)
 }
 
 @media only screen and (min-width: $breakpoint-portrait-md-min) and (min-height: $breakpoint-landscape-md-min) {
-  .modal {
+  #modal {
     top: 50%;
     left: 50%;
     bottom: auto;
@@ -167,13 +167,7 @@ screen and (max-height: $breakpoint-portrait-sm-max) and (orientation: portrait)
     transform: translate(-50%, -50%);
     border-radius: .3rem;
     opacity: 0;
-    -moz-box-shadow: 1px 1px 6px 0px rgba(0, 0, 0, 0.1);
-    -webkit-box-shadow: 1px 1px 6px 0px rgba(0, 0, 0, 0.1);
     box-shadow: 1px 1px 6px 0px rgba(0, 0, 0, 0.1);
-    -webkit-transition: all 400ms ease;
-    -moz-transition: all 400ms ease;
-    -o-transition: all 400ms ease;
-    -ms-transition: all 400ms ease;
     transition: all 400ms ease;
   }
 }

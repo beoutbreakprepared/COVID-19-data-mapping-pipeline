@@ -185,7 +185,7 @@ h1 {
   margin-left: 1rem;
 }
 
-.reported-cases-num {
+#total-cases {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -213,7 +213,7 @@ h1 {
   border-bottom: 1px solid #666;
 }
 
-.clear-filter {
+#clear-filter {
   display: none;
   position: absolute;
   top: 50%;
@@ -229,7 +229,7 @@ h1 {
   }
 }
 
-.location-list {
+#location-list {
   flex: 1;
   overflow: auto;
   li {
@@ -299,7 +299,7 @@ h1 {
   z-index: 1;
 }
 
-.legend {
+#legend {
   position: absolute;
   top: 0;
   right: 0;
@@ -325,11 +325,9 @@ h1 {
       border-radius: 50%;
     }
     .label {
-      line-height: 1;
-    }
-    .label-val {
       font-size: .6rem;
       line-height: 1;
+      margin-top: 3px;
       color: #fff;
     }
   }
@@ -397,27 +395,23 @@ h1 {
 
 /* modal */
 
-.modal-wrapper {
+#modal-wrapper {
   display: none;
   position: relative;
   opacity: 0;
-  -webkit-transition: opacity 400ms ease;
-  -moz-transition: opacity 400ms ease;
-  -o-transition: opacity 400ms ease;
-  -ms-transition: opacity 400ms ease;
   transition: opacity 400ms ease;
   z-index: 15;
 }
 
-.modal-wrapper.is-block {
+#modal-wrapper.is-block {
   display: block;
 }
 
-.modal-wrapper.is-visible {
+#modal-wrapper.is-visible {
   opacity: 1;
 }
 
-.modal {
+#modal {
   display: none;
   flex-direction: column;
   position: fixed;
@@ -431,11 +425,11 @@ h1 {
   user-select: none;
 }
 
-.modal.is-flex {
+#modal.is-flex {
   display: flex;
 }
 
-.modal.is-visible {
+#modal.is-visible {
   opacity: 1;
   margin-top: 0;
 }
