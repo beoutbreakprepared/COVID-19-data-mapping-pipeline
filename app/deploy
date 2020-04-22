@@ -90,7 +90,8 @@ def deploy(target_path):
       and not f.endswith(".orig")]
   os.system("cp -a " + " ".join(to_copy) + " " + target_path + "/")
 
-check_dependencies()
+if not check_dependencies():
+  sys.exit(1)
 data_util.prepare_for_deployment()
 os.system("sass css/styles.scss css/styles.css")
 
