@@ -7,7 +7,8 @@ const COLOR_MAP = [
   ['#fb9533', '501–2000', 2000],
   ['#edf91c', '> 2000'],
   ['cornflowerblue', 'New'],
-]
+];
+const MAPBOX_TOKEN = 'pk.eyJ1IjoiaGVhbHRobWFwIiwiYSI6ImNrOGl1NGNldTAyYXYzZnBqcnBmN3RjanAifQ.H377pe4LPPcymeZkUBiBtg';
 
 // Runtime constants
 const timestamp = (new Date()).getTime();
@@ -237,7 +238,7 @@ function showLegend() {
 }
 
 function initMap() {
-  mapboxgl.accessToken = 'pk.eyJ1IjoiaGVhbHRobWFwIiwiYSI6ImNrOGl1NGNldTAyYXYzZnBqcnBmN3RjanAifQ.H377pe4LPPcymeZkUBiBtg';
+  mapboxgl.accessToken = MAPBOX_TOKEN;
   map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/healthmap/ck7o47dgs1tmb1ilh5b1ro1vn',
