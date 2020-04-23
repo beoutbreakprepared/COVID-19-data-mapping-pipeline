@@ -8,7 +8,6 @@ FILES_TO_REMOVE = [
   "full-data.json",
   "latestCounts.json",
   "location_info.data",
-  "who.json",
 ]
 
 for f in FILES_TO_REMOVE:
