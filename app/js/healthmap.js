@@ -113,7 +113,7 @@ function processDailySlice(dateString, jsonData) {
   // Only use the latest data for the map until we're done downloading
   // everything.
   if (dateString == 'latest') {
-    map.getSource('counts').setData(featureSet);
+    showDataAtDate(currentDate);
   }
 }
 
@@ -348,9 +348,9 @@ function initMap() {
     // Don't use the last color here (for new cases).
     for (let i = 0; i < COLOR_MAP.length - 1; i++) {
       let color = COLOR_MAP[i];
-      circleColor.push(color[0]);
+      circleColorForTotals.push(color[0]);
       if (color.length > 2) {
-        circleColor.push(color[2]);
+        circleColorForTotals.push(color[2]);
       }
     }
 
