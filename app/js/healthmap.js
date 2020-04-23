@@ -190,7 +190,7 @@ function fetchWhoData() {
           legendGroup = '2000';
         }
 
-        list += '<li><button onClick="handleFlyTo(' + lat + ',' + lon + ',' + 4 + ')"><span class="label">' + name + '</span><span class="num legend-group-' + legendGroup + '">' + cumConf + '</span></span></button></li>';
+        list += '<li><button onClick="handleFlyTo(' + lat + ',' + lon + ',' + 4 + ')"><span class="label">' + name + '</span><span class="num legend-group-' + legendGroup + '">' + cumConf.toLocaleString() + '</span></span></button></li>';
       }
       document.getElementById('location-list').innerHTML = list;
     });
