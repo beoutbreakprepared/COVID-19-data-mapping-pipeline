@@ -19,12 +19,16 @@ let dates = [];
 let map;
 
 // An object mapping dates to JSON objects with the corresponding data.
-// for that day.
-let featuresByDay = {};
+// for that day, grouped by country, province, or ungrouped (smallest
+// granularity level).
+let countryFeaturesByDay = {};
+let provinceFeaturesByDay = {};
+let atomicFeaturesByDay = {};
+
 let timeControl = document.getElementById('slider');
 
 function showDataAtDate(isodate) {
-  map.getSource('counts').setData(featuresByDay[isodate]);
+  map.getSource('counts').setData(atomicFeaturesByDay[isodate]);
 }
 
 function setTimeControlLabel(date) {
@@ -77,15 +81,36 @@ function processDailySlice(dateString, jsonData) {
   let currentDate = jsonData.date;
   // "Re-hydrate" the features into objects ingestable by the map.
   jsonData.type = 'FeatureCollection';
+
+  // Cases grouped by country and province.
+  let provinceFeatures = {};
+  let countryFeatures = {};
+
   for (let i = 0; i < jsonData.features.length; i++) {
     let feature = jsonData.features[i];
     feature.type = 'Feature';
     let coords = feature.properties.geoid.split('|');
     // Flip latitude and longitude.
     feature.geometry = {'type': 'Point', 'coordinates': [coords[1], coords[0]]};
+
+    // City, province, country.
+    let location = location_info[feature.properties.geoid].split(',');
+    if (!provinceFeatures[location[1]]) {
+      provinceFeatures[location[1]] = [];
+    }
+    provinceFeatures[location[1]].push(feature);
+    if (!countryFeatures[location[2]]) {
+      countryFeatures[location[2]] = [];
+    }
+    countryFeatures[location[2]].push(feature);
   }
+
+  countryFeaturesByDay[currentDate] = countryFeatures;
+  provinceFeaturesByDay[currentDate] = provinceFeatures;
+  atomicFeaturesByDay[currentDate] = jsonData;
+
   dates.unshift(currentDate);
-  featuresByDay[currentDate] = jsonData;
+
   // Only use the latest data for the map until we're done downloading
   // everything.
   if (dateString == 'latest') {
