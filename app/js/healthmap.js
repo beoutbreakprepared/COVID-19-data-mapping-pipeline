@@ -28,7 +28,19 @@ let atomicFeaturesByDay = {};
 let timeControl = document.getElementById('slider');
 
 function showDataAtDate(isodate) {
-  map.getSource('counts').setData(formatFeatureSetForMap(atomicFeaturesByDay[isodate]));
+
+  const zoom = map.getZoom();
+  let featuresToShow;
+  if (zoom <= 1) {
+    let countryFeaturesAsArray = [];
+    for (let country in countryFeaturesByDay[isodate]) {
+      countryFeaturesAsArray.push(formatFeatureForMap(countryFeaturesByDay[isodate][country]));
+    }
+    featuresToShow = countryFeaturesAsArray;
+  } else {
+    featuresToShow = atomicFeaturesByDay[isodate];
+  }
+  map.getSource('counts').setData(formatFeatureSetForMap(featuresToShow));
 }
 
 function setTimeControlLabel(date) {
@@ -160,10 +172,12 @@ function formatFeatureSetForMap(features) {
 }
 
 // Tweaks the given object to make it ingestable as a feature by the map API.
-// The input object is expected to have a 'geoid' defines on its 'properties'
-// field.
 function formatFeatureForMap(feature) {
   feature.type = 'Feature';
+  if (!feature.properties) {
+    // This feature is missing key data, add a placeholder.
+    feature.properties = {geoid: '0|0'};
+  }
   let coords = feature.properties.geoid.split('|');
   // Flip latitude and longitude.
   feature.geometry = {'type': 'Point', 'coordinates': [coords[1], coords[0]]};
