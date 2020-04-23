@@ -73,6 +73,26 @@ function oneDayBefore(dateString) {
           zfill(date.getDate(), 2)].join('-');
 }
 
+function processDailySlice(dateString, jsonData) {
+  let currentDate = jsonData.date;
+  // "Re-hydrate" the features into objects ingestable by the map.
+  jsonData.type = 'FeatureCollection';
+  for (let i = 0; i < jsonData.features.length; i++) {
+    let feature = jsonData.features[i];
+    feature.type = 'Feature';
+    let coords = feature.properties.geoid.split('|');
+    // Flip latitude and longitude.
+    feature.geometry = {'type': 'Point', 'coordinates': [coords[1], coords[0]]};
+  }
+  dates.unshift(currentDate);
+  featuresByDay[currentDate] = jsonData;
+  // Only use the latest data for the map until we're done downloading
+  // everything.
+  if (dateString == 'latest') {
+    map.getSource('counts').setData(jsonData);
+  }
+}
+
 /**
  * Fetches the next daily slice of data we need. If no argument is provided,
  * fetches the latest slice first.
@@ -97,27 +117,10 @@ function fetchDailySlice(dateString) {
         if (!jsonData) {
           return;
         }
-        let currentDate = jsonData.date;
-        // "Re-hydrate" the features into objects ingestable by the map.
-        jsonData.type = 'FeatureCollection';
-        for (let i = 0; i < jsonData.features.length; i++) {
-          let feature = jsonData.features[i];
-          feature.type = 'Feature';
-          let coords = feature.properties.geoid.split('|');
-          // Flip latitude and longitude.
-          feature.geometry = {'type': 'Point', 'coordinates': [coords[1], coords[0]]};
-        }
+        processDailySlice(dateString, jsonData);
 
-        dates.unshift(currentDate);
-        featuresByDay[currentDate] = jsonData;
-
-        // Only use the latest data for the map until we're done downloading
-        // everything.
-        if (dateString == 'latest') {
-          map.getSource('counts').setData(jsonData);
-        }
         // Now fetch the next (older) slice of data.
-        fetchDailySlice(oneDayBefore(currentDate));
+        fetchDailySlice(oneDayBefore(jsonData.date));
   });
 }
 
