@@ -344,7 +344,7 @@ function initMap() {
       'type': 'geojson',
       'data': formatFeatureSetForMap([])
     });
-    let circleColor = ['step', ['get', 'total']];
+    let circleColorForTotals = ['step', ['get', 'total']];
     // Don't use the last color here (for new cases).
     for (let i = 0; i < COLOR_MAP.length - 1; i++) {
       let color = COLOR_MAP[i];
@@ -354,7 +354,7 @@ function initMap() {
       }
     }
 
-    addMapLayer(map, 'totals', 'total', circleColor);
+    addMapLayer(map, 'totals', 'total', circleColorForTotals);
     addMapLayer(map, 'daily', 'new', 'cornflowerblue');
 
     // Create a popup, but don't add it to the map yet.
