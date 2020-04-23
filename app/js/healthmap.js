@@ -282,6 +282,40 @@ function showLegend() {
   }
 }
 
+function addMapLayer(map, id, featureProperty, circleColor) {
+  map.addLayer({
+    'id': id,
+    'type': 'circle',
+    'source': 'counts',
+    'paint': {
+      'circle-radius': [
+        'case', [
+          '<',
+          0, [
+            'number', [
+              'get',
+              featureProperty
+            ]
+          ]
+        ], [
+          '*', [
+            'log10', [
+              'sqrt', [
+                'get',
+                featureProperty
+              ]
+            ]
+          ],
+          10
+        ],
+        0
+      ],
+      'circle-color': circleColor,
+      'circle-opacity': 0.6,
+    }
+  });
+}
+
 function initMap() {
   mapboxgl.accessToken = MAPBOX_TOKEN;
   map = new mapboxgl.Map({
@@ -322,25 +356,9 @@ function initMap() {
         circleColor.push(color[2]);
       }
     }
-    map.addLayer({
-      'id': 'totals',
-      'type': 'circle',
-      'source': 'counts',
-      'paint': {
-        'circle-radius': [ 'case', ['<', 0, ['number', ['get', 'total']]], ['*', ['log10', ['sqrt', ['get', 'total']]], 10], 0 ],
-        'circle-color': circleColor,
-        'circle-opacity': .6,
-    }});
-    map.addLayer({
-      'id': 'daily',
-      'type': 'circle',
-      'source': 'counts',
-      'paint': {
-        'circle-radius': [ 'case', ['<', 0, ['number', ['get', 'new']]], ['*', ['log10', ['sqrt', ['get', 'new']]], 10], 0 ],
-        'circle-color': 'cornflowerblue',
-        'circle-opacity': 0.6,
-      }
-    });
+
+    addMapLayer(map, 'totals', 'total', circleColor);
+    addMapLayer(map, 'daily', 'new', 'cornflowerblue');
 
     // Create a popup, but don't add it to the map yet.
     let popup = new mapboxgl.Popup({
