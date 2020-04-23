@@ -79,42 +79,41 @@ function oneDayBefore(dateString) {
 
 function processDailySlice(dateString, jsonData) {
   let currentDate = jsonData.date;
-  // "Re-hydrate" the features into objects ingestable by the map.
-  jsonData.type = 'FeatureCollection';
+  let features = jsonData.features;
 
   // Cases grouped by country and province.
   let provinceFeatures = {};
   let countryFeatures = {};
 
-  for (let i = 0; i < jsonData.features.length; i++) {
-    let feature = jsonData.features[i];
-    feature.type = 'Feature';
-    let coords = feature.properties.geoid.split('|');
-    // Flip latitude and longitude.
-    feature.geometry = {'type': 'Point', 'coordinates': [coords[1], coords[0]]};
+  // "Re-hydrate" the features into objects ingestable by the map.
+  for (let i = 0; i < features.length; i++) {
+    let feature = formatFeatureForMap(features[i]);
 
     // City, province, country.
     let location = location_info[feature.properties.geoid].split(',');
     if (!provinceFeatures[location[1]]) {
-      provinceFeatures[location[1]] = [];
+      provinceFeatures[location[1]] = {total: 0, new: 0};
     }
-    provinceFeatures[location[1]].push(feature);
+    provinceFeatures[location[1]].total += feature.properties.total;
+    provinceFeatures[location[1]].new += feature.properties.new;
     if (!countryFeatures[location[2]]) {
-      countryFeatures[location[2]] = [];
+      countryFeatures[location[2]] = {total: 0, new: 0};
     }
-    countryFeatures[location[2]].push(feature);
+    countryFeatures[location[2]].total += feature.properties.total;
+    countryFeatures[location[2]].new += feature.properties.new;
   }
 
+  dates.unshift(currentDate);
+
+  let featureSet = formatFeatureSetForMap(features);
   countryFeaturesByDay[currentDate] = countryFeatures;
   provinceFeaturesByDay[currentDate] = provinceFeatures;
-  atomicFeaturesByDay[currentDate] = jsonData;
-
-  dates.unshift(currentDate);
+  atomicFeaturesByDay[currentDate] = featureSet;
 
   // Only use the latest data for the map until we're done downloading
   // everything.
   if (dateString == 'latest') {
-    map.getSource('counts').setData(jsonData);
+    map.getSource('counts').setData(featureSet);
   }
 }
 
@@ -152,6 +151,24 @@ function fetchDailySlice(dateString) {
 function onAllDailySlicesFetched() {
   buildTimeControl();
   document.getElementById('spread').addEventListener('click', animateMap);
+  let latestDate = dates[dates.length - 1];
+}
+
+// Takes an array of features, and bundles them in a way that the map API
+// can ingest.
+function formatFeatureSetForMap(features) {
+  return {type: 'FeatureCollection', features: features};
+}
+
+// Tweaks the given object to make it ingestable as a feature by the map API.
+// The input object is expected to have a 'geoid' defines on its 'properties'
+// field.
+function formatFeatureForMap(feature) {
+  feature.type = 'Feature';
+  let coords = feature.properties.geoid.split('|');
+  // Flip latitude and longitude.
+  feature.geometry = {'type': 'Point', 'coordinates': [coords[1], coords[0]]};
+  return feature;
 }
 
 // Load the location data (geo names from latitude and longitude).
