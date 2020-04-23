@@ -342,10 +342,7 @@ function initMap() {
   map.on('load', function () {
     map.addSource('counts', {
       'type': 'geojson',
-      'data': {
-        'type': 'FeatureCollection',
-        'features': []
-      }
+      'data': formatFeatureSetForMap([])
     });
     let circleColor = ['step', ['get', 'total']];
     // Don't use the last color here (for new cases).
