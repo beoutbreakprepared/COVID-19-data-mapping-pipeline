@@ -28,7 +28,7 @@ let atomicFeaturesByDay = {};
 let timeControl = document.getElementById('slider');
 
 function showDataAtDate(isodate) {
-  map.getSource('counts').setData(atomicFeaturesByDay[isodate]);
+  map.getSource('counts').setData(formatFeatureSetForMap(atomicFeaturesByDay[isodate]));
 }
 
 function setTimeControlLabel(date) {
@@ -105,10 +105,9 @@ function processDailySlice(dateString, jsonData) {
 
   dates.unshift(currentDate);
 
-  let featureSet = formatFeatureSetForMap(features);
   countryFeaturesByDay[currentDate] = countryFeatures;
   provinceFeaturesByDay[currentDate] = provinceFeatures;
-  atomicFeaturesByDay[currentDate] = featureSet;
+  atomicFeaturesByDay[currentDate] = features;
 
   // Only use the latest data for the map until we're done downloading
   // everything.
