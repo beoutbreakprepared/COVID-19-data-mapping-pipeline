@@ -184,6 +184,77 @@ function formatFeatureForMap(feature) {
   return feature;
 }
 
+function fetchWhoData() {
+  const params = {
+    'where': '1=1',
+    'geometryType': 'esriGeometryEnvelope',
+    'spatialRel': 'esriSpatialRelIntersects',
+    'units': 'esriSRUnit_Meter',
+    'returnGeodetic': 'true',
+    'outFields': 'cum_conf%2C+ADM0_NAME',
+    'returnGeometry': 'false',
+    'returnCentroid': 'true',
+    'featureEncoding': 'esriDefault',
+    'multipatchOption': 'xyFootprint',
+    'applyVCSProjection': 'false',
+    'returnIdsOnly': 'false',
+    'returnUniqueIdsOnly': 'false',
+    'returnCountOnly': 'false',
+    'returnExtentOnly': 'false',
+    'returnQueryGeometry': 'false',
+    'returnDistinctValues': 'false',
+    'cacheHint': 'false',
+    'returnZ': 'false',
+    'returnM': 'false',
+    'returnExceededLimitFeatures': 'true',
+    'f': 'pjson'
+  }
+  const token = '5T5nSi527N4F7luB';
+  let paramArray = [];
+  for (let p in params) {
+    paramArray.push(p + '=' + params[p]);
+  }
+  const url = 'https://services.arcgis.com/' +
+      token + '/' +
+      'ArcGIS/rest/services/COVID_19_CasesByCountry(pl)_VIEW/FeatureServer/0/query?' +
+      paramArray.join('&');
+
+  fetch(url)
+    .then(function(response) { return response.json(); })
+    .then(function(jsonData) {
+      let obj = jsonData.features;
+      list = '';
+      // Sort according to decreasing confirmed cases.
+      obj.sort(function(a, b) {
+        return b.attributes.cum_conf - a.attributes.cum_conf;
+      });
+      for (let i = 0; i < obj.length; ++i) {
+        let location = obj[i];
+        if (!location || !location.attributes || !location.centroid) {
+          // We can't do much with this location.
+          continue;
+        }
+        let name = location.attributes.ADM0_NAME || '';
+        let lat = location.centroid.x || 0;
+        let lon = location.centroid.y || 0;
+        let cumConf = location.attributes.cum_conf || 0;
+        let legendGroup = 'default';
+        if (cumConf <= 10) {
+          legendGroup = '10';
+        } else if (cumConf <= 100) {
+          legendGroup = '100';
+        } else if (cumConf <= 500) {
+          legendGroup = '500';
+        } else if (cumConf <= 2000) {
+          legendGroup = '2000';
+        }
+
+        list += '<li><button onClick="handleFlyTo(' + lat + ',' + lon + ',' + 4 + ')"><span class="label">' + name + '</span><span class="num legend-group-' + legendGroup + '">' + cumConf.toLocaleString() + '</span></span></button></li>';
+      }
+      document.getElementById('location-list').innerHTML = list;
+    });
+}
+
 // Load the location data (geo names from latitude and longitude).
 fetch('location_info.data')
   .then(function(response) { return response.text(); })
@@ -204,23 +275,6 @@ fetch('latestCounts.json?nocache=' + timestamp)
   });
 
 // Build list of locations with counts
-fetch('who.json?nocache=' + timestamp)
-  .then(function(response) { return response.json(); })
-  .then(function(jsonData) {
-    let obj = jsonData.features;
-    list = '';
-    for (let i = 0; i < obj.length; ++i) {
-      let location = obj[i];
-      let name, lat, lon, cumConf, legendGroup;
-      name = location.attributes.ADM0_NAME ? location.attributes.ADM0_NAME : '';
-      lat = location.centroid.x ? location.centroid.x : 0;
-      lon = location.centroid.y ? location.centroid.y : 0;
-      cumConf = location.attributes.cum_conf ? location.attributes.cum_conf : 0;
-      legendGroup = location.attributes.legendGroup ? location.attributes.legendGroup : '';
-      list += '<li><button onClick="handleFlyTo(' + lat + ',' + lon + ',' + 4 + ')"><span class="label">' + name + '</span><span class="num legend-group-' + legendGroup + '">' + cumConf + '</span></span></button></li>';
-    }
-    document.getElementById('location-list').innerHTML = list;
-  });
 
 // Filter list of locations
 function filterList() {
@@ -414,6 +468,7 @@ function initMap() {
     });
 
     fetchDailySlice();
+    fetchWhoData();
     showLegend();
   });
 }
