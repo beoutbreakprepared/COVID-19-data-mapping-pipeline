@@ -205,6 +205,10 @@ function formatFeatureForMap(feature) {
     // This feature is missing key data, add a placeholder.
     feature.properties = {geoid: '0|0'};
   }
+  // If the 'new' property is absent, assume 0.
+  if (isNaN(feature.properties.new)) {
+    feature.properties.new = 0;
+  }
   let coords = feature.properties.geoid.split('|');
   // Flip latitude and longitude.
   feature.geometry = {'type': 'Point', 'coordinates': [coords[1], coords[0]]};
