@@ -6,6 +6,7 @@ import os.path
 import pandas as pd
 import pickle
 import re
+import sys
 
 from datetime import datetime, timedelta
 from shutil import copyfile
@@ -13,10 +14,10 @@ from shutil import copyfile
 class GoogleSheet(object):
     '''
     Simple object to help organizing.
-    Attributes: 
-    :spreadsheetid:-> str, Google Spreadsheet ID (from link). 
+    Attributes:
+    :spreadsheetid:-> str, Google Spreadsheet ID (from link).
     :name: -> list or str, sheet name (list when multiple sheets in 1 spreadsheet).
-    :ID: -> str, code for ID column in sheets (specific to region). 
+    :ID: -> str, code for ID column in sheets (specific to region).
     '''
 
     def __init__(self, *args):
@@ -26,7 +27,7 @@ class GoogleSheet(object):
 
 def get_GoogleSheets(config: configparser.ConfigParser) -> GoogleSheet:
     '''
-    Fetch info for the different sheets. 
+    Fetch info for the different sheets.
     '''
 
     # fetch for original sheet (temporary as things will get migrated)
@@ -37,11 +38,11 @@ def get_GoogleSheets(config: configparser.ConfigParser) -> GoogleSheet:
     ID  = sheet0.get('ID')
     s1 = GoogleSheet(sid, name1, ID)
     s2 = GoogleSheet(sid, name2, ID)
-    
-    
+
+
     sheets = [s1, s2] # change to blank when no longer using original.
 
-    # Fetch for Regional Sheets. 
+    # Fetch for Regional Sheets.
     pattern = '^SHEET\d*$'
     sections = config.sections()
     for s in sections:
@@ -66,7 +67,7 @@ def log_message(message: str, config: configparser.ConfigParser) -> None:
 def savedata(data: list, outfile: str) -> None:
     '''
     dave data to file.
-    '''  
+    '''
     with open(outfile, 'w') as F:
         json.dump(data, F)
 
@@ -174,8 +175,8 @@ def load_sheet(Sheet: GoogleSheet, config: configparser.ConfigParser) -> pd.Data
 
 def clean_data(data: pd.DataFrame, colnames: list) -> pd.DataFrame:
     '''
-    Basic cleaning and filtering on dataframe. 
-    Most of this gets done either by curators or pipeline now, this filters out for : 
+    Basic cleaning and filtering on dataframe.
+    Most of this gets done either by curators or pipeline now, this filters out for :
     - valid lat/longs
     - valid dates (using %d.%m.%Y format)
     - manage white space
@@ -196,11 +197,11 @@ def clean_data(data: pd.DataFrame, colnames: list) -> pd.DataFrame:
     df = df[~invalid] # NOT invalid
 
     # Only keep those that have a date_confirmation
-    df['date_confirmation'] = df['date_confirmation'].str.strip() # some have empty spaces 
+    df['date_confirmation'] = df['date_confirmation'].str.strip() # some have empty spaces
     dc = df.date_confirmation
     dc = dc.fillna('')
     dc = dc.apply(lambda x: x.split('-')[1].strip() if '-'  in x else x.strip())
-    valid_date = (dc != '') & ~(dc.isnull()) & dc.str.match('.*\d{2}\.\d{2}\.\d{4}.*') 
+    valid_date = (dc != '') & ~(dc.isnull()) & dc.str.match('.*\d{2}\.\d{2}\.\d{4}.*')
     df = df[valid_date]
     df['date_confirmation'] = df['date_confirmation'].str.strip()
 
@@ -219,14 +220,14 @@ def clean_data(data: pd.DataFrame, colnames: list) -> pd.DataFrame:
 
 def reduceToUnique(data: pd.DataFrame) -> list:
     '''
-    Get counts for unique locations (by lat/long combination). 
-    Output is a records style list [{d1}, {d2}, ... {}]. 
+    Get counts for unique locations (by lat/long combination).
+    Output is a records style list [{d1}, {d2}, ... {}].
 
     Does some situatinal name changing for consistency, but this should be done on Curator's side.
     '''
     df = data.copy()
     groups = df.groupby(['latitude', 'longitude'])
-    
+
 
     results = []
     for g in groups:
@@ -234,12 +235,12 @@ def reduceToUnique(data: pd.DataFrame) -> list:
         cut      = g[1]
         count    = len(cut)
         try:
-            # Uniques to flag inconsistencies. 
+            # Uniques to flag inconsistencies.
             cities = cut.city.unique()
             provinces = cut.province.unique()
             countries = cut.country.unique()
-    
-            # Subject to change. 
+
+            # Subject to change.
             city     = cities[0]
             province = provinces[0]
             country  = countries[0]
@@ -266,7 +267,7 @@ def reduceToUnique(data: pd.DataFrame) -> list:
             symptoms = cut.symptoms.values[0] if count == 1 else ''
             source = cut.source.values[0] if count == 1 else ''
             geo_resolution = cut.geo_resolution.values[0]
-           
+
             d = {
                     'latitude': lat,
                     'longitude': lon,
@@ -304,7 +305,7 @@ def reduceToUnique(data: pd.DataFrame) -> list:
 
 def animation_formating(infile):
     '''
-    Read from "full-data" and convert to something usable for the animation. 
+    Read from "full-data" and convert to something usable for the animation.
     '''
 
     with open(infile, 'r') as F:
@@ -363,10 +364,10 @@ def animation_formating(infile):
 
             results[datestr][-1]['pin'] = pin
 
-    # Reformatting data to fit with animation script : 
+    # Reformatting data to fit with animation script :
     dates = results.keys()
     array = [{d: results[d]} for d in dates]
-    
+
     return array
 
 
@@ -378,22 +379,41 @@ def latlong_to_geo_id(latitude, longitude):
   # unique, IDs.
   return str(latitude) + "|" + str(longitude)
 
-def compile_location_info(in_file: str):
+def find_country_iso_code_from_name(name, dict):
+  if name == "nan":
+    return ""
+  if name in dict:
+    return dict[name]
+  print("Sorry, I don't know about '" + name + "', you might want "
+        "to update the country data file.")
+  sys.exit(1)
+
+def compile_location_info(in_file: str, country_file: str):
   '''
   Returns a dictionary where each key is the unique geo ID and the value
   is a list of the corresponding (city, province, country).
   '''
-  print("Reading file...")
+  print("Reading full data file...")
   with open(in_file, 'r') as f:
     in_data = json.load(f)
+    f.close()
+  print("Reading country data...")
+  countries = {}
+  with open(country_file) as f:
+    country_data = f.read().strip()
+    for country in country_data.split("|"):
+      (name, iso) = country.split(":")
+      countries[name] = iso
     f.close()
   all_data = in_data["data"]
   location_info = {}
   for item in all_data:
     geo_id = latlong_to_geo_id(item["latitude"], item["longitude"])
     if geo_id not in location_info:
+      # 2-letter ISO code for the country
+      country_iso = find_country_iso_code_from_name(str(item["country"]), countries)
       location_info[geo_id] = [(str(item[key]) if str(item[key]) != "nan" else "")
-          for key in ["city", "province", "country"]]
+          for key in ["city", "province"]] + [country_iso]
   return location_info
 
 def chunks(all_features):
@@ -407,9 +427,9 @@ def chunks(all_features):
 
 def animation_formating_geo(infile: str, outfile: str, groupby: str = 'day') -> None:
     '''
-    Read from full data file, and reformat for animation. 
-    Currently grouping on a weekly basis, but subject to change as 
-    new cases come in (produces large files). 
+    Read from full data file, and reformat for animation.
+    Currently grouping on a weekly basis, but subject to change as
+    new cases come in (produces large files).
     '''
     print("Reading file...")
     with open(infile, 'r') as f:
@@ -439,10 +459,10 @@ def animation_formatting_geo_in_memory(in_data: str, groupby: str = 'day') -> No
     full.fillna('', inplace=True)
     full['geoid']  = full.apply(
         lambda s: latlong_to_geo_id(s['latitude'], s['longitude']), axis=1)
-    full['date_confirmation'] = full.date_confirmation.apply(lambda x: x.split('-')[0].strip())    
+    full['date_confirmation'] = full.date_confirmation.apply(lambda x: x.split('-')[0].strip())
 
     full['date']   = pd.to_datetime(full['date_confirmation'], format="%d.%m.%Y")  # to ensure sorting is done by date value (not str)
-    
+
     if groupby == 'week':
         full['date'] = full.date.apply(lambda x : x - timedelta(days=x.weekday()))
         freq = 'W-MON'
@@ -497,7 +517,7 @@ def animation_formatting_geo_in_memory(in_data: str, groupby: str = 'day') -> No
             timeline.append(entry)
             if geoid not in has_entry:
                 has_entry.append(geoid)
-            
+
     assert len(geoids) == len(has_entry), "Grouping failed"
 
     return timeline
@@ -507,14 +527,14 @@ def convert_to_geojson(infile, outfile):
     '''
     Convert aggregated file to geojson.
     '''
-    geojson_format = {'type': 'Feature', 'geometry': 
-            {"type": "Point", 
-                "coordinates": None}, 
+    geojson_format = {'type': 'Feature', 'geometry':
+            {"type": "Point",
+                "coordinates": None},
             'properties': {'age': 'age', 'city': 'city',
-                'province': 'province', 
-                'country': 'country', 
+                'province': 'province',
+                'country': 'country',
                 'date': 'date_confirmation', 'sex': 'sex', 'source': 'source', 'symptoms': 'symptoms'}}
-    geojson_data = []   
+    geojson_data = []
 
 
     with open(infile, 'r') as F:
@@ -543,9 +563,8 @@ def convert_to_geojson(infile, outfile):
                 }
                 }
         geojson_data.append(entry)
-    final = {'type': 'FeatureCollection', 
+    final = {'type': 'FeatureCollection',
             'features': geojson_data}
 
     with open(outfile, 'w') as F:
         json.dump(final, F)
-

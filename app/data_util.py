@@ -10,23 +10,19 @@ FULL_DATA_FILE = "full-data.json"
 FULL_DATA_TAR  = FULL_DATA_FILE.replace('.json', '.tar.gz')
 FULL_DATA_FILE_URL = 'https://dl.dropboxusercontent.com/s/33mixinoi076x9f/full-data.tar.gz?dl=0'
 
-
 # The directory where JSON files for daily data are expected to be.
-DAILIES_DIR = "dailies"  
+DAILIES_DIR = "dailies"
 
+COUNTRY_DATA_PATH = "countries.data"
 LOCATION_INFO_PATH = "location_info.data"
 
 self_dir = os.path.dirname(os.path.realpath(__file__))
 
 # Returns whether we were able to get the necessary data
 def retrieve_generable_data(out_dir, should_overwrite=False):
-  import get_WHO_data
   import scrape_total_count
 
   success = True
-  out_path = os.path.join(out_dir, "who.json")
-  if not os.path.exists(out_path) or should_overwrite:
-    success &= get_WHO_data.get_WHO(out_path)
   out_path = os.path.join(out_dir, "latestCounts.json")
   if not os.path.exists(out_path) or should_overwrite:
     success &= scrape_total_count.scrape_total_count(out_path)
@@ -48,7 +44,8 @@ def prepare_for_local_development():
 
   if not os.path.exists(LOCATION_INFO_PATH):
     print("Generating location info data...")
-    split.compile_location_info(FULL_DATA_FILE, LOCATION_INFO_PATH)
+    split.compile_location_info(
+        FULL_DATA_FILE, LOCATION_INFO_PATH, COUNTRY_DATA_PATH)
 
   dailies = os.listdir(DAILIES_DIR)
   if len(dailies) > 0:
@@ -82,7 +79,8 @@ def prepare_for_deployment():
   if os.path.exists(LOCATION_INFO_PATH):
     os.remove(LOCATION_INFO_PATH)
   print("Generating location info data...")
-  split.compile_location_info(FULL_DATA_FILE, LOCATION_INFO_PATH)
+  split.compile_location_info(
+    FULL_DATA_FILE, LOCATION_INFO_PATH, COUNTRY_DATA_PATH)
 
   generate_daily_slices(FULL_DATA_FILE)
 

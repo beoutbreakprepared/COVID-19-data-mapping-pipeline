@@ -7,23 +7,63 @@ const COLOR_MAP = [
   ['#fb9533', '501–2000', 2000],
   ['#edf91c', '> 2000'],
   ['cornflowerblue', 'New'],
-]
+];
+const MAPBOX_TOKEN = 'pk.eyJ1IjoiaGVhbHRobWFwIiwiYSI6ImNrOGl1NGNldTAyYXYzZnBqcnBmN3RjanAifQ.H377pe4LPPcymeZkUBiBtg';
+
+// This is a single threshold for now, but is meant to become a multi-stage
+// logic.
+const ZOOM_THRESHOLD = 2;
 
 // Runtime constants
 const timestamp = (new Date()).getTime();
 
 // Globals
-let location_info = {};
+let locationInfo = {};
+// A map from 2-letter ISO country codes to full names
+let countryNames = {};
+// A map from country names to most recent data (case count, etc.).
+let latestDataPerCountry = {};
 let dates = [];
 let map;
+let currentIsoDate;
 
 // An object mapping dates to JSON objects with the corresponding data.
-// for that day.
-let featuresByDay = {};
+// for that day, grouped by country, province, or ungrouped (smallest
+// granularity level).
+let countryFeaturesByDay = {};
+let provinceFeaturesByDay = {};
+let atomicFeaturesByDay = {};
+
 let timeControl = document.getElementById('slider');
 
+function onMapZoomChanged() {
+  showDataAtDate(currentIsoDate);
+}
+
 function showDataAtDate(isodate) {
-  map.getSource('counts').setData(featuresByDay[isodate]);
+  if (currentIsoDate != isodate) {
+    currentIsoDate = isodate;
+  }
+  const zoom = map.getZoom();
+  let featuresToShow = [];
+  // Show per-country data for low zoom levels, but only for the most recent
+  // date.
+  if (zoom <= ZOOM_THRESHOLD && currentIsoDate == dates[dates.length - 1]) {
+    for (let country in latestDataPerCountry) {
+      let countryData = latestDataPerCountry[country];
+      let feature = formatFeatureForMap({
+        properties: {
+          geoid: countryData[0] + '|' + countryData[1],
+          total: countryData[2],
+          new: 0
+        }
+      });
+      featuresToShow.push(feature);
+    }
+  } else {
+    featuresToShow = atomicFeaturesByDay[isodate];
+  }
+  map.getSource('counts').setData(formatFeatureSetForMap(featuresToShow));
 }
 
 function setTimeControlLabel(date) {
@@ -63,13 +103,52 @@ function zfill(n, width) {
 function oneDayBefore(dateString) {
 
   let parts = dateString.split('-');
-   // Month is 0-based.
+  // Month is 0-based.
   let date = new Date(parts[0], parseInt(parts[1]) - 1, parts[2]);
   // Backtrack one day.
   date.setDate(date.getDate() - 1);
   return [date.getFullYear(),
           zfill(date.getMonth() + 1, 2),
           zfill(date.getDate(), 2)].join('-');
+}
+
+function processDailySlice(dateString, jsonData) {
+  let currentDate = jsonData.date;
+  let features = jsonData.features;
+
+  // Cases grouped by country and province.
+  let provinceFeatures = {};
+  let countryFeatures = {};
+
+  // "Re-hydrate" the features into objects ingestable by the map.
+  for (let i = 0; i < features.length; i++) {
+    let feature = formatFeatureForMap(features[i]);
+
+    // City, province, country.
+    let location = locationInfo[feature.properties.geoid].split(',');
+    if (!provinceFeatures[location[1]]) {
+      provinceFeatures[location[1]] = {total: 0, new: 0};
+    }
+    provinceFeatures[location[1]].total += feature.properties.total;
+    provinceFeatures[location[1]].new += feature.properties.new;
+    if (!countryFeatures[location[2]]) {
+      countryFeatures[location[2]] = {total: 0, new: 0};
+    }
+    countryFeatures[location[2]].total += feature.properties.total;
+    countryFeatures[location[2]].new += feature.properties.new;
+  }
+
+  dates.unshift(currentDate);
+
+  countryFeaturesByDay[currentDate] = countryFeatures;
+  provinceFeaturesByDay[currentDate] = provinceFeatures;
+  atomicFeaturesByDay[currentDate] = features;
+
+  // Only use the latest data for the map until we're done downloading
+  // everything.
+  if (dateString == 'latest') {
+    showDataAtDate(currentDate);
+  }
 }
 
 /**
@@ -96,28 +175,16 @@ function fetchDailySlice(dateString) {
         if (!jsonData) {
           return;
         }
-        let currentDate = jsonData.date;
-        // "Re-hydrate" the features into objects ingestable by the map.
-        jsonData.type = 'FeatureCollection';
-        for (let i = 0; i < jsonData.features.length; i++) {
-          let feature = jsonData.features[i];
-          feature.type = 'Feature';
-          let coords = feature.properties.geoid.split('|');
-          // Flip latitude and longitude.
-          feature.geometry = {'type': 'Point', 'coordinates': [coords[1], coords[0]]};
-        }
+        processDailySlice(dateString, jsonData);
 
-        dates.unshift(currentDate);
-        featuresByDay[currentDate] = jsonData;
-
-        // Only use the latest data for the map until we're done downloading
-        // everything.
-        if (dateString == 'latest') {
-          map.getSource('counts').setData(jsonData);
-        }
         // Now fetch the next (older) slice of data.
-        fetchDailySlice(oneDayBefore(currentDate));
+        fetchDailySlice(oneDayBefore(jsonData.date));
   });
+}
+
+function onBasicDataFetched() {
+  // We can now start getting daily data.
+  fetchDailySlice();
 }
 
 function onAllDailySlicesFetched() {
@@ -125,51 +192,154 @@ function onAllDailySlicesFetched() {
   document.getElementById('spread').addEventListener('click', animateMap);
 }
 
+// Takes an array of features, and bundles them in a way that the map API
+// can ingest.
+function formatFeatureSetForMap(features) {
+  return {type: 'FeatureCollection', features: features};
+}
+
+// Tweaks the given object to make it ingestable as a feature by the map API.
+function formatFeatureForMap(feature) {
+  feature.type = 'Feature';
+  if (!feature.properties) {
+    // This feature is missing key data, add a placeholder.
+    feature.properties = {geoid: '0|0'};
+  }
+  // If the 'new' property is absent, assume 0.
+  if (isNaN(feature.properties.new)) {
+    feature.properties.new = 0;
+  }
+  let coords = feature.properties.geoid.split('|');
+  // Flip latitude and longitude.
+  feature.geometry = {'type': 'Point', 'coordinates': [coords[1], coords[0]]};
+  return feature;
+}
+
+function fetchWhoData() {
+  const params = {
+    'where': '1=1',
+    'geometryType': 'esriGeometryEnvelope',
+    'spatialRel': 'esriSpatialRelIntersects',
+    'units': 'esriSRUnit_Meter',
+    'returnGeodetic': 'true',
+    'outFields': 'cum_conf%2C+ADM0_NAME',
+    'returnGeometry': 'false',
+    'returnCentroid': 'true',
+    'featureEncoding': 'esriDefault',
+    'multipatchOption': 'xyFootprint',
+    'applyVCSProjection': 'false',
+    'returnIdsOnly': 'false',
+    'returnUniqueIdsOnly': 'false',
+    'returnCountOnly': 'false',
+    'returnExtentOnly': 'false',
+    'returnQueryGeometry': 'false',
+    'returnDistinctValues': 'false',
+    'cacheHint': 'false',
+    'returnZ': 'false',
+    'returnM': 'false',
+    'returnExceededLimitFeatures': 'true',
+    'f': 'pjson'
+  }
+  const token = '5T5nSi527N4F7luB';
+  let paramArray = [];
+  for (let p in params) {
+    paramArray.push(p + '=' + params[p]);
+  }
+  const url = 'https://services.arcgis.com/' +
+      token + '/' +
+      'ArcGIS/rest/services/COVID_19_CasesByCountry(pl)_VIEW/' +
+      'FeatureServer/0/query?' +
+      paramArray.join('&');
+
+  return fetch(url)
+    .then(function(response) { return response.json(); })
+    .then(function(jsonData) {
+      let obj = jsonData.features;
+      list = '';
+      // Sort according to decreasing confirmed cases.
+      obj.sort(function(a, b) {
+        return b.attributes.cum_conf - a.attributes.cum_conf;
+      });
+      for (let i = 0; i < obj.length; ++i) {
+        let location = obj[i];
+        if (!location || !location.attributes || !location.centroid) {
+          // We can't do much with this location.
+          continue;
+        }
+        let name = location.attributes.ADM0_NAME || '';
+        let lon = location.centroid.x || 0;
+        let lat = location.centroid.y || 0;
+        const geoid = '' + lat + '|' + lon;
+        let cumConf = location.attributes.cum_conf || 0;
+        let legendGroup = 'default';
+        latestDataPerCountry[name] = [lat, lon, cumConf];
+        // No city or province, just the country name.
+        locationInfo[geoid] = ',,' + name;
+        if (cumConf <= 10) {
+          legendGroup = '10';
+        } else if (cumConf <= 100) {
+          legendGroup = '100';
+        } else if (cumConf <= 500) {
+          legendGroup = '500';
+        } else if (cumConf <= 2000) {
+          legendGroup = '2000';
+        }
+
+        list += '<li><button onClick="handleFlyTo(' + lon + ',' + lat +
+            ',' + 4 + ')"><span class="label">' + name +
+            '</span><span class="num legend-group-' + legendGroup + '">' +
+            cumConf.toLocaleString() + '</span></span></button></li>';
+      }
+      document.getElementById('location-list').innerHTML = list;
+    });
+}
+
 // Load the location data (geo names from latitude and longitude).
-fetch('location_info.data')
-  .then(function(response) { return response.text(); })
-  .then(function(responseText) {
-    let lines = responseText.split('\n');
-    for (let i = 0; i < lines.length; i++) {
-      let parts = lines[i].split(':');
-      location_info[parts[0]] = parts[1];
-    }
-  });
+function fetchLocationData() {
+  return fetch('location_info.data')
+    .then(function(response) { return response.text(); })
+    .then(function(responseText) {
+      let lines = responseText.split('\n');
+      for (let i = 0; i < lines.length; i++) {
+        let parts = lines[i].split(':');
+        locationInfo[parts[0]] = parts[1];
+      }
+    });
+}
+
+function fetchCountryNames() {
+  return fetch('countries.data')
+    .then(function(response) { return response.text(); })
+    .then(function(responseText) {
+      let countries = responseText.trim().split('|');
+      for (let i = 0; i < countries.length; i++) {
+        let parts = countries[i].split(':');
+        countryNames[parts[1]] = parts[0];
+      }
+    });
+}
 
 // Load latest counts from scraper
-fetch('latestCounts.json?nocache=' + timestamp)
-  .then(function(response) { return response.json(); })
-  .then(function(jsonData) {
-    document.getElementById('total-cases').innerText = jsonData[0].caseCount;
-    document.getElementById('last-updated-date').innerText = jsonData[0].date;
-  });
+function fetchLatestCounts() {
+  return fetch('latestCounts.json?nocache=' + timestamp)
+    .then(function(response) { return response.json(); })
+    .then(function(jsonData) {
+      document.getElementById('total-cases').innerText = jsonData[0].caseCount;
+      document.getElementById('last-updated-date').innerText = jsonData[0].date;
+    });
+}
 
 // Build list of locations with counts
-fetch('who.json?nocache=' + timestamp)
-  .then(function(response) { return response.json(); })
-  .then(function(jsonData) {
-    let obj = jsonData.features;
-    list = '';
-    for (let i = 0; i < obj.length; ++i) {
-      let location = obj[i];
-      let name, lat, lon, cumConf, legendGroup;
-      name = location.attributes.ADM0_NAME ? location.attributes.ADM0_NAME : '';
-      lat = location.centroid.x ? location.centroid.x : 0;
-      lon = location.centroid.y ? location.centroid.y : 0;
-      cumConf = location.attributes.cum_conf ? location.attributes.cum_conf : 0;
-      legendGroup = location.attributes.legendGroup ? location.attributes.legendGroup : '';
-      list += '<li><button onClick="handleFlyTo(' + lat + ',' + lon + ',' + 4 + ')"><span class="label">' + name + '</span><span class="num legend-group-' + legendGroup + '">' + cumConf + '</span></span></button></li>';
-    }
-    document.getElementById('location-list').innerHTML = list;
-  });
 
 // Filter list of locations
 function filterList() {
   let filter = document.getElementById('location-filter').value.toUpperCase();
   ul = document.getElementById('location-list');
-  let list_items = document.getElementById('location-list').getElementsByTagName('li');
+  let list_items = document.getElementById(
+      'location-list').getElementsByTagName('li');
   let clearFilter = document.getElementById('clear-filter');
-  // Loop through all list items, and hide those who don't match the search query
+  // Loop through all list items, and hide those who don't match the search
+  // query.
   for (let i = 0; i < list_items.length; ++i) {
     let label = list_items[i].getElementsByClassName('label')[0];
     let txtValue = label.textContent || label.innerText;
@@ -196,7 +366,8 @@ function fetchAboutPage() {
 function handleShowModal(html) {
   let modal = document.getElementById('modal');
   let modalWrapper = document.getElementById('modal-wrapper');
-  // switch elements to have 'display' value (block, flex) but keep hidden via opacity
+  // Switch elements to have 'display' value (block, flex) but keep hidden via
+  // opacity
   modalWrapper.classList.add('is-block');
   modal.classList.add('is-flex');
   setTimeout(function () {
@@ -236,8 +407,42 @@ function showLegend() {
   }
 }
 
+function addMapLayer(map, id, featureProperty, circleColor) {
+  map.addLayer({
+    'id': id,
+    'type': 'circle',
+    'source': 'counts',
+    'paint': {
+      'circle-radius': [
+        'case', [
+          '<',
+          0, [
+            'number', [
+              'get',
+              featureProperty
+            ]
+          ]
+        ], [
+          '*', [
+            'log10', [
+              'sqrt', [
+                'get',
+                featureProperty
+              ]
+            ]
+          ],
+          10
+        ],
+        0
+      ],
+      'circle-color': circleColor,
+      'circle-opacity': 0.6,
+    }
+  });
+}
+
 function initMap() {
-  mapboxgl.accessToken = 'pk.eyJ1IjoiaGVhbHRobWFwIiwiYSI6ImNrOGl1NGNldTAyYXYzZnBqcnBmN3RjanAifQ.H377pe4LPPcymeZkUBiBtg';
+  mapboxgl.accessToken = MAPBOX_TOKEN;
   map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/healthmap/ck7o47dgs1tmb1ilh5b1ro1vn',
@@ -262,39 +467,20 @@ function initMap() {
   map.on('load', function () {
     map.addSource('counts', {
       'type': 'geojson',
-      'data': {
-        'type': 'FeatureCollection',
-        'features': []
-      }
+      'data': formatFeatureSetForMap([])
     });
-    let circleColor = ['step', ['get', 'total']];
+    let circleColorForTotals = ['step', ['get', 'total']];
     // Don't use the last color here (for new cases).
     for (let i = 0; i < COLOR_MAP.length - 1; i++) {
       let color = COLOR_MAP[i];
-      circleColor.push(color[0]);
+      circleColorForTotals.push(color[0]);
       if (color.length > 2) {
-        circleColor.push(color[2]);
+        circleColorForTotals.push(color[2]);
       }
     }
-    map.addLayer({
-      'id': 'totals',
-      'type': 'circle',
-      'source': 'counts',
-      'paint': {
-        'circle-radius': [ 'case', ['<', 0, ['number', ['get', 'total']]], ['*', ['log10', ['sqrt', ['get', 'total']]], 10], 0 ],
-        'circle-color': circleColor,
-        'circle-opacity': .6,
-    }});
-    map.addLayer({
-      'id': 'daily',
-      'type': 'circle',
-      'source': 'counts',
-      'paint': {
-        'circle-radius': [ 'case', ['<', 0, ['number', ['get', 'new']]], ['*', ['log10', ['sqrt', ['get', 'new']]], 10], 0 ],
-        'circle-color': 'cornflowerblue',
-        'circle-opacity': 0.6,
-      }
-    });
+
+    addMapLayer(map, 'totals', 'total', circleColorForTotals);
+    addMapLayer(map, 'daily', 'new', 'cornflowerblue');
 
     // Create a popup, but don't add it to the map yet.
     let popup = new mapboxgl.Popup({
@@ -312,12 +498,17 @@ function initMap() {
       let lat = parseFloat(coordinatesString[0]);
       let lng = parseFloat(coordinatesString[1]);
       // Country, province, city
-      let location = location_info[geo_id].split(',');
+      let location = locationInfo[geo_id].split(',');
+      // Replace country code with name if necessary
+      if (location[2].length == 2) {
+        location[2] = countryNames[location[2]];
+      }
       // Remove empty strings
       location = location.filter(function (el) { return el != ''; });
       let description =
         '<h3 class="popup-header">' + location.join(', ') + '</h3>' +
-        '<div>' + '<strong>Number of Cases: </strong>' + props.total + '</div>';
+        '<div>' + '<strong>Number of Cases: </strong>' +
+        props.total.toLocaleString() + '</div>';
 
       // Ensure that if the map is zoomed out such that multiple
       // copies of the feature are visible, the popup appears
@@ -334,12 +525,22 @@ function initMap() {
         .addTo(map);
     });
 
+    map.on('zoom', onMapZoomChanged);
+
     map.on('mouseleave', 'totals', function () {
       map.getCanvas().style.cursor = '';
       popup.remove();
     });
 
-    fetchDailySlice();
+    // Get the basic data about locations before we can start getting daily
+    // slices.
+    Promise.all([
+      fetchLatestCounts(),
+      fetchCountryNames(),
+      fetchLocationData(),
+      fetchWhoData()
+    ]).then(onBasicDataFetched);
+
     showLegend();
   });
 }
