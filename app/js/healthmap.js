@@ -19,6 +19,7 @@ const timestamp = (new Date()).getTime();
 
 // Globals
 let location_info = {};
+let country_names = {};
 let dates = [];
 let map;
 let currentIsoDate;
@@ -282,6 +283,17 @@ fetch('location_info.data')
     }
   });
 
+// Load country names.
+fetch('countries.data')
+  .then(function(response) { return response.text(); })
+  .then(function(responseText) {
+    let countries = responseText.trim().split('|');
+    for (let i = 0; i < countries.length; i++) {
+      let parts = countries[i].split(':');
+      country_names[parts[1]] = parts[0];
+    }
+  });
+
 // Load latest counts from scraper
 fetch('latestCounts.json?nocache=' + timestamp)
   .then(function(response) { return response.json(); })
@@ -460,6 +472,8 @@ function initMap() {
       let lng = parseFloat(coordinatesString[1]);
       // Country, province, city
       let location = location_info[geo_id].split(',');
+      // Replace country code with name
+      location[2] = country_names[location[2]];
       // Remove empty strings
       location = location.filter(function (el) { return el != ''; });
       let description =
