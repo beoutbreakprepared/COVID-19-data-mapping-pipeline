@@ -401,7 +401,6 @@ def compile_location_info(in_file: str, country_file: str):
   countries = {}
   with open(country_file) as f:
     country_data = f.read().strip()
-    print(country_data)
     for country in country_data.split("|"):
       (name, iso) = country.split(":")
       countries[name] = iso
