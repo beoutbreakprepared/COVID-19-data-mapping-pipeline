@@ -10,6 +10,10 @@ const COLOR_MAP = [
 ];
 const MAPBOX_TOKEN = 'pk.eyJ1IjoiaGVhbHRobWFwIiwiYSI6ImNrOGl1NGNldTAyYXYzZnBqcnBmN3RjanAifQ.H377pe4LPPcymeZkUBiBtg';
 
+// This is a single threshold for now, but is meant to become a multi-stage
+// logic.
+const ZOOM_THRESHOLD = 1;
+
 // Runtime constants
 const timestamp = (new Date()).getTime();
 
@@ -17,6 +21,7 @@ const timestamp = (new Date()).getTime();
 let location_info = {};
 let dates = [];
 let map;
+let currentIsoDate;
 
 // An object mapping dates to JSON objects with the corresponding data.
 // for that day, grouped by country, province, or ungrouped (smallest
@@ -27,11 +32,17 @@ let atomicFeaturesByDay = {};
 
 let timeControl = document.getElementById('slider');
 
-function showDataAtDate(isodate) {
+function onMapZoomChanged() {
+  showDataAtDate(currentIsoDate);
+}
 
+function showDataAtDate(isodate) {
+  if (currentIsoDate != isodate) {
+    currentIsoDate = isodate;
+  }
   const zoom = map.getZoom();
   let featuresToShow;
-  if (zoom <= 1) {
+  if (zoom <= ZOOM_THRESHOLD) {
     let countryFeaturesAsArray = [];
     for (let country in countryFeaturesByDay[isodate]) {
       countryFeaturesAsArray.push(formatFeatureForMap(
@@ -469,6 +480,8 @@ function initMap() {
         .setHTML(description)
         .addTo(map);
     });
+
+    map.on('zoom', onMapZoomChanged);
 
     map.on('mouseleave', 'totals', function () {
       map.getCanvas().style.cursor = '';
