@@ -34,7 +34,8 @@ function showDataAtDate(isodate) {
   if (zoom <= 1) {
     let countryFeaturesAsArray = [];
     for (let country in countryFeaturesByDay[isodate]) {
-      countryFeaturesAsArray.push(formatFeatureForMap(countryFeaturesByDay[isodate][country]));
+      countryFeaturesAsArray.push(formatFeatureForMap(
+          countryFeaturesByDay[isodate][country]));
     }
     featuresToShow = countryFeaturesAsArray;
   } else {
@@ -216,7 +217,8 @@ function fetchWhoData() {
   }
   const url = 'https://services.arcgis.com/' +
       token + '/' +
-      'ArcGIS/rest/services/COVID_19_CasesByCountry(pl)_VIEW/FeatureServer/0/query?' +
+      'ArcGIS/rest/services/COVID_19_CasesByCountry(pl)_VIEW/' +
+      'FeatureServer/0/query?' +
       paramArray.join('&');
 
   fetch(url)
@@ -249,7 +251,10 @@ function fetchWhoData() {
           legendGroup = '2000';
         }
 
-        list += '<li><button onClick="handleFlyTo(' + lat + ',' + lon + ',' + 4 + ')"><span class="label">' + name + '</span><span class="num legend-group-' + legendGroup + '">' + cumConf.toLocaleString() + '</span></span></button></li>';
+        list += '<li><button onClick="handleFlyTo(' + lat + ',' + lon +
+            ',' + 4 + ')"><span class="label">' + name +
+            '</span><span class="num legend-group-' + legendGroup + '">' +
+            cumConf.toLocaleString() + '</span></span></button></li>';
       }
       document.getElementById('location-list').innerHTML = list;
     });
@@ -280,9 +285,11 @@ fetch('latestCounts.json?nocache=' + timestamp)
 function filterList() {
   let filter = document.getElementById('location-filter').value.toUpperCase();
   ul = document.getElementById('location-list');
-  let list_items = document.getElementById('location-list').getElementsByTagName('li');
+  let list_items = document.getElementById(
+      'location-list').getElementsByTagName('li');
   let clearFilter = document.getElementById('clear-filter');
-  // Loop through all list items, and hide those who don't match the search query
+  // Loop through all list items, and hide those who don't match the search
+  // query.
   for (let i = 0; i < list_items.length; ++i) {
     let label = list_items[i].getElementsByClassName('label')[0];
     let txtValue = label.textContent || label.innerText;
@@ -309,7 +316,8 @@ function fetchAboutPage() {
 function handleShowModal(html) {
   let modal = document.getElementById('modal');
   let modalWrapper = document.getElementById('modal-wrapper');
-  // switch elements to have 'display' value (block, flex) but keep hidden via opacity
+  // Switch elements to have 'display' value (block, flex) but keep hidden via
+  // opacity
   modalWrapper.classList.add('is-block');
   modal.classList.add('is-flex');
   setTimeout(function () {
