@@ -13,6 +13,7 @@ FULL_DATA_FILE_URL = 'https://dl.dropboxusercontent.com/s/33mixinoi076x9f/full-d
 # The directory where JSON files for daily data are expected to be.
 DAILIES_DIR = "dailies"
 
+COUNTRY_DATA_PATH = "countries.data"
 LOCATION_INFO_PATH = "location_info.data"
 
 self_dir = os.path.dirname(os.path.realpath(__file__))
@@ -43,7 +44,8 @@ def prepare_for_local_development():
 
   if not os.path.exists(LOCATION_INFO_PATH):
     print("Generating location info data...")
-    split.compile_location_info(FULL_DATA_FILE, LOCATION_INFO_PATH)
+    split.compile_location_info(
+        FULL_DATA_FILE, LOCATION_INFO_PATH, COUNTRY_DATA_PATH)
 
   dailies = os.listdir(DAILIES_DIR)
   if len(dailies) > 0:
@@ -77,7 +79,8 @@ def prepare_for_deployment():
   if os.path.exists(LOCATION_INFO_PATH):
     os.remove(LOCATION_INFO_PATH)
   print("Generating location info data...")
-  split.compile_location_info(FULL_DATA_FILE, LOCATION_INFO_PATH)
+  split.compile_location_info(
+    FULL_DATA_FILE, LOCATION_INFO_PATH, COUNTRY_DATA_PATH)
 
   generate_daily_slices(FULL_DATA_FILE)
 
