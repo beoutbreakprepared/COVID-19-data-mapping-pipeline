@@ -66,8 +66,9 @@ def split_by_day(data, out_dir):
 def convert_to_client_format(file_path):
   functions.animation_formating_geo(file_path, TEMP_JSON)
 
-def compile_location_info(in_file_path, out_file_path):
-  location_info = functions.compile_location_info(in_file_path)
+def compile_location_info(in_file_path, out_file_path, country_data_path):
+  location_info = functions.compile_location_info(
+      in_file_path, country_data_path)
   output = []
   for geoid in location_info:
     output.append(geoid + ":" + ",".join(location_info[geoid]))

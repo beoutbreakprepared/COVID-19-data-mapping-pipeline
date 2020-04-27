@@ -46,4 +46,4 @@ try:
 
 except KeyboardInterrupt as e:
   print("Shutting down...")
-
+  sys.exit(0)
