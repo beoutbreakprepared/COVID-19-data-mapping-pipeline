@@ -12,14 +12,17 @@ const MAPBOX_TOKEN = 'pk.eyJ1IjoiaGVhbHRobWFwIiwiYSI6ImNrOGl1NGNldTAyYXYzZnBqcnB
 
 // This is a single threshold for now, but is meant to become a multi-stage
 // logic.
-const ZOOM_THRESHOLD = 1;
+const ZOOM_THRESHOLD = 2;
 
 // Runtime constants
 const timestamp = (new Date()).getTime();
 
 // Globals
-let location_info = {};
-let country_names = {};
+let locationInfo = {};
+// A map from 2-letter ISO country codes to full names
+let countryNames = {};
+// A map from country names to most recent data (case count, etc.).
+let latestDataPerCountry = {};
 let dates = [];
 let map;
 let currentIsoDate;
@@ -42,14 +45,21 @@ function showDataAtDate(isodate) {
     currentIsoDate = isodate;
   }
   const zoom = map.getZoom();
-  let featuresToShow;
-  if (zoom <= ZOOM_THRESHOLD) {
-    let countryFeaturesAsArray = [];
-    for (let country in countryFeaturesByDay[isodate]) {
-      countryFeaturesAsArray.push(formatFeatureForMap(
-          countryFeaturesByDay[isodate][country]));
+  let featuresToShow = [];
+  // Show per-country data for low zoom levels, but only for the most recent
+  // date.
+  if (zoom <= ZOOM_THRESHOLD && currentIsoDate == dates[dates.length - 1]) {
+    for (let country in latestDataPerCountry) {
+      let countryData = latestDataPerCountry[country];
+      let feature = formatFeatureForMap({
+        properties: {
+          geoid: countryData[0] + '|' + countryData[1],
+          total: countryData[2],
+          new: 0
+        }
+      });
+      featuresToShow.push(feature);
     }
-    featuresToShow = countryFeaturesAsArray;
   } else {
     featuresToShow = atomicFeaturesByDay[isodate];
   }
@@ -115,7 +125,7 @@ function processDailySlice(dateString, jsonData) {
     let feature = formatFeatureForMap(features[i]);
 
     // City, province, country.
-    let location = location_info[feature.properties.geoid].split(',');
+    let location = locationInfo[feature.properties.geoid].split(',');
     if (!provinceFeatures[location[1]]) {
       provinceFeatures[location[1]] = {total: 0, new: 0};
     }
@@ -249,10 +259,14 @@ function fetchWhoData() {
           continue;
         }
         let name = location.attributes.ADM0_NAME || '';
-        let lat = location.centroid.x || 0;
-        let lon = location.centroid.y || 0;
+        let lon = location.centroid.x || 0;
+        let lat = location.centroid.y || 0;
+        const geoid = '' + lat + '|' + lon;
         let cumConf = location.attributes.cum_conf || 0;
         let legendGroup = 'default';
+        latestDataPerCountry[name] = [lat, lon, cumConf];
+        // No city or province, just the country name.
+        locationInfo[geoid] = ',,' + name;
         if (cumConf <= 10) {
           legendGroup = '10';
         } else if (cumConf <= 100) {
@@ -263,7 +277,7 @@ function fetchWhoData() {
           legendGroup = '2000';
         }
 
-        list += '<li><button onClick="handleFlyTo(' + lat + ',' + lon +
+        list += '<li><button onClick="handleFlyTo(' + lon + ',' + lat +
             ',' + 4 + ')"><span class="label">' + name +
             '</span><span class="num legend-group-' + legendGroup + '">' +
             cumConf.toLocaleString() + '</span></span></button></li>';
@@ -279,7 +293,7 @@ fetch('location_info.data')
     let lines = responseText.split('\n');
     for (let i = 0; i < lines.length; i++) {
       let parts = lines[i].split(':');
-      location_info[parts[0]] = parts[1];
+      locationInfo[parts[0]] = parts[1];
     }
   });
 
@@ -290,7 +304,7 @@ fetch('countries.data')
     let countries = responseText.trim().split('|');
     for (let i = 0; i < countries.length; i++) {
       let parts = countries[i].split(':');
-      country_names[parts[1]] = parts[0];
+      countryNames[parts[1]] = parts[0];
     }
   });
 
@@ -471,14 +485,17 @@ function initMap() {
       let lat = parseFloat(coordinatesString[0]);
       let lng = parseFloat(coordinatesString[1]);
       // Country, province, city
-      let location = location_info[geo_id].split(',');
-      // Replace country code with name
-      location[2] = country_names[location[2]];
+      let location = locationInfo[geo_id].split(',');
+      // Replace country code with name if necessary
+      if (location[2].length == 2) {
+        location[2] = countryNames[location[2]];
+      }
       // Remove empty strings
       location = location.filter(function (el) { return el != ''; });
       let description =
         '<h3 class="popup-header">' + location.join(', ') + '</h3>' +
-        '<div>' + '<strong>Number of Cases: </strong>' + props.total + '</div>';
+        '<div>' + '<strong>Number of Cases: </strong>' +
+        props.total.toLocaleString() + '</div>';
 
       // Ensure that if the map is zoomed out such that multiple
       // copies of the feature are visible, the popup appears
