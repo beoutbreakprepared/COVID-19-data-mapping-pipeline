@@ -103,7 +103,7 @@ function zfill(n, width) {
 function oneDayBefore(dateString) {
 
   let parts = dateString.split('-');
-   // Month is 0-based.
+  // Month is 0-based.
   let date = new Date(parts[0], parseInt(parts[1]) - 1, parts[2]);
   // Backtrack one day.
   date.setDate(date.getDate() - 1);
@@ -182,10 +182,14 @@ function fetchDailySlice(dateString) {
   });
 }
 
+function onBasicDataFetched() {
+  // We can now start getting daily data.
+  fetchDailySlice();
+}
+
 function onAllDailySlicesFetched() {
   buildTimeControl();
   document.getElementById('spread').addEventListener('click', animateMap);
-  let latestDate = dates[dates.length - 1];
 }
 
 // Takes an array of features, and bundles them in a way that the map API
@@ -243,7 +247,7 @@ function fetchWhoData() {
       'FeatureServer/0/query?' +
       paramArray.join('&');
 
-  fetch(url)
+  return fetch(url)
     .then(function(response) { return response.json(); })
     .then(function(jsonData) {
       let obj = jsonData.features;
@@ -287,34 +291,39 @@ function fetchWhoData() {
 }
 
 // Load the location data (geo names from latitude and longitude).
-fetch('location_info.data')
-  .then(function(response) { return response.text(); })
-  .then(function(responseText) {
-    let lines = responseText.split('\n');
-    for (let i = 0; i < lines.length; i++) {
-      let parts = lines[i].split(':');
-      locationInfo[parts[0]] = parts[1];
-    }
-  });
+function fetchLocationData() {
+  return fetch('location_info.data')
+    .then(function(response) { return response.text(); })
+    .then(function(responseText) {
+      let lines = responseText.split('\n');
+      for (let i = 0; i < lines.length; i++) {
+        let parts = lines[i].split(':');
+        locationInfo[parts[0]] = parts[1];
+      }
+    });
+}
 
-// Load country names.
-fetch('countries.data')
-  .then(function(response) { return response.text(); })
-  .then(function(responseText) {
-    let countries = responseText.trim().split('|');
-    for (let i = 0; i < countries.length; i++) {
-      let parts = countries[i].split(':');
-      countryNames[parts[1]] = parts[0];
-    }
-  });
+function fetchCountryNames() {
+  return fetch('countries.data')
+    .then(function(response) { return response.text(); })
+    .then(function(responseText) {
+      let countries = responseText.trim().split('|');
+      for (let i = 0; i < countries.length; i++) {
+        let parts = countries[i].split(':');
+        countryNames[parts[1]] = parts[0];
+      }
+    });
+}
 
 // Load latest counts from scraper
-fetch('latestCounts.json?nocache=' + timestamp)
-  .then(function(response) { return response.json(); })
-  .then(function(jsonData) {
-    document.getElementById('total-cases').innerText = jsonData[0].caseCount;
-    document.getElementById('last-updated-date').innerText = jsonData[0].date;
-  });
+function fetchLatestCounts() {
+  return fetch('latestCounts.json?nocache=' + timestamp)
+    .then(function(response) { return response.json(); })
+    .then(function(jsonData) {
+      document.getElementById('total-cases').innerText = jsonData[0].caseCount;
+      document.getElementById('last-updated-date').innerText = jsonData[0].date;
+    });
+}
 
 // Build list of locations with counts
 
@@ -519,8 +528,15 @@ function initMap() {
       popup.remove();
     });
 
-    fetchDailySlice();
-    fetchWhoData();
+    // Get the basic data about locations before we can start getting daily
+    // slices.
+    Promise.all([
+      fetchLatestCounts(),
+      fetchCountryNames(),
+      fetchLocationData(),
+      fetchWhoData()
+    ]).then(onBasicDataFetched);
+
     showLegend();
   });
 }
