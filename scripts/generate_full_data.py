@@ -162,11 +162,11 @@ def daily_slice(new_cases, total_cases):
     # structure for daily slice YYYY.MM.DD.json
     #{"date": "YYYY-MM-DD", "features": [{"properties": {"geoid": "lat|long",
     # "new": int, "total": int}}, ... ]
-    
+   
     assert new_cases.name == total_cases.name, "mismatched dates"
     
     date = new_cases.name
-    daily_dict = {"date": split.normalize_date(date).replace('.', '-'),
+    daily_dict = {"date": date.replace('.', '-'),
                 "features": []}
 
     for i in new_cases.index:
@@ -175,13 +175,19 @@ def daily_slice(new_cases, total_cases):
         if new == total == 0:
             continue
         else:
-            entry = {
-                "properties" : {
-                    "geoid": i,
-                    "new": int(new),
-                    "total": int(total)
+            if new == 0:
+                properties = {
+                        'geoid': i, 
+                        'total': int(total)
                 }
-            }
+
+            else:
+                properties = {
+                    'geoid': i,
+                    'new': int(new),
+                    'total': int(total)
+                }
+            entry = {'properties': properties}
             daily_dict['features'].append(entry)
   
     return daily_dict
@@ -208,8 +214,6 @@ def main():
   full = latest.merge(jhu, on='date', how='outer')
   full.fillna(0, inplace=True)
   full = full.set_index('date')
-  print(full.index[:10])
-  print(full.columns[:10])
   for c in full.columns:
       if c == 'date': 
           continue
@@ -220,12 +224,18 @@ def main():
   # Hopefully theny will be fixed at some point. 
   if args.full:
       full.to_csv(args.full)
-    
+  
+
   latest_date = split.normalize_date(full.index[-1]).replace('.', '-')
+
+  full.index = [split.normalize_date(x) for x in full.index]
+  full.index.name = 'date'
+  full = full.sort_index(by='date')
 
   new_cases = full
   total_cases = new_cases.cumsum()
     
+
   n_cpus = multiprocessing.cpu_count()
   print("Processing " + str(len(full)) + " features "
           "with " + str(n_cpus) + " threads...")
@@ -233,9 +243,8 @@ def main():
   pool = multiprocessing.Pool(n_cpus)
   out_slices = pool.starmap(daily_slice, chunks(new_cases, total_cases), chunksize=10)
 
-
   for s in out_slices:
-    out_name = ("latest" if s['date'] == latest_date else split.normalize_date(s['date'])) + '.json'
+    out_name = ("latest" if s['date'] == latest_date else s['date'].replace('-','.')) + '.json'
     daily_slice_file_path = os.path.join(args.out_dir, out_name) 
 
     if os.path.exists(daily_slice_file_path):
@@ -248,7 +257,7 @@ def main():
 
 
   if args.timeit:
-      print(round(time.time(), 2) - t0, "seconds")
+      print(round(time.time() - t0, 2), "seconds")
 
 
 
