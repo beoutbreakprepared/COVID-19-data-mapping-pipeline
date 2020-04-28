@@ -1,8 +1,8 @@
 #!/usr/bin/env python3 
 
 '''
-- Generate full-data.json from latestdata.csv and JHU data
-- Split data into daily slices
+Pull data from latestdata.csv, and JHU repo for US
+split into daily slices. 
 '''
 
 import pandas as pd
