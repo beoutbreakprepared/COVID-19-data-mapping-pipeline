@@ -1,5 +1,8 @@
 // Constants
 const ANIMATION_FRAME_DURATION_MS = 300;
+const CASE_GRAPH_WIDTH_PX = 220;
+const CASE_GRAPH_HEIGHT_PX = 120;
+
 const COLOR_MAP = [
   ['#67009e', '< 10', 10],
   ['#921694', '11–100', 100],
@@ -25,6 +28,9 @@ let countryNames = {};
 let latestDataPerCountry = {};
 let dates = [];
 let map;
+// The same popup object will be reused.
+let popup;
+
 let currentIsoDate;
 
 // An object mapping dates to JSON objects with the corresponding data.
@@ -441,6 +447,105 @@ function addMapLayer(map, id, featureProperty, circleColor) {
   });
 }
 
+function sameLocation(geoid_a, geoid_b) {
+  // Comparing the strings directly seems sufficient for now, but we might need
+  // to round to fewer decimal places first.
+  return geoid_a == geoid_b;
+}
+
+function makeCaseGraph(geoid) {
+  let svg = d3.select(document.createElementNS(d3.namespaces.svg, 'svg'));
+  svg.attr('width', CASE_GRAPH_WIDTH_PX).
+      attr('height', CASE_GRAPH_HEIGHT_PX);
+  // const svg = d3.select(DOM.svg(220, 120))
+      // .style("overflow", "visible");
+
+  let historicalFeaturesForHere = [];
+  let dates = [];
+  let cases = [];
+  for (let date in atomicFeaturesByDay) {
+    let features = atomicFeaturesByDay[date];
+    for (let i = 0; i < features.length; i++) {
+      const f = features[i];
+      if (sameLocation(geoid, f.properties.geoid)) {
+        f.properties.date = date;
+        cases.push({
+          date: d3.timeParse("%Y-%m-%d")(date),
+          total: f.properties.total});
+      }
+    }
+  }
+
+  let xScale = d3.scaleTime()
+      .domain(d3.extent(cases, function(c) { return c.date; }))
+      .range([0, CASE_GRAPH_WIDTH_PX]);
+
+  svg.append('g')
+      .attr('transform', 'translate(0,' + CASE_GRAPH_HEIGHT_PX + ')')
+      .call(d3.axisBottom(xScale));
+
+  let yScale = d3.scaleLinear()
+      .domain([0, d3.max(cases, function(c) { return c.total; })])
+      .range([CASE_GRAPH_HEIGHT_PX, 0]);
+
+  svg.append("g").call(d3.axisLeft(yScale));
+
+  let casesLine = d3.line()
+    .x(function(c) { return xScale(c.date);}) // apply the x scale to the x data
+    .y(function(c) { return yScale(c.total);}) // apply the y scale to the y data
+
+  svg.append("path")
+      .attr('d', casesLine(cases))
+      .attr('fill', 'none')
+      .attr('stroke', 'steelblue')
+      .attr('stroke-width', 1.5);
+
+  return svg.node();
+}
+
+function showPopupForEvent(e) {
+  if (!e.features.length) {
+    // We can't do much without a feature.
+    return;
+  }
+
+  const f = e.features[0];
+  let props = f.properties;
+  let geo_id = props.geoid;
+  let coordinatesString = geo_id.split('|');
+  let lat = parseFloat(coordinatesString[0]);
+  let lng = parseFloat(coordinatesString[1]);
+  // Country, province, city
+  let location = locationInfo[geo_id].split(',');
+  // Replace country code with name if necessary
+  if (location[2].length == 2) {
+    location[2] = countryNames[location[2]];
+  }
+  // Remove empty strings
+  location = location.filter(function (el) { return el != ''; });
+
+  let content = document.createElement('div');
+  content.innerHTML = '<h3 class="popup-header">' + location.join(', ') +
+      '</h3>' + '<div>' + '<strong>Number of Cases: </strong>' +
+      props.total.toLocaleString() + '</div>';
+
+  // Only show case graphs for atomic locations.
+  if (map.getZoom() > ZOOM_THRESHOLD) {
+    content.appendChild(makeCaseGraph(geo_id));
+  }
+
+  // Ensure that if the map is zoomed out such that multiple
+  // copies of the feature are visible, the popup appears
+  // over the copy being pointed to.
+  while (Math.abs(e.lngLat.lng - lng) > 180) {
+    lng += e.lngLat.lng > lng ? 360 : -360;
+  }
+  popup
+    .setLngLat([lng, lat])
+    .setDOMContent(content)
+    .addTo(map);
+}
+
 function initMap() {
   mapboxgl.accessToken = MAPBOX_TOKEN;
   map = new mapboxgl.Map({
@@ -449,6 +554,10 @@ function initMap() {
     center: [10, 0],
     zoom: 1,
   }).addControl(new mapboxgl.NavigationControl());
+  popup = new mapboxgl.Popup({
+    closeButton: false,
+    closeOnClick: false
+  });
 
   window.handleFlyTo = function(lat, lon, zoom, item) {
     map.flyTo({ center: [lat, lon], zoom: zoom })
@@ -482,47 +591,11 @@ function initMap() {
     addMapLayer(map, 'totals', 'total', circleColorForTotals);
     addMapLayer(map, 'daily', 'new', 'cornflowerblue');
 
-    // Create a popup, but don't add it to the map yet.
-    let popup = new mapboxgl.Popup({
-      closeButton: false,
-      closeOnClick: false
-    });
-
     map.on('mouseenter', 'totals', function (e) {
       // Change the cursor style as a UI indicator.
       map.getCanvas().style.cursor = 'pointer';
 
-      let props = e.features[0].properties;
-      let geo_id = props.geoid;
-      let coordinatesString = geo_id.split('|');
-      let lat = parseFloat(coordinatesString[0]);
-      let lng = parseFloat(coordinatesString[1]);
-      // Country, province, city
-      let location = locationInfo[geo_id].split(',');
-      // Replace country code with name if necessary
-      if (location[2].length == 2) {
-        location[2] = countryNames[location[2]];
-      }
-      // Remove empty strings
-      location = location.filter(function (el) { return el != ''; });
-      let description =
-        '<h3 class="popup-header">' + location.join(', ') + '</h3>' +
-        '<div>' + '<strong>Number of Cases: </strong>' +
-        props.total.toLocaleString() + '</div>';
-
-      // Ensure that if the map is zoomed out such that multiple
-      // copies of the feature are visible, the popup appears
-      // over the copy being pointed to.
-      while (Math.abs(e.lngLat.lng - lng) > 180) {
-        lng += e.lngLat.lng > lng ? 360 : -360;
-      }
-
-      // Populate the popup and set its coordinates
-      // based on the feature found.
-      popup
-        .setLngLat([lng, lat])
-        .setHTML(description)
-        .addTo(map);
+      showPopupForEvent(e);
     });
 
     map.on('zoom', onMapZoomChanged);
