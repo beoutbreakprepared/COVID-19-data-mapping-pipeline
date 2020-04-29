@@ -85,11 +85,12 @@ def deploy(target_path):
   print("Replacing target contents with new version...")
   # TODO: Use 'rsync' if it's available.
   os.system("rm -rf " + target_path + "/*")
-  to_copy = [f for f in os.listdir(".")
+  to_copy = ["'" + f + "'" for f in os.listdir(".")
       if f not in EXCLUDED
       and not f.startswith(BACKUP_DIR_PREFIX)
       and not f.endswith(".orig")]
-  os.system("cp -a " + " ".join(to_copy) + " " + target_path + "/")
+  cmd = "cp -a " + " ".join(to_copy) + " " + target_path + "/"
+  os.system(cmd)
 
 if not check_dependencies():
   sys.exit(1)
