@@ -5,6 +5,7 @@ import os
 
 # These files can be re-generated and aren't checked into version control.
 FILES_TO_REMOVE = [
+  "full-data.tar.gz",
   "full-data.json",
   "latestCounts.json",
   "location_info.data",
