@@ -347,6 +347,14 @@ h1 {
   color: #222;
 }
 
+div.mapboxgl-popup-content {
+  padding: 10px;
+}
+
+.popup-header {
+  margin: 0 0 0.5rem 0;
+}
+
 // move zoom controls above range slider
 .mapboxgl-ctrl-top-right {
   top: auto !important;
