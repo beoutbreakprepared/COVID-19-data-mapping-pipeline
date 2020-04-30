@@ -11,6 +11,10 @@ class DeployTest(base_test.BaseTest):
     def display_name(self):
         return "Deployment tests"
 
+    def target_file_contains(self, path, pattern):
+        return os.system("grep --quiet '" + pattern + "' " + \
+             os.path.join(TEST_TARGET, path)) == 0
+
     def run(self):
         if os.path.exists(TEST_TARGET):
             # Previous run may have failed.
@@ -18,9 +22,13 @@ class DeployTest(base_test.BaseTest):
         os.mkdir(TEST_TARGET)
         deploy(TEST_TARGET, quiet=True)
 
-        self.check(os.system("grep --quiet 'google-analytics' " + \
-            os.path.join(TEST_TARGET, "index.html")) == 0,
-                   "The deployed index file should contain analytics code")
+        self.check(
+            self.target_file_contains("index.html", "google-analytics"),
+            "The deployed index file should contain analytics code")
+
+        self.check(
+            self.target_file_contains("location_info.data", "Berlin,DE"),
+            "The location info file should contain geo information")
 
         # Clean up.
         os.system("rm -rf " + TEST_TARGET)
