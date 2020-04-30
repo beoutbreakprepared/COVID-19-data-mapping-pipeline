@@ -21,6 +21,7 @@ EXCLUDED = [
     "deploy",
     "full-data.json",
     "full-data.tar.gz",
+    "js/healthmap.js",
     "prerequisites.md",
     "run",
 ]
@@ -72,7 +73,7 @@ def use_compiled_js():
         for line in f:
             if line.strip() == "<!-- /js -->":
                 scripting_time = False
-                main_page += '<script src="js/bundle.js"></script>'
+                main_page += '<script src="js/bundle.js"></script>\n'
             elif scripting_time:
                 continue
             elif line.strip() == "<!-- js -->":
