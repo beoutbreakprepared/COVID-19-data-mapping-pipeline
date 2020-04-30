@@ -21,6 +21,7 @@ EXCLUDED = [
     "deploy",
     "full-data.json",
     "full-data.tar.gz",
+    "js/externs.js",
     "js/healthmap.js",
     "prerequisites.md",
     "run",
