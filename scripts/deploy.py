@@ -25,15 +25,16 @@ BACKUP_DIR_PREFIX = "backup_"
 # Returns True if everything we need is here, False otherwise.
 def check_dependencies():
     try:
-        subprocess.check_call(shlex.split("sass --version"),
-                              stdout=subprocess.DEVNULL)
+        subprocess.check_call(shlex.split("sass --version"), stdout=subprocess.DEVNULL)
     except (subprocess.CalledProcessError, OSError):
         print("Please install 'sass' first.")
         return False
     return True
 
+
 def has_analytics_code():
     return os.system("grep 'google-analytics.com' app/index.html") == 0
+
 
 def insert_analytics_code(quiet=False):
     main_page = ""
@@ -55,8 +56,10 @@ def insert_analytics_code(quiet=False):
         f.write(main_page)
         f.close()
 
+
 def restore_pristine_files():
     os.system("mv app/index.html.orig app/index.html")
+
 
 # Returns whether the backup operation succeeded
 def backup_current_version(target_path, quiet=False):
@@ -67,17 +70,22 @@ def backup_current_version(target_path, quiet=False):
         print("Backing up current version into '" + backup_dir + "'...")
     return os.system("cp -a " + target_path + " " + backup_dir) == 0
 
+
 def copy_contents(target_path, quiet=False):
     if not quiet:
         print("Replacing target contents with new version...")
     # TODO: Use 'rsync' if it's available.
     os.system("rm -rf " + target_path + "/*")
-    to_copy = ["'app/" + f + "'" for f in os.listdir("app")
-               if f not in EXCLUDED
-               and not f.startswith(BACKUP_DIR_PREFIX)
-               and not f.endswith(".orig")]
+    to_copy = [
+        "'app/" + f + "'"
+        for f in os.listdir("app")
+        if f not in EXCLUDED
+        and not f.startswith(BACKUP_DIR_PREFIX)
+        and not f.endswith(".orig")
+    ]
     cmd = "cp -a " + " ".join(to_copy) + " " + target_path + "/"
     os.system(cmd)
+
 
 def deploy(target_path, quiet=False):
     if not check_dependencies():

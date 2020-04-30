@@ -22,6 +22,7 @@ def retrieve_generable_data(out_dir, should_overwrite=False, quiet=False):
 
     return success
 
+
 def prepare_for_local_development(quiet=False):
     if not os.path.exists(DAILIES_DIR):
         os.mkdir(DAILIES_DIR)
@@ -29,22 +30,27 @@ def prepare_for_local_development(quiet=False):
     dailies = os.listdir(DAILIES_DIR)
     if len(dailies) > 0:
         if not quiet:
-            print("I found some daily data ready to use. To re-generate, "
-                  "empty the '" + DAILIES_DIR + "' directory (or "
-                  "run './clean') and start me again.")
+            print(
+                "I found some daily data ready to use. To re-generate, "
+                "empty the '" + DAILIES_DIR + "' directory (or "
+                "run './clean') and start me again."
+            )
     else:
         generate_data(quiet=quiet)
 
-    retrieve_generable_data(os.path.join(self_dir, "app"),
-                            should_overwrite=False, quiet=quiet)
+    retrieve_generable_data(
+        os.path.join(self_dir, "app"), should_overwrite=False, quiet=quiet
+    )
 
     return False
+
 
 def prepare_for_deployment(quiet=False):
     os.chdir(self_dir)
 
-    if not retrieve_generable_data(os.path.join(self_dir, "app"),
-                                   should_overwrite=True, quiet=quiet):
+    if not retrieve_generable_data(
+        os.path.join(self_dir, "app"), should_overwrite=True, quiet=quiet
+    ):
         print("I wasn't able to retrieve necessary data, aborting")
         sys.exit(1)
 
@@ -56,9 +62,13 @@ def prepare_for_deployment(quiet=False):
 
     generate_data(overwrite=True, quiet=quiet)
 
+
 def generate_data(overwrite=False, quiet=False):
     if not quiet:
-        print("I need to generate the appropriate data, this is going to "
-              "take a few minutes...")
-    generate_full_data.generate_data(os.path.join(self_dir, DAILIES_DIR),
-                                     overwrite=overwrite, quiet=quiet)
+        print(
+            "I need to generate the appropriate data, this is going to "
+            "take a few minutes..."
+        )
+    generate_full_data.generate_data(
+        os.path.join(self_dir, DAILIES_DIR), overwrite=overwrite, quiet=quiet
+    )
