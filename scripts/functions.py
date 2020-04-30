@@ -382,6 +382,9 @@ def latlong_to_geo_id(lat, lng):
 def find_country_iso_code_from_name(name, dict):
   if name == "nan":
     return ""
+  # If this is already a 2-letter ISO code, return it as-is
+  if len(name) == 2 and name == name.upper():
+    return name
   if name in dict:
     return dict[name]
   for key in dict:
@@ -392,7 +395,8 @@ def find_country_iso_code_from_name(name, dict):
         "to update the country data file.")
   sys.exit(1)
 
-def compile_location_info(in_data, out_file, country_file="app/countries.data"):
+def compile_location_info(in_data, out_file,
+    keys=["country", "province", "city"], country_file="app/countries.data"):
 
   print("Reading country data...")
   countries = {}
@@ -408,9 +412,9 @@ def compile_location_info(in_data, out_file, country_file="app/countries.data"):
     geo_id = item['geoid']
     if geo_id not in location_info:
       # 2-letter ISO code for the country
-      country_iso = find_country_iso_code_from_name(str(item["country"]), countries)
+      country_iso = find_country_iso_code_from_name(str(item[keys[0]]), countries)
       location_info[geo_id] = [(str(item[key]) if str(item[key]) != "nan" else "")
-          for key in ["city", "province"]] + [country_iso]
+          for key in [keys[2], keys[1]]] + [country_iso]
 
   output = []
   for geoid in location_info:

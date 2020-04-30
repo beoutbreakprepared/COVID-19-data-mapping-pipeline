@@ -78,7 +78,8 @@ def prepare_latest_data(infile):
 
     # Extract mappings between lat|long and geographical names, then only keep
     # the geo_id.
-    functions.compile_location_info(df.to_dict("records"), "app/location_info.data")
+    functions.compile_location_info(df.to_dict("records"),
+        "app/location_info_world.data")
     df = df.drop(['city', 'province', 'country', 'latitude', 'longitude'], axis=1)
 
     dates  = df.date_confirmation.unique()
@@ -126,14 +127,16 @@ def prepare_jhu_data(outfile, read_from_file):
     df = df[df.Admin2 != 'Unassigned']
     df = df[~((df.Lat == 0) & (df.Long_ == 0))]
 
-    df['geoid'] = df.Lat.astype(str) + '|' + df['Long_'].astype(str)
-    df.drop(['Lat', 'Long_'], axis=1, inplace=True)
+    df["geoid"] = df.apply(lambda row: functions.latlong_to_geo_id(
+        row['Lat'], row['Long_']), axis=1)
+    functions.compile_location_info(df.to_dict("records"),
+        out_file="app/location_info_us.data",
+        keys=["Country_Region", "Province_State", "Admin2"])
 
     rx = '\d{1,2}/\d{1,2}/\d'
     date_columns = [c for c in df.columns if re.match(rx, c)]
     keep = ['geoid'] + date_columns
     df = df[keep]
-
 
     # rename to match latestdata format
     new_dates = []
@@ -158,8 +161,6 @@ def prepare_jhu_data(outfile, read_from_file):
     df.index.name = 'date'
     df.reset_index(inplace=True)
     return df
-
-
 
 def daily_slice(new_cases, total_cases):
     # full starts from new cases by location/date
@@ -235,6 +236,13 @@ def generate_data(out_dir, latest=False, jhu=False, input_jhu='', export_full_da
 
     with open(daily_slice_file_path, "w") as f:
         f.write(json.dumps(s))
+
+  # Concatenate location info for the US and elsewhere
+  os.system("rm -f app/location_info.data")
+  os.system("cat app/location_info_world.data app/location_info_us.data > "
+            "app/location_info.data")
+  os.remove("app/location_info_world.data")
+  os.remove("app/location_info_us.data")
 
 if __name__ == '__main__':
   args = parser.parse_args()

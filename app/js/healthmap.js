@@ -130,6 +130,10 @@ function processDailySlice(dateString, jsonData) {
   for (let i = 0; i < features.length; i++) {
     let feature = formatFeatureForMap(features[i]);
 
+    // If we don't know where this is, discard.
+    if (!locationInfo[feature.properties.geoid]) {
+      continue;
+    }
     // City, province, country.
     let location = locationInfo[feature.properties.geoid].split(',');
     if (!provinceFeatures[location[1]]) {
