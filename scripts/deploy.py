@@ -1,3 +1,7 @@
+"""
+Makes it easy and painless to deploy the site and make all necessary changes
+so that it's immediately ready to serve in production.
+"""
 import datetime
 import os
 import shlex
@@ -5,6 +9,7 @@ import subprocess
 import sys
 
 import data_util
+import js_compilation
 
 # Files and directories inside "app" that do not need to be copied over
 # to the target. Please keep alphabetized.
@@ -33,7 +38,7 @@ def check_dependencies():
 
 
 def has_analytics_code():
-    return os.system("grep 'google-analytics.com' app/index.html") == 0
+    return os.system("grep --quiet 'google-analytics.com' app/index.html") == 0
 
 
 def insert_analytics_code(quiet=False):
@@ -47,14 +52,44 @@ def insert_analytics_code(quiet=False):
             if not inserted and "<script" in line:
                 main_page += code
                 inserted = True
-        main_page += line
+            main_page += line
         f.close()
 
-    # Back-up the file write a modified version
-    os.system("mv app/index.html app/index.html.orig")
+    # Remove the file and write a modified version
+    os.system("rm app/index.html")
     with open("app/index.html", "w") as f:
         f.write(main_page)
         f.close()
+
+
+def use_compiled_js():
+    js_compilation.compile_js()
+
+    # Now link to the compiled code in the HTML file
+    main_page = ""
+    scripting_time = False
+    with open("app/index.html") as f:
+        for line in f:
+            if line.strip() == "<!-- /js -->":
+                scripting_time = False
+                main_page += '<script src="js/bundle.js"></script>'
+            elif scripting_time:
+                continue
+            elif line.strip() == "<!-- js -->":
+                scripting_time = True
+            else:
+                main_page += line
+        f.close()
+
+    # Remove the file and write a modified version
+    os.system("rm app/index.html")
+    with open("app/index.html", "w") as f:
+        f.write(main_page)
+        f.close()
+
+
+def backup_pristine_files():
+    os.system("cp app/index.html app/index.html.orig")
 
 
 def restore_pristine_files():
@@ -90,6 +125,7 @@ def copy_contents(target_path, quiet=False):
 def deploy(target_path, quiet=False):
     if not check_dependencies():
         sys.exit(1)
+    backup_pristine_files()
     data_util.prepare_for_deployment(quiet=quiet)
     os.system("sass app/css/styles.scss app/css/styles.css")
 
@@ -98,6 +134,7 @@ def deploy(target_path, quiet=False):
             print("Analytics code is already present, skipping that step.")
     else:
         insert_analytics_code(quiet=quiet)
+    use_compiled_js()
 
     if not backup_current_version(target_path, quiet=quiet):
         print("I could not back up the current version, bailing out.")
