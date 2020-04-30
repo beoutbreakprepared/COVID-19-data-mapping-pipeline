@@ -1,9 +1,11 @@
 #!/usr/bin/python3
 
 import os
+import shutil
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "tests"))
 
+from colorama import Fore, Back, Style
 from tests import *
 
 TESTS = [
@@ -11,6 +13,18 @@ TESTS = [
   run_test.RunTest,
 ]
 
-for t in TESTS:
-  if t().run():
-    print("PASS")
+for test_class in TESTS:
+  width = shutil.get_terminal_size((80, 20)).columns
+  t = test_class()
+
+  print(Style.RESET_ALL)
+  name = t.display_name()
+  print(name, end="")
+  print("." * (width - len(name) - len("PASS") - 1) + " ", end="")
+
+  if t.run():
+    print(Fore.GREEN + "PASS", end="", flush=True)
+  else:
+    print(Fore.RED + "FAIL", end="", flush=True)
+
+print("\n")

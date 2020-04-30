@@ -6,5 +6,9 @@ class BaseTest(ABC):
     super().__init__()
 
   @abstractmethod
+  def display_name(self):
+    pass
+
+  @abstractmethod
   def run(self):
     pass
