@@ -1,0 +1,16 @@
+#!/usr/bin/python3
+
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), "tests"))
+
+from tests import *
+
+TESTS = [
+  deploy_test.DeployTest,
+  run_test.RunTest,
+]
+
+for t in TESTS:
+  if t().run():
+    print("PASS")
