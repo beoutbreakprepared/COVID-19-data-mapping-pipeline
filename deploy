@@ -6,10 +6,9 @@ import shlex
 import subprocess
 import sys
 
-sys.path.append("../scripts")
-import split
-
+sys.path.append("scripts")
 import data_util
+import split
 
 if len(sys.argv) < 2:
   print("Please give me the target path as an argument. "
@@ -20,8 +19,8 @@ src_path = os.path.dirname(os.path.realpath(__file__))
 os.chdir(src_path)
 target_path = sys.argv[1]
 if not os.path.exists(target_path):
-  print("Target '" + target_path + "' doesn't seem to exist.")
-  sys.exit(1)
+  print("Target '" + target_path + "' doesn't exist, creating it.")
+  os.mkdir(target_path)
 
 # Files and directories inside "app" that do not need to be copied over
 # to the target. Please keep alphabetized.
@@ -49,15 +48,15 @@ def check_dependencies():
   return True
 
 def has_analytics_code():
-  return os.system("grep 'google-analytics.com' index.html") == 0
+  return os.system("grep 'google-analytics.com' app/index.html") == 0
 
 def insert_analytics_code():
   main_page = ""
-  with open("analytics.js") as f:
+  with open("app/analytics.js") as f:
     code = f.read()
     f.close()
   inserted = False
-  with open("index.html") as f:
+  with open("app/index.html") as f:
     for line in f:
       if not inserted and "<script" in line:
         main_page += code
@@ -66,13 +65,13 @@ def insert_analytics_code():
     f.close()
 
   # Back-up the file write a modified version
-  os.system("mv index.html index.html.orig")
-  with open("index.html", "w") as f:
+  os.system("mv app/index.html app/index.html.orig")
+  with open("app/index.html", "w") as f:
     f.write(main_page)
     f.close()
 
 def restore_pristine_files():
-  os.system("mv index.html.orig index.html")
+  os.system("mv app/index.html.orig app/index.html")
 
 # Returns whether the backup operation succeeded
 def backup_current_version(target_path):
@@ -85,7 +84,7 @@ def deploy(target_path):
   print("Replacing target contents with new version...")
   # TODO: Use 'rsync' if it's available.
   os.system("rm -rf " + target_path + "/*")
-  to_copy = ["'" + f + "'" for f in os.listdir(".")
+  to_copy = ["'app/" + f + "'" for f in os.listdir("app")
       if f not in EXCLUDED
       and not f.startswith(BACKUP_DIR_PREFIX)
       and not f.endswith(".orig")]
@@ -95,7 +94,7 @@ def deploy(target_path):
 if not check_dependencies():
   sys.exit(1)
 data_util.prepare_for_deployment()
-os.system("sass css/styles.scss css/styles.css")
+os.system("sass app/css/styles.scss app/css/styles.css")
 
 if has_analytics_code():
   print("Analytics code is already present, skipping that step.")
@@ -105,6 +104,7 @@ else:
 if not backup_current_version(target_path):
   print("I could not back up the current version, bailing out.")
   sys.exit(1)
+
 deploy(target_path)
 
 restore_pristine_files()

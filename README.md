@@ -2,14 +2,14 @@
 Resource hub for code related to data processing and mapping piepline
 
 # Usage
-Make sure dependencies in `app/prerequisites.md` are met. Then, to run the
+Make sure dependencies in `prerequisites.md` are met. Then, to run the
 application locally:
 
-`cd app && ./run`
+`./run`
 
 For deployment in a server environment:
 
-`cd app && ./deploy`
+`./deploy path/to/target`
 
 # Contributions
 

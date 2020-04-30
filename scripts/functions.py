@@ -11,6 +11,8 @@ import sys
 from datetime import datetime, timedelta
 from shutil import copyfile
 
+LAT_LNG_DECIMAL_PLACES = 4
+
 class GoogleSheet(object):
     '''
     Simple object to help organizing.
@@ -371,32 +373,31 @@ def animation_formating(infile):
     return array
 
 
-def latlong_to_geo_id(latitude, longitude):
+def latlong_to_geo_id(lat, lng):
   '''
   Returns a string key from a latitude and longitude.
   '''
-  # TODO: Consider cropping some of the precision for shorter, but still
-  # unique, IDs.
-  return str(latitude) + "|" + str(longitude)
+  return "|".join([str(round(float(a), LAT_LNG_DECIMAL_PLACES)) for a in [lat, lng]])
 
 def find_country_iso_code_from_name(name, dict):
   if name == "nan":
     return ""
+  # If this is already a 2-letter ISO code, return it as-is
+  if len(name) == 2 and name == name.upper():
+    return name
   if name in dict:
     return dict[name]
+  for key in dict:
+    if key.lower() == name.lower():
+      return dict[key]
+
   print("Sorry, I don't know about '" + name + "', you might want "
         "to update the country data file.")
   sys.exit(1)
 
-def compile_location_info(in_file: str, country_file: str):
-  '''
-  Returns a dictionary where each key is the unique geo ID and the value
-  is a list of the corresponding (city, province, country).
-  '''
-  print("Reading full data file...")
-  with open(in_file, 'r') as f:
-    in_data = json.load(f)
-    f.close()
+def compile_location_info(in_data, out_file,
+    keys=["country", "province", "city"], country_file="app/countries.data"):
+
   print("Reading country data...")
   countries = {}
   with open(country_file) as f:
@@ -405,16 +406,22 @@ def compile_location_info(in_file: str, country_file: str):
       (name, iso) = country.split(":")
       countries[name] = iso
     f.close()
-  all_data = in_data["data"]
+
   location_info = {}
-  for item in all_data:
-    geo_id = latlong_to_geo_id(item["latitude"], item["longitude"])
+  for item in in_data:
+    geo_id = item['geoid']
     if geo_id not in location_info:
       # 2-letter ISO code for the country
-      country_iso = find_country_iso_code_from_name(str(item["country"]), countries)
+      country_iso = find_country_iso_code_from_name(str(item[keys[0]]), countries)
       location_info[geo_id] = [(str(item[key]) if str(item[key]) != "nan" else "")
-          for key in ["city", "province"]] + [country_iso]
-  return location_info
+          for key in [keys[2], keys[1]]] + [country_iso]
+
+  output = []
+  for geoid in location_info:
+    output.append(geoid + ":" + ",".join(location_info[geoid]))
+  with open(out_file, "w") as f:
+    f.write("\n".join(output))
+    f.close()
 
 def chunks(all_features):
     '''
