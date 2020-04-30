@@ -23,7 +23,7 @@ for test_class in TESTS:
     print("." * (width - len(name) - len("PASS") - len("...") - 1) + " ",
           end="")
 
-    if t.run():
+    if t.run_wrapper():
         print(Fore.GREEN + "PASS", end="", flush=True)
     else:
         print(Fore.RED + "FAIL", end="", flush=True)

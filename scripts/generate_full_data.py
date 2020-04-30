@@ -218,7 +218,7 @@ def generate_data(out_dir, latest=False, jhu=False, input_jhu='',
 
   full.index = [split.normalize_date(x) for x in full.index]
   full.index.name = 'date'
-  full = full.sort_index(by='date')
+  full = full.sort_values(by='date')
 
   new_cases = full
   total_cases = new_cases.cumsum()
