@@ -80,7 +80,7 @@ def backup_current_version(target_path):
   print("Backing up current version into '" + backup_dir + "'...")
   return os.system("cp -a " + target_path + " " + backup_dir) == 0
 
-def deploy(target_path):
+def copy_contents(target_path):
   print("Replacing target contents with new version...")
   # TODO: Use 'rsync' if it's available.
   os.system("rm -rf " + target_path + "/*")
@@ -91,22 +91,25 @@ def deploy(target_path):
   cmd = "cp -a " + " ".join(to_copy) + " " + target_path + "/"
   os.system(cmd)
 
-if not check_dependencies():
-  sys.exit(1)
-data_util.prepare_for_deployment()
-os.system("sass app/css/styles.scss app/css/styles.css")
+def deploy():
+  if not check_dependencies():
+    sys.exit(1)
+  data_util.prepare_for_deployment()
+  os.system("sass app/css/styles.scss app/css/styles.css")
 
-if has_analytics_code():
-  print("Analytics code is already present, skipping that step.")
-else:
-  insert_analytics_code()
+  if has_analytics_code():
+    print("Analytics code is already present, skipping that step.")
+  else:
+    insert_analytics_code()
 
-if not backup_current_version(target_path):
-  print("I could not back up the current version, bailing out.")
-  sys.exit(1)
+  if not backup_current_version(target_path):
+    print("I could not back up the current version, bailing out.")
+    sys.exit(1)
 
-deploy(target_path)
+  copy_contents(target_path)
+  restore_pristine_files()
 
-restore_pristine_files()
+  print("All done.")
 
-print("All done.")
+if __name__ == '__main__':
+  deploy()
