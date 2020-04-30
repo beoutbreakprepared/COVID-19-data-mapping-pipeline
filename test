@@ -19,8 +19,9 @@ for test_class in TESTS:
 
     print(Style.RESET_ALL)
     name = t.display_name()
-    print(name, end="")
-    print("." * (width - len(name) - len("PASS") - 1) + " ", end="")
+    print(name + "...", end="", flush=True)
+    print("." * (width - len(name) - len("PASS") - len("...") - 1) + " ",
+          end="")
 
     if t.run():
         print(Fore.GREEN + "PASS", end="", flush=True)

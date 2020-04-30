@@ -396,32 +396,34 @@ def find_country_iso_code_from_name(name, dict):
   sys.exit(1)
 
 def compile_location_info(in_data, out_file,
-    keys=["country", "province", "city"], country_file="app/countries.data"):
+    keys=["country", "province", "city"], country_file="app/countries.data",
+    quiet=False):
 
-  print("Reading country data...")
-  countries = {}
-  with open(country_file) as f:
-    country_data = f.read().strip()
-    for country in country_data.split("|"):
-      (name, iso) = country.split(":")
-      countries[name] = iso
-    f.close()
+    if not quiet:
+        print("Reading country data...")
+    countries = {}
+    with open(country_file) as f:
+        country_data = f.read().strip()
+        for country in country_data.split("|"):
+            (name, iso) = country.split(":")
+            countries[name] = iso
+        f.close()
 
-  location_info = {}
-  for item in in_data:
-    geo_id = item['geoid']
-    if geo_id not in location_info:
-      # 2-letter ISO code for the country
-      country_iso = find_country_iso_code_from_name(str(item[keys[0]]), countries)
-      location_info[geo_id] = [(str(item[key]) if str(item[key]) != "nan" else "")
-          for key in [keys[2], keys[1]]] + [country_iso]
+    location_info = {}
+    for item in in_data:
+        geo_id = item['geoid']
+        if geo_id not in location_info:
+            # 2-letter ISO code for the country
+            country_iso = find_country_iso_code_from_name(
+                          str(item[keys[0]]), countries)
+            location_info[geo_id] = [(str(item[key]) if str(item[key]) != "nan" else "") for key in [keys[2], keys[1]]] + [country_iso]
 
-  output = []
-  for geoid in location_info:
-    output.append(geoid + ":" + ",".join(location_info[geoid]))
-  with open(out_file, "w") as f:
-    f.write("\n".join(output))
-    f.close()
+    output = []
+    for geoid in location_info:
+        output.append(geoid + ":" + ",".join(location_info[geoid]))
+    with open(out_file, "w") as f:
+        f.write("\n".join(output))
+        f.close()
 
 def chunks(all_features):
     '''
@@ -432,31 +434,33 @@ def chunks(all_features):
     for i in range(0, len(all_features), CHUNK_SIZE):
         yield all_features[i:i + CHUNK_SIZE]
 
-def animation_formating_geo(infile: str, outfile: str, groupby: str = 'day') -> None:
+def animation_formating_geo(infile: str, outfile: str, groupby: str = 'day', quiet=False) -> None:
     '''
     Read from full data file, and reformat for animation.
     Currently grouping on a weekly basis, but subject to change as
     new cases come in (produces large files).
     '''
-    print("Reading file...")
+    if not quiet:
+        print("Reading file...")
     with open(infile, 'r') as f:
         in_data = json.load(f)
         f.close()
 
     n_cpus = multiprocessing.cpu_count()
     all_features = in_data["data"]
-    print("Processing " + str(len(all_features)) + " features "
-          "with " + str(n_cpus) + " threads...")
+    if not quiet:
+        print("Processing " + str(len(all_features)) + " features "
+              "with " + str(n_cpus) + " threads...")
     pool = multiprocessing.Pool(n_cpus)
     out_slices = pool.map(animation_formatting_geo_in_memory, chunks(all_features))
     # Concatenate everybody.
     out_data = list(itertools.chain.from_iterable(out_slices))
 
     # Wrap in feature collection and write to disk
-    print("Writing result...")
+    if not quiet:
+        print("Writing result...")
     with open(outfile, 'w') as F:
         json.dump({"type": "FeatureCollection", "features": out_data}, F)
-
 
 def animation_formatting_geo_in_memory(in_data: str, groupby: str = 'day') -> None:
     # Give the caller an idea of the progress we're making.

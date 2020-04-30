@@ -46,11 +46,12 @@ parser.add_argument('--input_jhu', default='', type=str,
         help='read from local jhu file')
 
 
-def prepare_latest_data(infile):
+def prepare_latest_data(infile, quiet=False):
     if infile :
         readfrom = infile
     else:
-        print("Downloading latest data...")
+        if not quiet:
+            print("Downloading latest data...")
         req = requests.get(LATEST_DATA_URL)
         if req.status_code != 200:
             print('could not get latestdata.csv, aborting')
@@ -79,7 +80,7 @@ def prepare_latest_data(infile):
     # Extract mappings between lat|long and geographical names, then only keep
     # the geo_id.
     functions.compile_location_info(df.to_dict("records"),
-        "app/location_info_world.data")
+        "app/location_info_world.data", quiet=quiet)
     df = df.drop(['city', 'province', 'country', 'latitude', 'longitude'], axis=1)
 
     dates  = df.date_confirmation.unique()
@@ -95,7 +96,7 @@ def prepare_latest_data(infile):
     new.reset_index(drop=False)
     return new
 
-def prepare_jhu_data(outfile, read_from_file):
+def prepare_jhu_data(outfile, read_from_file, quiet=False):
     '''
     Get JHU data from URL and format to
     to be compatible with full-data.json
@@ -106,7 +107,8 @@ def prepare_jhu_data(outfile, read_from_file):
         read_from = read_from_file
     else:
         # Get JHU data
-        print("Downloading data from JHU...")
+        if not quiet:
+            print("Downloading data from JHU...")
         req = requests.get(JHU_URL)
         if req.status_code != 200:
             print('Could not get JHU data, aborting')
@@ -131,7 +133,8 @@ def prepare_jhu_data(outfile, read_from_file):
         row['Lat'], row['Long_']), axis=1)
     functions.compile_location_info(df.to_dict("records"),
         out_file="app/location_info_us.data",
-        keys=["Country_Region", "Province_State", "Admin2"])
+        keys=["Country_Region", "Province_State", "Admin2"],
+        quiet=quiet)
 
     rx = '\d{1,2}/\d{1,2}/\d'
     date_columns = [c for c in df.columns if re.match(rx, c)]
@@ -193,10 +196,10 @@ def chunks(new_cases, total_cases):
         yield (new_cases.iloc[i], total_cases.iloc[i])
 
 def generate_data(out_dir, latest=False, jhu=False, input_jhu='',
-    export_full_data=False, overwrite=False):
+    export_full_data=False, overwrite=False, quiet=False):
 
-  latest = prepare_latest_data(latest)
-  jhu = prepare_jhu_data(jhu, input_jhu)
+  latest = prepare_latest_data(latest, quiet=quiet)
+  jhu = prepare_jhu_data(jhu, input_jhu, quiet=quiet)
   full = latest.merge(jhu, on='date', how='outer')
   full.fillna(0, inplace=True)
   full = full.set_index('date')
@@ -221,8 +224,9 @@ def generate_data(out_dir, latest=False, jhu=False, input_jhu='',
   total_cases = new_cases.cumsum()
 
   n_cpus = multiprocessing.cpu_count()
-  print("Processing " + str(len(full)) + " features "
-          "with " + str(n_cpus) + " threads...")
+  if not quiet:
+      print("Processing " + str(len(full)) + " features "
+            "with " + str(n_cpus) + " threads...")
 
   pool = multiprocessing.Pool(n_cpus)
   out_slices = pool.starmap(daily_slice, chunks(new_cases, total_cases), chunksize=10)
@@ -246,13 +250,13 @@ def generate_data(out_dir, latest=False, jhu=False, input_jhu='',
   os.remove("app/location_info_us.data")
 
 if __name__ == '__main__':
-  args = parser.parse_args()
+    args = parser.parse_args()
 
-  if args.timeit:
-      import time
-      t0 = time.time()
+    if args.timeit:
+        import time
+        t0 = time.time()
 
-  generate_data(args.out_dir, args.latest, args.jhu, args.input_jhu, args.full)
+    generate_data(args.out_dir, args.latest, args.jhu, args.input_jhu, args.full)
 
-  if args.timeit:
-      print(round(time.time() - t0, 2), "seconds")
+    if args.timeit:
+        print(round(time.time() - t0, 2), "seconds")

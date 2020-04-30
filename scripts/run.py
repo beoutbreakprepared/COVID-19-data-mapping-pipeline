@@ -19,7 +19,6 @@ def run():
     data_util.prepare_for_local_development()
 
     try:
-        threads = []
         os.chdir("app")
         http = threading.Thread(target=run_http_server)
         sass = threading.Thread(target=run_sass_precompiler)
@@ -28,6 +27,6 @@ def run():
         http.join()
         sass.join()
 
-    except KeyboardInterrupt as e:
+    except KeyboardInterrupt:
         print("Shutting down...")
         sys.exit(0)

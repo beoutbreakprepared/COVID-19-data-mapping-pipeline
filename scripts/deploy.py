@@ -25,7 +25,8 @@ BACKUP_DIR_PREFIX = "backup_"
 # Returns True if everything we need is here, False otherwise.
 def check_dependencies():
     try:
-        subprocess.check_call(shlex.split("sass --version"))
+        subprocess.check_call(shlex.split("sass --version"),
+                              stdout=subprocess.DEVNULL)
     except (subprocess.CalledProcessError, OSError):
         print("Please install 'sass' first.")
         return False
@@ -34,7 +35,7 @@ def check_dependencies():
 def has_analytics_code():
     return os.system("grep 'google-analytics.com' app/index.html") == 0
 
-def insert_analytics_code():
+def insert_analytics_code(quiet=False):
     main_page = ""
     with open("app/analytics.js") as f:
         code = f.read()
@@ -58,14 +59,17 @@ def restore_pristine_files():
     os.system("mv app/index.html.orig app/index.html")
 
 # Returns whether the backup operation succeeded
-def backup_current_version(target_path):
+def backup_current_version(target_path, quiet=False):
     timestamp = datetime.datetime.now().strftime("%Y.%m.%d_%H.%M.%S")
     backup_dir = BACKUP_DIR_PREFIX + timestamp
-    print("Backing up current version into '" + backup_dir + "'...")
+
+    if not quiet:
+        print("Backing up current version into '" + backup_dir + "'...")
     return os.system("cp -a " + target_path + " " + backup_dir) == 0
 
-def copy_contents(target_path):
-    print("Replacing target contents with new version...")
+def copy_contents(target_path, quiet=False):
+    if not quiet:
+        print("Replacing target contents with new version...")
     # TODO: Use 'rsync' if it's available.
     os.system("rm -rf " + target_path + "/*")
     to_copy = ["'app/" + f + "'" for f in os.listdir("app")
@@ -75,22 +79,24 @@ def copy_contents(target_path):
     cmd = "cp -a " + " ".join(to_copy) + " " + target_path + "/"
     os.system(cmd)
 
-def deploy(target_path):
+def deploy(target_path, quiet=False):
     if not check_dependencies():
         sys.exit(1)
-    data_util.prepare_for_deployment()
+    data_util.prepare_for_deployment(quiet=quiet)
     os.system("sass app/css/styles.scss app/css/styles.css")
 
     if has_analytics_code():
-        print("Analytics code is already present, skipping that step.")
+        if not quiet:
+            print("Analytics code is already present, skipping that step.")
     else:
-        insert_analytics_code()
+        insert_analytics_code(quiet=quiet)
 
-    if not backup_current_version(target_path):
+    if not backup_current_version(target_path, quiet=quiet):
         print("I could not back up the current version, bailing out.")
         sys.exit(1)
 
-    copy_contents(target_path)
+    copy_contents(target_path, quiet=quiet)
     restore_pristine_files()
 
-    print("All done.")
+    if not quiet:
+        print("All done.")
