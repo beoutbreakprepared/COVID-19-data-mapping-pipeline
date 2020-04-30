@@ -192,7 +192,8 @@ def chunks(new_cases, total_cases):
     for i in range(len(new_cases)):
         yield (new_cases.iloc[i], total_cases.iloc[i])
 
-def generate_data(out_dir, latest=False, jhu=False, input_jhu='', export_full_data=False):
+def generate_data(out_dir, latest=False, jhu=False, input_jhu='',
+    export_full_data=False, overwrite=False):
 
   latest = prepare_latest_data(latest)
   jhu = prepare_jhu_data(jhu, input_jhu)
@@ -230,7 +231,7 @@ def generate_data(out_dir, latest=False, jhu=False, input_jhu='', export_full_da
     out_name = ("latest" if s['date'] == latest_date else s['date'].replace('-','.')) + '.json'
     daily_slice_file_path = os.path.join(out_dir, out_name)
 
-    if os.path.exists(daily_slice_file_path):
+    if not overwrite and os.path.exists(daily_slice_file_path):
         print("I will not clobber '" + daily_slice_file_path + "', " "please delete it first")
         continue
 

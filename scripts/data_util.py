@@ -52,9 +52,10 @@ def prepare_for_deployment():
   for daily in glob.glob("dailies/*.json"):
     os.remove(daily)
 
-  generate_data()
+  generate_data(overwrite=True)
 
-def generate_data():
+def generate_data(overwrite=False):
   print("I need to generate the appropriate data, this is going to take "
         "a few minutes...")
-  generate_full_data.generate_data(os.path.join(self_dir, DAILIES_DIR))
+  generate_full_data.generate_data(os.path.join(self_dir, DAILIES_DIR),
+      overwrite=overwrite)
