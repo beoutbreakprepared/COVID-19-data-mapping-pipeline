@@ -6,10 +6,10 @@ import subprocess
 import sys
 import threading
 
-sys.path.append("../scripts")
+sys.path.append("scripts")
+import data_util
 import split
 
-import data_util
 
 # Returns True if everything we need is here, False otherwise.
 def check_dependencies():
@@ -37,6 +37,7 @@ data_util.prepare_for_local_development()
 
 try:
   threads = []
+  os.chdir("app")
   http = threading.Thread(target=run_http_server)
   sass = threading.Thread(target=run_sass_precompiler)
   http.start()

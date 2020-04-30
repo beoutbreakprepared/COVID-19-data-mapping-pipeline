@@ -6,10 +6,9 @@ import shlex
 import subprocess
 import sys
 
-sys.path.append("../scripts")
-import split
-
+sys.path.append("scripts")
 import data_util
+import split
 
 if len(sys.argv) < 2:
   print("Please give me the target path as an argument. "
@@ -95,7 +94,7 @@ def deploy(target_path):
 if not check_dependencies():
   sys.exit(1)
 data_util.prepare_for_deployment()
-os.system("sass css/styles.scss css/styles.css")
+os.system("sass app/css/styles.scss app/css/styles.css")
 
 if has_analytics_code():
   print("Analytics code is already present, skipping that step.")
