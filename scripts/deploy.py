@@ -145,4 +145,5 @@ def deploy(target_path, quiet=False):
     restore_pristine_files()
 
     if not quiet:
-        print("All done.")
+        print("All done. You can test it out with: "
+              "cd " + target_path + " && python3 -m http.server")
