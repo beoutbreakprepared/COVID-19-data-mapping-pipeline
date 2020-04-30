@@ -9,22 +9,22 @@ from colorama import Fore, Back, Style
 from tests import *
 
 TESTS = [
-  deploy_test.DeployTest,
-  run_test.RunTest,
+    deploy_test.DeployTest,
+    run_test.RunTest,
 ]
 
 for test_class in TESTS:
-  width = shutil.get_terminal_size((80, 20)).columns
-  t = test_class()
+    width = shutil.get_terminal_size((80, 20)).columns
+    t = test_class()
 
-  print(Style.RESET_ALL)
-  name = t.display_name()
-  print(name, end="")
-  print("." * (width - len(name) - len("PASS") - 1) + " ", end="")
+    print(Style.RESET_ALL)
+    name = t.display_name()
+    print(name, end="")
+    print("." * (width - len(name) - len("PASS") - 1) + " ", end="")
 
-  if t.run():
-    print(Fore.GREEN + "PASS", end="", flush=True)
-  else:
-    print(Fore.RED + "FAIL", end="", flush=True)
+    if t.run():
+        print(Fore.GREEN + "PASS", end="", flush=True)
+    else:
+        print(Fore.RED + "FAIL", end="", flush=True)
 
 print("\n")
