@@ -619,3 +619,6 @@ function initMap() {
     showLegend();
   });
 }
+
+// Exports
+window['initMap'] = initMap;

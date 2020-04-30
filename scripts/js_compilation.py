@@ -8,6 +8,7 @@ def compile_js(quiet=False):
 
     os.system("closure-compiler "
               "--language_in ECMASCRIPT5 "
+              "--compilation_level ADVANCED_OPTIMIZATIONS "
               "--js healthmap.js "
               "--externs externs.js "
               "--js_output_file bundle.js")
