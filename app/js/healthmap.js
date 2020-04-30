@@ -548,27 +548,29 @@ function showPopupForEvent(e) {
     .addTo(map);
 }
 
+
+function handleFlyTo(lat, lon, zoom, item) {
+  map.flyTo({ center: [lat, lon], zoom: zoom })
+  window.scrollTo({
+    top: 0,
+    left: 0,
+    behavior: 'smooth'
+  });
+};
+
+
 function initMap() {
   mapboxgl.accessToken = MAPBOX_TOKEN;
   map = new mapboxgl.Map({
-    container: 'map',
-    style: 'mapbox://styles/healthmap/ck7o47dgs1tmb1ilh5b1ro1vn',
-    center: [10, 0],
-    zoom: 1,
+    'container': 'map',
+    'style': 'mapbox://styles/healthmap/ck7o47dgs1tmb1ilh5b1ro1vn',
+    'center': [10, 0],
+    'zoom': 1,
   }).addControl(new mapboxgl.NavigationControl());
   popup = new mapboxgl.Popup({
-    closeButton: false,
-    closeOnClick: false
+    'closeButton': false,
+    'closeOnClick': false
   });
-
-  window.handleFlyTo = function(lat, lon, zoom, item) {
-    map.flyTo({ center: [lat, lon], zoom: zoom })
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: 'smooth'
-    });
-  }
 
   timeControl.addEventListener('input', function() {
     setTimeControlLabel(timeControl.value);
@@ -622,3 +624,4 @@ function initMap() {
 
 // Exports
 window['initMap'] = initMap;
+window['handleFlyTo'] = handleFlyTo;
