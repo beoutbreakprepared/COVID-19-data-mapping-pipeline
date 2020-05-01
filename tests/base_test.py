@@ -22,7 +22,7 @@ class BaseTest(ABC):
             self.run()
             return True
         except TestFailure as e:
-            print(e.explanation)
+            print("\n" + e.explanation + " ", end="")
             return False
 
     @abstractmethod
