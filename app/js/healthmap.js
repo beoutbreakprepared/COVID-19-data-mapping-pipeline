@@ -58,10 +58,10 @@ function showDataAtDate(isodate) {
     for (var country in latestDataPerCountry) {
       var countryData = latestDataPerCountry[country];
       var feature = formatFeatureForMap({
-        properties: {
-          geoid: countryData[0] + '|' + countryData[1],
-          total: countryData[2],
-          new: 0
+        'properties': {
+          'geoid': countryData[0] + '|' + countryData[1],
+          'total': countryData[2],
+          'new': 0
         }
       });
       featuresToShow.push(feature);
@@ -110,7 +110,7 @@ function oneDayBefore(dateString) {
 
   var parts = dateString.split('-');
   // Month is 0-based.
-  var date = new Date(parts[0], parseInt(parts[1]) - 1, parts[2]);
+  var date = new Date(parts[0], parseInt(parts[1], 10) - 1, parts[2]);
   // Backtrack one day.
   date.setDate(date.getDate() - 1);
   return [date.getFullYear(),
@@ -119,8 +119,8 @@ function oneDayBefore(dateString) {
 }
 
 function processDailySlice(dateString, jsonData) {
-  var currentDate = jsonData.date;
-  var features = jsonData.features;
+  var currentDate = jsonData['date'];
+  var features = jsonData['features'];
 
   // Cases grouped by country and province.
   var provinceFeatures = {};
@@ -131,21 +131,21 @@ function processDailySlice(dateString, jsonData) {
     var feature = formatFeatureForMap(features[i]);
 
     // If we don't know where this is, discard.
-    if (!locationInfo[feature.properties.geoid]) {
+    if (!locationInfo[feature['properties']['geoid']]) {
       continue;
     }
     // City, province, country.
-    var location = locationInfo[feature.properties.geoid].split(',');
+    var location = locationInfo[feature['properties']['geoid']].split(',');
     if (!provinceFeatures[location[1]]) {
-      provinceFeatures[location[1]] = {total: 0, new: 0};
+      provinceFeatures[location[1]] = {'total': 0, 'new': 0};
     }
-    provinceFeatures[location[1]].total += feature.properties.total;
-    provinceFeatures[location[1]].new += feature.properties.new;
+    provinceFeatures[location[1]]['total'] += feature['properties']['total'];
+    provinceFeatures[location[1]]['new'] += feature['properties']['new'];
     if (!countryFeatures[location[2]]) {
-      countryFeatures[location[2]] = {total: 0, new: 0};
+      countryFeatures[location[2]] = {'total': 0, 'new': 0};
     }
-    countryFeatures[location[2]].total += feature.properties.total;
-    countryFeatures[location[2]].new += feature.properties.new;
+    countryFeatures[location[2]]['total'] += feature['properties']['total'];
+    countryFeatures[location[2]]['new'] += feature['properties']['new'];
   }
 
   dates.unshift(currentDate);
@@ -188,13 +188,13 @@ function fetchDailySlice(dateString) {
         processDailySlice(dateString, jsonData);
 
         // Now fetch the next (older) slice of data.
-        fetchDailySlice(oneDayBefore(jsonData.date));
+        fetchDailySlice(oneDayBefore(jsonData['date']));
   });
 }
 
 function onBasicDataFetched() {
   // We can now start getting daily data.
-  fetchDailySlice();
+  fetchDailySlice(undefined);
 }
 
 function onAllDailySlicesFetched() {
@@ -205,23 +205,23 @@ function onAllDailySlicesFetched() {
 // Takes an array of features, and bundles them in a way that the map API
 // can ingest.
 function formatFeatureSetForMap(features) {
-  return {type: 'FeatureCollection', features: features};
+  return {'type': 'FeatureCollection', 'features': features};
 }
 
 // Tweaks the given object to make it ingestable as a feature by the map API.
 function formatFeatureForMap(feature) {
   feature.type = 'Feature';
-  if (!feature.properties) {
+  if (!feature['properties']) {
     // This feature is missing key data, add a placeholder.
-    feature.properties = {geoid: '0|0'};
+    feature['properties'] = {'geoid': '0|0'};
   }
   // If the 'new' property is absent, assume 0.
-  if (isNaN(feature.properties.new)) {
-    feature.properties.new = 0;
+  if (isNaN(feature['properties']['new'])) {
+    feature['properties']['new'] = 0;
   }
-  var coords = feature.properties.geoid.split('|');
+  var coords = feature['properties']['geoid'].split('|');
   // Flip latitude and longitude.
-  feature.geometry = {'type': 'Point', 'coordinates': [coords[1], coords[0]]};
+  feature['geometry'] = {'type': 'Point', 'coordinates': [coords[1], coords[0]]};
   return feature;
 }
 
@@ -264,23 +264,23 @@ function fetchWhoData() {
   return fetch(url)
     .then(function(response) { return response.json(); })
     .then(function(jsonData) {
-      var obj = jsonData.features;
-      list = '';
+      var obj = jsonData['features'];
+      var list = '';
       // Sort according to decreasing confirmed cases.
       obj.sort(function(a, b) {
-        return b.attributes.cum_conf - a.attributes.cum_conf;
+        return b['attributes']['cum_conf'] - a['attributes']['cum_conf'];
       });
       for (var i = 0; i < obj.length; ++i) {
         var location = obj[i];
-        if (!location || !location.attributes || !location.centroid) {
+        if (!location || !location['attributes'] || !location['centroid']) {
           // We can't do much with this location.
           continue;
         }
-        var name = location.attributes.ADM0_NAME || '';
-        var lon = location.centroid.x || 0;
-        var lat = location.centroid.y || 0;
+        var name = location['attributes']['ADM0_NAME'] || '';
+        var lon = location['centroid']['x'] || 0;
+        var lat = location['centroid']['y'] || 0;
         var geoid = '' + lat + '|' + lon;
-        var cumConf = location.attributes.cum_conf || 0;
+        var cumConf = location['attributes']['cum_conf'] || 0;
         var legendGroup = 'default';
         latestDataPerCountry[name] = [lat, lon, cumConf];
         // No city or province, just the country name.
@@ -334,8 +334,8 @@ function fetchLatestCounts() {
   return fetch('latestCounts.json?nocache=' + timestamp)
     .then(function(response) { return response.json(); })
     .then(function(jsonData) {
-      document.getElementById('total-cases').innerText = jsonData[0].caseCount;
-      document.getElementById('last-updated-date').innerText = jsonData[0].date;
+      document.getElementById('total-cases').innerText = jsonData[0]['caseCount'];
+      document.getElementById('last-updated-date').innerText = jsonData[0]['date'];
     });
 }
 
@@ -344,7 +344,7 @@ function fetchLatestCounts() {
 // Filter list of locations
 function filterList() {
   var filter = document.getElementById('location-filter').value.toUpperCase();
-  ul = document.getElementById('location-list');
+  var ul = document.getElementById('location-list');
   var list_items = document.getElementById(
       'location-list').getElementsByTagName('li');
   var clearFilter = document.getElementById('clear-filter');
@@ -469,17 +469,17 @@ function makeCaseGraph(geoid) {
     var features = atomicFeaturesByDay[date];
     for (var i = 0; i < features.length; i++) {
       var f = features[i];
-      if (sameLocation(geoid, f.properties.geoid)) {
-        f.properties.date = date;
+      if (sameLocation(geoid, f['properties']['geoid'])) {
+        f['properties']['date'] = date;
         cases.push({
-          date: d3.timeParse("%Y-%m-%d")(date),
-          total: f.properties.total});
+          'date': d3.timeParse("%Y-%m-%d")(date),
+          'total': f['properties']['total']});
       }
     }
   }
 
   var xScale = d3.scaleTime()
-      .domain(d3.extent(cases, function(c) { return c.date; }))
+      .domain(d3.extent(cases, function(c) { return c['date']; }))
       .range([0, CASE_GRAPH_WIDTH_PX]);
 
   svg.append('g')
@@ -487,14 +487,14 @@ function makeCaseGraph(geoid) {
       .call(d3.axisBottom(xScale));
 
   var yScale = d3.scaleLinear()
-      .domain([0, d3.max(cases, function(c) { return c.total; })])
+      .domain([0, d3.max(cases, function(c) { return c['total']; })])
       .range([CASE_GRAPH_HEIGHT_PX, 0]);
 
   svg.append("g").call(d3.axisLeft(yScale));
 
   var casesLine = d3.line()
-    .x(function(c) { return xScale(c.date);}) // apply the x scale to the x data
-    .y(function(c) { return yScale(c.total);}) // apply the y scale to the y data
+    .x(function(c) { return xScale(c['date']);}) // apply the x scale to the x data
+    .y(function(c) { return yScale(c['total']);}) // apply the y scale to the y data
 
   svg.append("path")
       .attr('d', casesLine(cases))
@@ -506,14 +506,14 @@ function makeCaseGraph(geoid) {
 }
 
 function showPopupForEvent(e) {
-  if (!e.features.length) {
+  if (!e['features'].length) {
     // We can't do much without a feature.
     return;
   }
 
-  var f = e.features[0];
-  var props = f.properties;
-  var geo_id = props.geoid;
+  var f = e['features'][0];
+  var props = f['properties'];
+  var geo_id = props['geoid'];
   var coordinatesString = geo_id.split('|');
   var lat = parseFloat(coordinatesString[0]);
   var lng = parseFloat(coordinatesString[1]);
@@ -529,7 +529,7 @@ function showPopupForEvent(e) {
   var content = document.createElement('div');
   content.innerHTML = '<h3 class="popup-header">' + location.join(', ') +
       '</h3>' + '<div>' + '<strong>Number of Cases: </strong>' +
-      props.total.toLocaleString() + '</div>';
+      props['total'].toLocaleString() + '</div>';
 
   // Only show case graphs for atomic locations.
   if (map.getZoom() > ZOOM_THRESHOLD) {
@@ -539,8 +539,8 @@ function showPopupForEvent(e) {
   // Ensure that if the map is zoomed out such that multiple
   // copies of the feature are visible, the popup appears
   // over the copy being pointed to.
-  while (Math.abs(e.lngLat.lng - lng) > 180) {
-    lng += e.lngLat.lng > lng ? 360 : -360;
+  while (Math.abs(e['lngLat']['lng'] - lng) > 180) {
+    lng += e['lngLat']['lng'] > lng ? 360 : -360;
   }
   popup
     .setLngLat([lng, lat])
@@ -550,11 +550,11 @@ function showPopupForEvent(e) {
 
 
 function handleFlyTo(lat, lon, zoom, item) {
-  map.flyTo({ center: [lat, lon], zoom: zoom })
+  map.flyTo({'center': [lat, lon], 'zoom': zoom })
   window.scrollTo({
-    top: 0,
-    left: 0,
-    behavior: 'smooth'
+    'top': 0,
+    'left': 0,
+    'behavior': 'smooth'
   });
 };
 
@@ -623,5 +623,7 @@ function initMap() {
 }
 
 // Exports
+window['clearFilter'] = clearFilter;
+window['filterList'] = filterList;
 window['initMap'] = initMap;
 window['handleFlyTo'] = handleFlyTo;

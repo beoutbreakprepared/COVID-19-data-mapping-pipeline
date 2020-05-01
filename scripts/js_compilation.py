@@ -1,19 +1,18 @@
 import os
 
 def compile_js(quiet=False):
-    os.chdir("app/js")
 
     if not quiet:
         print("Compiling Javascript...")
 
-    os.system("closure-compiler "
+    os.system("java -jar tools/closure-compiler.jar "
               "--language_in ECMASCRIPT5 "
               "--compilation_level ADVANCED_OPTIMIZATIONS "
-              "--js healthmap.js "
-              "--externs externs.js "
-              "--js_output_file bundle.js")
-
-    os.chdir("../..")
+              "--js app/js/healthmap.js "
+              "--externs app/js/externs_d3.js "
+              "--externs app/js/externs_mapbox.js "
+              "--formatting=pretty_print "
+              "--js_output_file app/js/bundle.js")
 
 
 if __name__ == "__main__":

@@ -21,7 +21,8 @@ EXCLUDED = [
     "deploy",
     "full-data.json",
     "full-data.tar.gz",
-    "js/externs.js",
+    "js/externs_d3.js",
+    "js/externs_mapbox.js",
     "js/healthmap.js",
     "prerequisites.md",
     "run",
@@ -32,10 +33,23 @@ BACKUP_DIR_PREFIX = "backup_"
 # Returns True if everything we need is here, False otherwise.
 def check_dependencies():
     try:
-        subprocess.check_call(shlex.split("sass --version"), stdout=subprocess.DEVNULL)
+        subprocess.check_call(shlex.split("sass --version"),
+                              stdout=subprocess.DEVNULL)
     except (subprocess.CalledProcessError, OSError):
         print("Please install 'sass' first.")
         return False
+    # If the Closure compiler isn't available, let's get that setup.
+    if not os.path.exists("tools/closure-compiler.jar"):
+        print("The Closure compiler isn't available, fetching it. "
+              "This will only happen once.")
+        os.system("curl \"https://dl.google.com/closure-compiler/"
+                  "compiler-latest.zip\" > compiler-latest.zip")
+        if not os.path.exists("tools"):
+            os.mkdir("tools")
+        os.system("unzip -d tools compiler-latest.zip")
+        os.system("mv tools/closure-compiler*.jar tools/closure-compiler.jar")
+        os.system("rm -rf tools/COPYING tools/README.md")
+
     return True
 
 
