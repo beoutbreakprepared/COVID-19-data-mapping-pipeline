@@ -84,8 +84,10 @@ function updateTimeControl() {
     return;
   }
   document.getElementById('range-slider').style.display = 'flex';
-  timeControl.setAttribute('max', dates.length - 1)
-  timeControl.setAttribute('value', dates.length - 1);
+  timeControl.min = 0;
+  timeControl.max = dates.length - 1;
+  // Keep the slider at max value.
+  timeControl.value = dates.length - 1;
   setTimeControlLabel(dates.length - 1);
 }
 
