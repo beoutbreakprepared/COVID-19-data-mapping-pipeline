@@ -78,8 +78,8 @@ def insert_analytics_code(quiet=False):
         f.close()
 
 
-def use_compiled_js():
-    js_compilation.compile_js()
+def use_compiled_js(quiet=False):
+    js_compilation.compile_js(quiet)
 
     # Now link to the compiled code in the HTML file
     main_page = ""
@@ -150,7 +150,7 @@ def deploy(target_path, quiet=False):
             print("Analytics code is already present, skipping that step.")
     else:
         insert_analytics_code(quiet=quiet)
-    use_compiled_js()
+    use_compiled_js(quiet=quiet)
 
     if not backup_current_version(target_path, quiet=quiet):
         print("I could not back up the current version, bailing out.")

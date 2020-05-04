@@ -8,6 +8,7 @@ class BaseTest(ABC):
 
     def __init__(self):
         super().__init__()
+        self.failures = []
 
     @abstractmethod
     def display_name(self):
@@ -20,10 +21,16 @@ class BaseTest(ABC):
     def run_wrapper(self):
         try:
             self.run()
-            return True
+
         except TestFailure as e:
-            print("\n" + e.explanation + " ", end="")
-            return False
+            self.failures.append(e)
+
+    def tear_down(self):
+        for f in self.failures:
+            print("\n" + f.explanation + " ")
+
+    def passed(self):
+        return len(self.failures) == 0
 
     @abstractmethod
     def run(self):

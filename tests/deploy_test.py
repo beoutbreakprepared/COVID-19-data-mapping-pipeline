@@ -8,6 +8,7 @@ from deploy import deploy
 TEST_TARGET = "test_deployment"
 
 class DeployTest(base_test.BaseTest):
+
     def display_name(self):
         return "Deployment tests"
 
@@ -34,6 +35,11 @@ class DeployTest(base_test.BaseTest):
             self.target_file_contains("location_info.data", "Berlin,DE"),
             "The location info file should contain geo information")
 
-        # Clean up.
-        os.system("rm -rf " + TEST_TARGET)
-        return True
+    def tear_down(self):
+        if self.passed():
+            # Clean up if everything went well.
+            os.system("rm -rf " + TEST_TARGET)
+        else:
+            print("I will leave the test deployment in "
+                  "'" + TEST_TARGET + "' for inspection")
+        super().tear_down()
