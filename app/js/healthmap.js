@@ -1,9 +1,9 @@
 // Constants
-let ANIMATION_FRAME_DURATION_MS = 300;
-let CASE_GRAPH_WIDTH_PX = 220;
-let CASE_GRAPH_HEIGHT_PX = 120;
+const ANIMATION_FRAME_DURATION_MS = 300;
+const CASE_GRAPH_WIDTH_PX = 220;
+const CASE_GRAPH_HEIGHT_PX = 120;
 
-let COLOR_MAP = [
+const COLOR_MAP = [
   ['#67009e', '< 10', 10],
   ['#921694', '11–100', 100],
   ['#d34d60', '101–500', 500],
@@ -11,14 +11,14 @@ let COLOR_MAP = [
   ['#edf91c', '> 2000'],
   ['cornflowerblue', 'New'],
 ];
-let MAPBOX_TOKEN = 'pk.eyJ1IjoiaGVhbHRobWFwIiwiYSI6ImNrOGl1NGNldTAyYXYzZnBqcnBmN3RjanAifQ.H377pe4LPPcymeZkUBiBtg';
+const MAPBOX_TOKEN = 'pk.eyJ1IjoiaGVhbHRobWFwIiwiYSI6ImNrOGl1NGNldTAyYXYzZnBqcnBmN3RjanAifQ.H377pe4LPPcymeZkUBiBtg';
 
 // This is a single threshold for now, but is meant to become a multi-stage
 // logic.
-let ZOOM_THRESHOLD = 2;
+const ZOOM_THRESHOLD = 2;
 
 // Runtime constants
-let timestamp = (new Date()).getTime();
+const timestamp = (new Date()).getTime();
 
 // Globals
 let locationInfo = {};
