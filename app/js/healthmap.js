@@ -50,7 +50,7 @@ function showDataAtDate(isodate) {
   if (currentIsoDate != isodate) {
     currentIsoDate = isodate;
   }
-  let zoom = map.getZoom();
+  const zoom = map.getZoom();
   let featuresToShow = [];
   // Show per-country data for low zoom levels, but only for the most recent
   // date.
