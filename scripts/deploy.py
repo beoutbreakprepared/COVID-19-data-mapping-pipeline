@@ -47,7 +47,7 @@ def insert_analytics_code(quiet=False):
             if not inserted and "<script" in line:
                 main_page += code
                 inserted = True
-        main_page += line
+            main_page += line
         f.close()
 
     # Back-up the file write a modified version
