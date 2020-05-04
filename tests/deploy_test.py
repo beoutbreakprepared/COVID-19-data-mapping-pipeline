@@ -27,6 +27,10 @@ class DeployTest(base_test.BaseTest):
             "The deployed index file should contain analytics code")
 
         self.check(
+            self.target_file_contains("index.html", "<body>"),
+            "The deployed index file should contain the basic HTML")
+
+        self.check(
             self.target_file_contains("location_info.data", "Berlin,DE"),
             "The location info file should contain geo information")
 
