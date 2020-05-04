@@ -6,7 +6,7 @@ def compile_js(quiet=False):
         print("Compiling Javascript...")
 
     cmd = ("java -jar tools/closure-compiler.jar "
-           "--language_in ECMASCRIPT5 "
+           "--language_in ECMASCRIPT6 "
            "--compilation_level SIMPLE_OPTIMIZATIONS "
            "--js app/js/healthmap.js "
            "--externs app/js/externs_d3.js "

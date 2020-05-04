@@ -1,9 +1,9 @@
 // Constants
-var ANIMATION_FRAME_DURATION_MS = 300;
-var CASE_GRAPH_WIDTH_PX = 220;
-var CASE_GRAPH_HEIGHT_PX = 120;
+let ANIMATION_FRAME_DURATION_MS = 300;
+let CASE_GRAPH_WIDTH_PX = 220;
+let CASE_GRAPH_HEIGHT_PX = 120;
 
-var COLOR_MAP = [
+let COLOR_MAP = [
   ['#67009e', '< 10', 10],
   ['#921694', '11–100', 100],
   ['#d34d60', '101–500', 500],
@@ -11,36 +11,36 @@ var COLOR_MAP = [
   ['#edf91c', '> 2000'],
   ['cornflowerblue', 'New'],
 ];
-var MAPBOX_TOKEN = 'pk.eyJ1IjoiaGVhbHRobWFwIiwiYSI6ImNrOGl1NGNldTAyYXYzZnBqcnBmN3RjanAifQ.H377pe4LPPcymeZkUBiBtg';
+let MAPBOX_TOKEN = 'pk.eyJ1IjoiaGVhbHRobWFwIiwiYSI6ImNrOGl1NGNldTAyYXYzZnBqcnBmN3RjanAifQ.H377pe4LPPcymeZkUBiBtg';
 
 // This is a single threshold for now, but is meant to become a multi-stage
 // logic.
-var ZOOM_THRESHOLD = 2;
+let ZOOM_THRESHOLD = 2;
 
 // Runtime constants
-var timestamp = (new Date()).getTime();
+let timestamp = (new Date()).getTime();
 
 // Globals
-var locationInfo = {};
+let locationInfo = {};
 // A map from 2-letter ISO country codes to full names
-var countryNames = {};
+let countryNames = {};
 // A map from country names to most recent data (case count, etc.).
-var latestDataPerCountry = {};
-var dates = [];
-var map;
+let latestDataPerCountry = {};
+let dates = [];
+let map;
 // The same popup object will be reused.
-var popup;
+let popup;
 
-var currentIsoDate;
+let currentIsoDate;
 
 // An object mapping dates to JSON objects with the corresponding data.
 // for that day, grouped by country, province, or ungrouped (smallest
 // granularity level).
-var countryFeaturesByDay = {};
-var provinceFeaturesByDay = {};
-var atomicFeaturesByDay = {};
+let countryFeaturesByDay = {};
+let provinceFeaturesByDay = {};
+let atomicFeaturesByDay = {};
 
-var timeControl = document.getElementById('slider');
+let timeControl = document.getElementById('slider');
 
 function onMapZoomChanged() {
   showDataAtDate(currentIsoDate);
@@ -50,14 +50,14 @@ function showDataAtDate(isodate) {
   if (currentIsoDate != isodate) {
     currentIsoDate = isodate;
   }
-  var zoom = map.getZoom();
-  var featuresToShow = [];
+  let zoom = map.getZoom();
+  let featuresToShow = [];
   // Show per-country data for low zoom levels, but only for the most recent
   // date.
   if (zoom <= ZOOM_THRESHOLD && currentIsoDate == dates[dates.length - 1]) {
-    for (var country in latestDataPerCountry) {
-      var countryData = latestDataPerCountry[country];
-      var feature = formatFeatureForMap({
+    for (let country in latestDataPerCountry) {
+      let countryData = latestDataPerCountry[country];
+      let feature = formatFeatureForMap({
         'properties': {
           'geoid': countryData[0] + '|' + countryData[1],
           'total': countryData[2],
@@ -84,8 +84,8 @@ function buildTimeControl() {
 }
 
 function animateMap() {
-  var i = 0;
-  var stepMap = setInterval(function() {
+  let i = 0;
+  let stepMap = setInterval(function() {
     timeControl.value = i;
     showDataAtDate(dates[i]);
     setTimeControlLabel(i);
@@ -108,9 +108,9 @@ function zfill(n, width) {
  */
 function oneDayBefore(dateString) {
 
-  var parts = dateString.split('-');
+  let parts = dateString.split('-');
   // Month is 0-based.
-  var date = new Date(parts[0], parseInt(parts[1], 10) - 1, parts[2]);
+  let date = new Date(parts[0], parseInt(parts[1], 10) - 1, parts[2]);
   // Backtrack one day.
   date.setDate(date.getDate() - 1);
   return [date.getFullYear(),
@@ -119,23 +119,23 @@ function oneDayBefore(dateString) {
 }
 
 function processDailySlice(dateString, jsonData) {
-  var currentDate = jsonData['date'];
-  var features = jsonData['features'];
+  let currentDate = jsonData['date'];
+  let features = jsonData['features'];
 
   // Cases grouped by country and province.
-  var provinceFeatures = {};
-  var countryFeatures = {};
+  let provinceFeatures = {};
+  let countryFeatures = {};
 
   // "Re-hydrate" the features into objects ingestable by the map.
-  for (var i = 0; i < features.length; i++) {
-    var feature = formatFeatureForMap(features[i]);
+  for (let i = 0; i < features.length; i++) {
+    let feature = formatFeatureForMap(features[i]);
 
     // If we don't know where this is, discard.
     if (!locationInfo[feature['properties']['geoid']]) {
       continue;
     }
     // City, province, country.
-    var location = locationInfo[feature['properties']['geoid']].split(',');
+    let location = locationInfo[feature['properties']['geoid']].split(',');
     if (!provinceFeatures[location[1]]) {
       provinceFeatures[location[1]] = {'total': 0, 'new': 0};
     }
@@ -168,7 +168,7 @@ function processDailySlice(dateString, jsonData) {
 function fetchDailySlice(dateString) {
   dateString = dateString || 'latest';
 
-  var url = 'dailies/' + dateString.replace(/-/g, '.') + '.json';
+  let url = 'dailies/' + dateString.replace(/-/g, '.') + '.json';
   if (dateString == 'latest') {
     url += '?nocache=' + timestamp;
   }
@@ -219,14 +219,14 @@ function formatFeatureForMap(feature) {
   if (isNaN(feature['properties']['new'])) {
     feature['properties']['new'] = 0;
   }
-  var coords = feature['properties']['geoid'].split('|');
+  let coords = feature['properties']['geoid'].split('|');
   // Flip latitude and longitude.
   feature['geometry'] = {'type': 'Point', 'coordinates': [coords[1], coords[0]]};
   return feature;
 }
 
 function fetchWhoData() {
-  var params = {
+  let params = {
     'where': '1=1',
     'geometryType': 'esriGeometryEnvelope',
     'spatialRel': 'esriSpatialRelIntersects',
@@ -250,12 +250,12 @@ function fetchWhoData() {
     'returnExceededLimitFeatures': 'true',
     'f': 'pjson'
   }
-  var token = '5T5nSi527N4F7luB';
-  var paramArray = [];
-  for (var p in params) {
+  let token = '5T5nSi527N4F7luB';
+  let paramArray = [];
+  for (let p in params) {
     paramArray.push(p + '=' + params[p]);
   }
-  var url = 'https://services.arcgis.com/' +
+  let url = 'https://services.arcgis.com/' +
       token + '/' +
       'ArcGIS/rest/services/COVID_19_CasesByCountry(pl)_VIEW/' +
       'FeatureServer/0/query?' +
@@ -264,24 +264,24 @@ function fetchWhoData() {
   return fetch(url)
     .then(function(response) { return response.json(); })
     .then(function(jsonData) {
-      var obj = jsonData['features'];
-      var list = '';
+      let obj = jsonData['features'];
+      let list = '';
       // Sort according to decreasing confirmed cases.
       obj.sort(function(a, b) {
         return b['attributes']['cum_conf'] - a['attributes']['cum_conf'];
       });
-      for (var i = 0; i < obj.length; ++i) {
-        var location = obj[i];
+      for (let i = 0; i < obj.length; ++i) {
+        let location = obj[i];
         if (!location || !location['attributes'] || !location['centroid']) {
           // We can't do much with this location.
           continue;
         }
-        var name = location['attributes']['ADM0_NAME'] || '';
-        var lon = location['centroid']['x'] || 0;
-        var lat = location['centroid']['y'] || 0;
-        var geoid = '' + lat + '|' + lon;
-        var cumConf = location['attributes']['cum_conf'] || 0;
-        var legendGroup = 'default';
+        let name = location['attributes']['ADM0_NAME'] || '';
+        let lon = location['centroid']['x'] || 0;
+        let lat = location['centroid']['y'] || 0;
+        let geoid = '' + lat + '|' + lon;
+        let cumConf = location['attributes']['cum_conf'] || 0;
+        let legendGroup = 'default';
         latestDataPerCountry[name] = [lat, lon, cumConf];
         // No city or province, just the country name.
         locationInfo[geoid] = ',,' + name;
@@ -309,9 +309,9 @@ function fetchLocationData() {
   return fetch('location_info.data')
     .then(function(response) { return response.text(); })
     .then(function(responseText) {
-      var lines = responseText.split('\n');
-      for (var i = 0; i < lines.length; i++) {
-        var parts = lines[i].split(':');
+      let lines = responseText.split('\n');
+      for (let i = 0; i < lines.length; i++) {
+        let parts = lines[i].split(':');
         locationInfo[parts[0]] = parts[1];
       }
     });
@@ -321,9 +321,9 @@ function fetchCountryNames() {
   return fetch('countries.data')
     .then(function(response) { return response.text(); })
     .then(function(responseText) {
-      var countries = responseText.trim().split('|');
-      for (var i = 0; i < countries.length; i++) {
-        var parts = countries[i].split(':');
+      let countries = responseText.trim().split('|');
+      for (let i = 0; i < countries.length; i++) {
+        let parts = countries[i].split(':');
         countryNames[parts[1]] = parts[0];
       }
     });
@@ -343,21 +343,21 @@ function fetchLatestCounts() {
 
 // Filter list of locations
 function filterList() {
-  var filter = document.getElementById('location-filter').value.toUpperCase();
-  var ul = document.getElementById('location-list');
-  var list_items = document.getElementById(
+  let filter = document.getElementById('location-filter').value.toUpperCase();
+  let ul = document.getElementById('location-list');
+  let list_items = document.getElementById(
       'location-list').getElementsByTagName('li');
-  var clearFilter = document.getElementById('clear-filter');
+  let clearFilter = document.getElementById('clear-filter');
   // Loop through all list items, and hide those who don't match the search
   // query.
-  for (var i = 0; i < list_items.length; ++i) {
-    var label = list_items[i].getElementsByClassName('label')[0];
-    var txtValue = label.textContent || label.innerText;
+  for (let i = 0; i < list_items.length; ++i) {
+    let label = list_items[i].getElementsByClassName('label')[0];
+    let txtValue = label.textContent || label.innerText;
     // Show/hide the clear filter button.
     clearFilter.style.display = !!filter ? 'flex' : 'none';
 
     // Show/hide matching list items.
-    var show = txtValue.toUpperCase().indexOf(filter) != -1;
+    let show = txtValue.toUpperCase().indexOf(filter) != -1;
     list_items[i].style.display = show ? 'list-item' : 'none';
   }
 }
@@ -374,8 +374,8 @@ function fetchAboutPage() {
 }
 
 function handleShowModal(html) {
-  var modal = document.getElementById('modal');
-  var modalWrapper = document.getElementById('modal-wrapper');
+  let modal = document.getElementById('modal');
+  let modalWrapper = document.getElementById('modal-wrapper');
   // Switch elements to have 'display' value (block, flex) but keep hidden via
   // opacity
   modalWrapper.classList.add('is-block');
@@ -389,8 +389,8 @@ function handleShowModal(html) {
 }
 
 function handleHideModal() {
-  var modal = document.getElementById('modal');
-  var modalWrapper = document.getElementById('modal-wrapper');
+  let modal = document.getElementById('modal');
+  let modalWrapper = document.getElementById('modal-wrapper');
   modalWrapper.classList.remove('is-visible');
   modal.classList.remove('is-visible');
   setTimeout(function () {
@@ -401,14 +401,14 @@ function handleHideModal() {
 }
 
 function showLegend() {
-  var list = document.getElementById('legend').getElementsByTagName('ul')[0];
-  for (var i = 0; i < COLOR_MAP.length; i++) {
-    var color = COLOR_MAP[i];
-    var item = document.createElement('li');
-    var circle = document.createElement('span');
+  let list = document.getElementById('legend').getElementsByTagName('ul')[0];
+  for (let i = 0; i < COLOR_MAP.length; i++) {
+    let color = COLOR_MAP[i];
+    let item = document.createElement('li');
+    let circle = document.createElement('span');
     circle.className = 'circle';
     circle.style.backgroundColor = color[0];
-    var label = document.createElement('span');
+    let label = document.createElement('span');
     label.className = 'label';
     label.textContent = color[1];
     item.appendChild(circle);
@@ -458,17 +458,17 @@ function sameLocation(geoid_a, geoid_b) {
 }
 
 function makeCaseGraph(geoid) {
-  var svg = d3.select(document.createElementNS(d3.namespaces.svg, 'svg'));
+  let svg = d3.select(document.createElementNS(d3.namespaces.svg, 'svg'));
   svg.attr('width', CASE_GRAPH_WIDTH_PX).
       attr('height', CASE_GRAPH_HEIGHT_PX);
 
-  var historicalFeaturesForHere = [];
-  var dates = [];
-  var cases = [];
-  for (var date in atomicFeaturesByDay) {
-    var features = atomicFeaturesByDay[date];
-    for (var i = 0; i < features.length; i++) {
-      var f = features[i];
+  let historicalFeaturesForHere = [];
+  let dates = [];
+  let cases = [];
+  for (let date in atomicFeaturesByDay) {
+    let features = atomicFeaturesByDay[date];
+    for (let i = 0; i < features.length; i++) {
+      let f = features[i];
       if (sameLocation(geoid, f['properties']['geoid'])) {
         f['properties']['date'] = date;
         cases.push({
@@ -478,7 +478,7 @@ function makeCaseGraph(geoid) {
     }
   }
 
-  var xScale = d3.scaleTime()
+  let xScale = d3.scaleTime()
       .domain(d3.extent(cases, function(c) { return c['date']; }))
       .range([0, CASE_GRAPH_WIDTH_PX]);
 
@@ -486,13 +486,13 @@ function makeCaseGraph(geoid) {
       .attr('transform', 'translate(0,' + CASE_GRAPH_HEIGHT_PX + ')')
       .call(d3.axisBottom(xScale));
 
-  var yScale = d3.scaleLinear()
+  let yScale = d3.scaleLinear()
       .domain([0, d3.max(cases, function(c) { return c['total']; })])
       .range([CASE_GRAPH_HEIGHT_PX, 0]);
 
   svg.append("g").call(d3.axisLeft(yScale));
 
-  var casesLine = d3.line()
+  let casesLine = d3.line()
     .x(function(c) { return xScale(c['date']);}) // apply the x scale to the x data
     .y(function(c) { return yScale(c['total']);}) // apply the y scale to the y data
 
@@ -511,14 +511,14 @@ function showPopupForEvent(e) {
     return;
   }
 
-  var f = e['features'][0];
-  var props = f['properties'];
-  var geo_id = props['geoid'];
-  var coordinatesString = geo_id.split('|');
-  var lat = parseFloat(coordinatesString[0]);
-  var lng = parseFloat(coordinatesString[1]);
+  let f = e['features'][0];
+  let props = f['properties'];
+  let geo_id = props['geoid'];
+  let coordinatesString = geo_id.split('|');
+  let lat = parseFloat(coordinatesString[0]);
+  let lng = parseFloat(coordinatesString[1]);
   // Country, province, city
-  var location = locationInfo[geo_id].split(',');
+  let location = locationInfo[geo_id].split(',');
   // Replace country code with name if necessary
   if (location[2].length == 2) {
     location[2] = countryNames[location[2]];
@@ -526,7 +526,7 @@ function showPopupForEvent(e) {
   // Remove empty strings
   location = location.filter(function (el) { return el != ''; });
 
-  var content = document.createElement('div');
+  let content = document.createElement('div');
   content.innerHTML = '<h3 class="popup-header">' + location.join(', ') +
       '</h3>' + '<div>' + '<strong>Number of Cases: </strong>' +
       props['total'].toLocaleString() + '</div>';
@@ -582,10 +582,10 @@ function initMap() {
       'type': 'geojson',
       'data': formatFeatureSetForMap([])
     });
-    var circleColorForTotals = ['step', ['get', 'total']];
+    let circleColorForTotals = ['step', ['get', 'total']];
     // Don't use the last color here (for new cases).
-    for (var i = 0; i < COLOR_MAP.length - 1; i++) {
-      var color = COLOR_MAP[i];
+    for (let i = 0; i < COLOR_MAP.length - 1; i++) {
+      let color = COLOR_MAP[i];
       circleColorForTotals.push(color[0]);
       if (color.length > 2) {
         circleColorForTotals.push(color[2]);
