@@ -226,7 +226,7 @@ function formatFeatureForMap(feature) {
 }
 
 function fetchWhoData() {
-  let params = {
+  const params = {
     'where': '1=1',
     'geometryType': 'esriGeometryEnvelope',
     'spatialRel': 'esriSpatialRelIntersects',
@@ -250,12 +250,12 @@ function fetchWhoData() {
     'returnExceededLimitFeatures': 'true',
     'f': 'pjson'
   }
-  let token = '5T5nSi527N4F7luB';
+  const token = '5T5nSi527N4F7luB';
   let paramArray = [];
   for (let p in params) {
     paramArray.push(p + '=' + params[p]);
   }
-  let url = 'https://services.arcgis.com/' +
+  const url = 'https://services.arcgis.com/' +
       token + '/' +
       'ArcGIS/rest/services/COVID_19_CasesByCountry(pl)_VIEW/' +
       'FeatureServer/0/query?' +
@@ -279,7 +279,7 @@ function fetchWhoData() {
         let name = location['attributes']['ADM0_NAME'] || '';
         let lon = location['centroid']['x'] || 0;
         let lat = location['centroid']['y'] || 0;
-        let geoid = '' + lat + '|' + lon;
+        const geoid = '' + lat + '|' + lon;
         let cumConf = location['attributes']['cum_conf'] || 0;
         let legendGroup = 'default';
         latestDataPerCountry[name] = [lat, lon, cumConf];
@@ -357,7 +357,7 @@ function filterList() {
     clearFilter.style.display = !!filter ? 'flex' : 'none';
 
     // Show/hide matching list items.
-    let show = txtValue.toUpperCase().indexOf(filter) != -1;
+    const show = txtValue.toUpperCase().indexOf(filter) != -1;
     list_items[i].style.display = show ? 'list-item' : 'none';
   }
 }
