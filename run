@@ -1,0 +1,23 @@
+#!/usr/bin/python3
+
+import shlex
+import subprocess
+import sys
+
+sys.path.append("scripts")
+from run import run
+
+# Returns True if everything we need is here, False otherwise.
+def check_dependencies():
+    try:
+        subprocess.check_call(shlex.split("sass --version"))
+    except (subprocess.CalledProcessError, OSError):
+        print("Please install 'sass' first.")
+        return False
+    return True
+
+if __name__ == '__main__':
+    if not check_dependencies():
+        sys.exit(1)
+
+    run()

@@ -5,15 +5,13 @@ import os
 
 # These files can be re-generated and aren't checked into version control.
 FILES_TO_REMOVE = [
-  "full-data.json",
-  "latestCounts.json",
-  "location_info.data",
-  "who.json",
+  "app/latestCounts.json",
+  "app/location_info.data",
 ]
 
 for f in FILES_TO_REMOVE:
   if os.path.exists(f):
     os.remove(f)
 
-for daily in glob.glob("dailies/*.json"):
+for daily in glob.glob("app/dailies/*.json"):
   os.remove(daily)

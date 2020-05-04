@@ -1,0 +1,24 @@
+#!/usr/bin/python3
+
+import sys
+sys.path.append("scripts")
+from deploy import deploy
+
+import os
+import shlex
+import subprocess
+
+if len(sys.argv) < 2:
+    print("Please give me the target path as an argument. "
+          "For instance:\n\n\t" + sys.argv[0] + " /var/www/html/covid-19\n")
+    sys.exit(1)
+
+src_path = os.path.dirname(os.path.realpath(__file__))
+os.chdir(src_path)
+target_path = sys.argv[1]
+if not os.path.exists(target_path):
+    print("Target '" + target_path + "' doesn't exist, creating it.")
+    os.mkdir(target_path)
+
+if __name__ == '__main__':
+    deploy(target_path)

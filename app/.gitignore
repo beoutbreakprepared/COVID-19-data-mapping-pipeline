@@ -2,7 +2,6 @@
 css/styles.css
 css/styles.css.map
 dailies/
-full-data.json
+js/bundle.js
 latestCounts.json
 location_info.data
-who.json

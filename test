@@ -1,0 +1,33 @@
+#!/usr/bin/python3
+
+import os
+import shutil
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), "tests"))
+
+from colorama import Fore, Back, Style
+from tests import *
+
+TESTS = [
+    deploy_test.DeployTest,
+    run_test.RunTest,
+]
+
+for test_class in TESTS:
+    width = shutil.get_terminal_size((80, 20)).columns
+    t = test_class()
+
+    print(Style.RESET_ALL)
+    name = t.display_name()
+    print(name + "...", end="", flush=True)
+    print("." * (width - len(name) - len("PASS") - len("...") - 1) + " ",
+          end="")
+
+    t.run_wrapper()
+    t.tear_down()
+    if t.passed():
+        print(Fore.GREEN + "PASS", end="", flush=True)
+    else:
+        print(Fore.RED + "FAIL", end="", flush=True)
+
+print("\n")

@@ -66,15 +66,6 @@ def split_by_day(data, out_dir):
 def convert_to_client_format(file_path):
   functions.animation_formating_geo(file_path, TEMP_JSON)
 
-def compile_location_info(in_file_path, out_file_path):
-  location_info = functions.compile_location_info(in_file_path)
-  output = []
-  for geoid in location_info:
-    output.append(geoid + ":" + ",".join(location_info[geoid]))
-  with open(out_file_path, "w") as f:
-    f.write("\n".join(output))
-    f.close()
-
 def split_full_data_to_daily_slices(full_data_file_path, out_dir):
   # TODO: Support passinng data directly instead of writing to and
   # re-reading from disk.
