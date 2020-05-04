@@ -21,6 +21,7 @@ class DeployTest(base_test.BaseTest):
             # Previous run may have failed.
             os.system("rm -rf " + TEST_TARGET)
         os.mkdir(TEST_TARGET)
+        # Note: set 'quiet' to True for debugging failures.
         deploy(TEST_TARGET, quiet=True)
 
         self.check(

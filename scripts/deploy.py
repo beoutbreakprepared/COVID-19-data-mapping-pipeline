@@ -49,6 +49,7 @@ def check_dependencies():
         os.system("unzip -d tools compiler-latest.zip")
         os.system("mv tools/closure-compiler*.jar tools/closure-compiler.jar")
         os.system("rm -rf tools/COPYING tools/README.md")
+        os.system("rm -f compiler-latest.zip")
 
     return True
 
@@ -145,12 +146,13 @@ def deploy(target_path, quiet=False):
     data_util.prepare_for_deployment(quiet=quiet)
     os.system("sass app/css/styles.scss app/css/styles.css")
 
+    use_compiled_js(quiet=quiet)
+
     if has_analytics_code():
         if not quiet:
             print("Analytics code is already present, skipping that step.")
     else:
         insert_analytics_code(quiet=quiet)
-    use_compiled_js(quiet=quiet)
 
     if not backup_current_version(target_path, quiet=quiet):
         print("I could not back up the current version, bailing out.")
