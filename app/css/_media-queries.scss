@@ -120,13 +120,7 @@
     right: 1rem;
   }
   #spread {
-    padding: .2rem .75rem .2rem .5rem;
-    & img {
-      margin-right: .25rem;
-    }
-    .spread-label {
-      display: inline;
-    }
+    padding: .2rem .5rem;
   }
   .mapboxgl-ctrl-bottom-left {
     margin-left: $sidebar-width + 1rem;

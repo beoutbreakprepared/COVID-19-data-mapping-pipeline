@@ -552,9 +552,6 @@ div.mapboxgl-popup-content {
   border-radius: $box-corner;
   transition: all .3s ease;
   cursor: pointer;
-  .spread-label {
-    display: none;
-  }
   &:hover {
     background-color: #44aa44;
   }

@@ -32,6 +32,7 @@ let map;
 let popup;
 
 let currentIsoDate;
+let animationIntervalId = 0;
 
 // An object mapping dates to JSON objects with the corresponding data.
 // for that day, grouped by country, province, or ungrouped (smallest
@@ -76,24 +77,40 @@ function setTimeControlLabel(date) {
   document.getElementById('date').innerText = dates[date];
 }
 
-function buildTimeControl() {
+function updateTimeControl() {
+  // There's no point in showing the time control if we only have data for one
+  // date.
+  if (dates.length < 2) {
+    return;
+  }
   document.getElementById('range-slider').style.display = 'flex';
-  timeControl.setAttribute('max', dates.length - 1)
-  timeControl.setAttribute('value', dates.length - 1);
+  timeControl.min = 0;
+  timeControl.max = dates.length - 1;
+  // Keep the slider at max value.
+  timeControl.value = dates.length - 1;
   setTimeControlLabel(dates.length - 1);
 }
 
-function animateMap() {
-  let i = 0;
-  let stepMap = setInterval(function() {
-    timeControl.value = i;
-    showDataAtDate(dates[i]);
-    setTimeControlLabel(i);
-    i++;
-    if (i === dates.length) {
-      clearInterval(stepMap);
-    }
-  }, ANIMATION_FRAME_DURATION_MS);
+function toggleMapAnimation() {
+  const shouldStart = !animationIntervalId;
+  document.getElementById('playpause').setAttribute('src', 'img/' +
+      (shouldStart ? 'pause' : 'play') + '.svg');
+  if (shouldStart) {
+    let i = 0;
+    animationIntervalId = setInterval(function() {
+      timeControl.value = i;
+      showDataAtDate(dates[i]);
+      setTimeControlLabel(i);
+      i++;
+      if (i === dates.length) {
+        // We've reached the end.
+        toggleMapAnimation();
+      }
+    }, ANIMATION_FRAME_DURATION_MS);
+  } else {
+    clearInterval(animationIntervalId);
+    animationIntervalId = 0;
+  }
 }
 
 /** Fills with leading zeros to the desired width. */
@@ -159,6 +176,8 @@ function processDailySlice(dateString, jsonData) {
   if (dateString == 'latest') {
     showDataAtDate(currentDate);
   }
+
+  updateTimeControl();
 }
 
 /**
@@ -198,8 +217,7 @@ function onBasicDataFetched() {
 }
 
 function onAllDailySlicesFetched() {
-  buildTimeControl();
-  document.getElementById('spread').addEventListener('click', animateMap);
+  // Nothing special to do at this point.
 }
 
 // Takes an array of features, and bundles them in a way that the map API
@@ -620,6 +638,9 @@ function initMap() {
 
     showLegend();
   });
+  document.getElementById('spread').
+      addEventListener('click', toggleMapAnimation);
+  document.getElementById('playpause').setAttribute('src', 'img/play.svg');
 }
 
 // Exports
