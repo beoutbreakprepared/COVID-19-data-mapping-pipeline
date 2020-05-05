@@ -187,7 +187,6 @@ function fetchDailySlice(sliceFileName, isNewest) {
 
 function onBasicDataFetched() {
   // We can now start getting daily data.
-  fetchDailySlice(undefined);
   let dailyFetches = [];
   for (let i = 0; i < dataSliceFileNames.length; i++) {
     dailyFetches.push(fetchDailySlice(dataSliceFileNames[i], i == 0));
