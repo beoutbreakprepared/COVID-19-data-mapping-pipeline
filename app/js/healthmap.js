@@ -27,6 +27,7 @@ let countryNames = {};
 // A map from country names to most recent data (case count, etc.).
 let latestDataPerCountry = {};
 let dates = [];
+let dataSliceFileNames = [];
 let map;
 // The same popup object will be reused.
 let popup;
@@ -119,23 +120,7 @@ function zfill(n, width) {
   return n.length >= width ? n : new Array(width - n.length + 1).join('0') + n;
 }
 
-/**
- * Returns a date string corresponding to the day before the passed in
- * date.
- */
-function oneDayBefore(dateString) {
-
-  let parts = dateString.split('-');
-  // Month is 0-based.
-  let date = new Date(parts[0], parseInt(parts[1], 10) - 1, parts[2]);
-  // Backtrack one day.
-  date.setDate(date.getDate() - 1);
-  return [date.getFullYear(),
-          zfill(date.getMonth() + 1, 2),
-          zfill(date.getDate(), 2)].join('-');
-}
-
-function processDailySlice(dateString, jsonData) {
+function processDailySlice(jsonData, isNewest) {
   let currentDate = jsonData['date'];
   let features = jsonData['features'];
 
@@ -173,7 +158,7 @@ function processDailySlice(dateString, jsonData) {
 
   // Only use the latest data for the map until we're done downloading
   // everything.
-  if (dateString == 'latest') {
+  if (isNewest) {
     showDataAtDate(currentDate);
   }
 
@@ -184,40 +169,33 @@ function processDailySlice(dateString, jsonData) {
  * Fetches the next daily slice of data we need. If no argument is provided,
  * fetches the latest slice first.
  */
-function fetchDailySlice(dateString) {
-  dateString = dateString || 'latest';
-
-  let url = 'dailies/' + dateString.replace(/-/g, '.') + '.json';
-  if (dateString == 'latest') {
+function fetchDailySlice(sliceFileName, isNewest) {
+  let url = 'dailies/' + sliceFileName;
+  // Don't cache the most recent daily slice. Cache all others.
+  if (isNewest) {
     url += '?nocache=' + timestamp;
   }
-  fetch(url)
-      .then(function(response) {
-        if (response.status == 200) {
-          return response.json();
-        } else {
-          // We're done downloading data.
-          onAllDailySlicesFetched();
-        }
-      })
+  return fetch(url)
+      .then(function(response) { return response.json(); })
       .then(function(jsonData) {
         if (!jsonData) {
           return;
         }
-        processDailySlice(dateString, jsonData);
-
-        // Now fetch the next (older) slice of data.
-        fetchDailySlice(oneDayBefore(jsonData['date']));
+        processDailySlice(jsonData, isNewest);
   });
 }
 
 function onBasicDataFetched() {
   // We can now start getting daily data.
-  fetchDailySlice(undefined);
+  let dailyFetches = [];
+  for (let i = 0; i < dataSliceFileNames.length; i++) {
+    dailyFetches.push(fetchDailySlice(dataSliceFileNames[i], i == 0));
+  }
+  Promise.all(dailyFetches).then(onAllDailySlicesFetched);
 }
 
 function onAllDailySlicesFetched() {
-  // Nothing special to do at this point.
+  dates = dates.sort();
 }
 
 // Takes an array of features, and bundles them in a way that the map API
@@ -331,6 +309,20 @@ function fetchLocationData() {
       for (let i = 0; i < lines.length; i++) {
         let parts = lines[i].split(':');
         locationInfo[parts[0]] = parts[1];
+      }
+    });
+}
+
+function fetchDataIndex() {
+  return fetch('dailies/index.txt')
+    .then(function(response) { return response.text(); })
+    .then(function(responseText) {
+      let lines = responseText.split('\n');
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!!line) {
+          dataSliceFileNames.push(line);
+        }
       }
     });
 }
@@ -481,9 +473,9 @@ function makeCaseGraph(geoid) {
       attr('height', CASE_GRAPH_HEIGHT_PX);
 
   let historicalFeaturesForHere = [];
-  let dates = [];
   let cases = [];
-  for (let date in atomicFeaturesByDay) {
+  for (let i = 0; i < dates.length; i++) {
+    const date = dates[i];
     let features = atomicFeaturesByDay[date];
     for (let i = 0; i < features.length; i++) {
       let f = features[i];
@@ -632,6 +624,7 @@ function initMap() {
     Promise.all([
       fetchLatestCounts(),
       fetchCountryNames(),
+      fetchDataIndex(),
       fetchLocationData(),
       fetchWhoData()
     ]).then(onBasicDataFetched);
