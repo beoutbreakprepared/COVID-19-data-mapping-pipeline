@@ -1,5 +1,10 @@
 var d3 = {};
 
+/** @constructor */
+d3.Axis = function() {};
+
+/** @return {d3.Axis} */
+d3.Axis.prototype.tickValues = function(a) {};
 
 /** @constructor */
 d3.Line = function() {};
@@ -36,9 +41,12 @@ d3.Selection.prototype.call = function(e) {};
 /** @return {d3.Selection} */
 d3.Selection.prototype.node = function() {};
 
-
+/** @return {d3.Axis} */
 d3.axisBottom = function(a) {};
+
+/** @return {d3.Axis} */
 d3.axisLeft = function(a) {};
+
 d3.extent = function(a, b) {};
 
 /** @return {d3.Line} */
