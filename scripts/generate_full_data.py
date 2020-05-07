@@ -49,8 +49,8 @@ parser.add_argument('--input_jhu', default='', type=str,
 def prepare_latest_data(quiet=False):
     if not quiet:
         print("Downloading latest data...")
-    os.system("curl '" + LATEST_DATA_URL + "' > latestdata.tgz")
-    os.system("tar xvf latestdata.tgz")
+    os.system("curl --silent '" + LATEST_DATA_URL + "' > latestdata.tgz")
+    os.system("tar xzf latestdata.tgz")
     os.remove("latestdata.tgz")
 
     try:
