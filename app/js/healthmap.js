@@ -1,6 +1,6 @@
 // Constants
 const ANIMATION_FRAME_DURATION_MS = 300;
-const CASE_GRAPH_WIDTH_PX = 220;
+const CASE_GRAPH_WIDTH_PX = 200;
 const CASE_GRAPH_HEIGHT_PX = 120;
 
 const COLOR_MAP = [
