@@ -20,7 +20,7 @@ from io import StringIO
 
 JHU_URL= 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv'
 
-LATEST_DATA_URL = 'https://raw.githubusercontent.com/beoutbreakprepared/nCoV2019/master/latest_data/latestdata.csv'
+LATEST_DATA_URL = 'https://raw.githubusercontent.com/beoutbreakprepared/nCoV2019/master/latest_data/latestdata.tar.gz'
 
 
 parser = argparse.ArgumentParser(description='Generate full-data.json file')
@@ -46,27 +46,24 @@ parser.add_argument('--input_jhu', default='', type=str,
         help='read from local jhu file')
 
 
-def prepare_latest_data(infile, quiet=False):
-    if infile :
-        if re.match('.*\.tar.gz$', infile):
-            print('extracting latest data')
-            os.system('tar -xzf ' + infile) 
-            readfrom = infile.replace('.tar.gz', '.csv')
+def prepare_latest_data(quiet=False):
+    if not quiet:
+        print("Downloading latest data...")
+    os.system("curl --silent '" + LATEST_DATA_URL + "' > latestdata.tgz")
+    os.system("tar xzf latestdata.tgz")
+    os.remove("latestdata.tgz")
 
-        else:
-            readfrom = infile
-    else:
+    try:
         if not quiet:
-            print("Downloading latest data...")
-        req = requests.get(LATEST_DATA_URL)
-        if req.status_code != 200:
-            print('could not get latestdata.csv, aborting')
-            sys.exit(1)
-        readfrom = StringIO(req.text)
+            print("Reading the latest data...")
+        df = pd.read_csv("latestdata.csv", usecols=['city', 'province', 'country',
+            'date_confirmation', 'latitude', 'longitude'])
+        os.remove("latestdata.csv")
 
-
-    df = pd.read_csv(readfrom, usecols=['city', 'province', 'country',
-        'date_confirmation', 'latitude', 'longitude'])
+    except ValueError:
+        print("I couldn't read data from the source file. Is there something "
+              "wrong with the data at '" + LATEST_DATA_URL + "'?")
+        sys.exit(1)
 
     df['latitude'] = df.latitude.astype(str)
     df['longitude'] = df.longitude.astype(str)
@@ -201,10 +198,10 @@ def chunks(new_cases, total_cases):
     for i in range(len(new_cases)):
         yield (new_cases.iloc[i], total_cases.iloc[i])
 
-def generate_data(out_dir, latest=False, jhu=False, input_jhu='',
+def generate_data(out_dir, jhu=False, input_jhu='',
     export_full_data=False, overwrite=False, quiet=False):
 
-  latest = prepare_latest_data(latest, quiet=quiet)
+  latest = prepare_latest_data(quiet=quiet)
   jhu = prepare_jhu_data(jhu, input_jhu, quiet=quiet)
   full = latest.merge(jhu, on='date', how='outer')
   full.fillna(0, inplace=True)
@@ -269,7 +266,7 @@ if __name__ == '__main__':
         import time
         t0 = time.time()
 
-    generate_data(args.out_dir, args.latest, args.jhu, args.input_jhu, args.full)
+    generate_data(args.out_dir, args.jhu, args.input_jhu, args.full)
 
     if args.timeit:
         print(round(time.time() - t0, 2), "seconds")
