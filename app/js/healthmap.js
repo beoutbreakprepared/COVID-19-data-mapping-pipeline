@@ -494,13 +494,14 @@ function makeCaseGraph(geoid) {
 
   svg.append('g')
       .attr('transform', 'translate(0,' + CASE_GRAPH_HEIGHT_PX + ')')
-      .call(d3.axisBottom(xScale));
+      .call(d3.axisBottom(xScale).tickValues([]));
 
   let yScale = d3.scaleLinear()
       .domain([0, d3.max(cases, function(c) { return c['total']; })])
       .range([CASE_GRAPH_HEIGHT_PX, 0]);
 
-  svg.append("g").call(d3.axisLeft(yScale));
+  svg.append("g")
+      .call(d3.axisLeft(yScale).tickValues([]));
 
   let casesLine = d3.line()
     .x(function(c) { return xScale(c['date']);}) // apply the x scale to the x data
