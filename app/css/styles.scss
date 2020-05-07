@@ -234,12 +234,12 @@ h1 {
   overflow: auto;
   li {
     width: 100%;
-    margin: .5rem 0 !important;
+    margin: .3rem 0 !important;
   }
   button {
     display: flex;
     justify-content: space-between;
-    padding: .75rem;
+    padding: .5rem .75rem;
     width: 100%;
     font-size: .9rem;
     color: #ccc;
@@ -348,7 +348,12 @@ h1 {
 }
 
 div.mapboxgl-popup-content {
-  padding: 10px;
+  padding: 20px;
+}
+
+.mapboxgl-popup-content svg {
+  margin-top: 7px;
+  overflow: visible;
 }
 
 .popup-header {
