@@ -46,9 +46,20 @@ parser.add_argument('--input_jhu', default='', type=str,
         help='read from local jhu file')
 
 
-def prepare_latest_data(infile, quiet=False):
+def prepare_latest_data(infile, quiet=False, **kwargs):
     if infile :
-        readfrom = infile
+        if re.match('.*\.tar.gz$', infile):
+            print('extracting latest data')
+            os.system('tar -xzf ' + infile) 
+
+            fname = kwargs.get('archived_name', '')
+            if fname:
+                readfrom = fname
+            else:
+                readfrom = infile.replace('.tar.gz', '.csv')
+
+        else:
+            readfrom = infile
     else:
         if not quiet:
             print("Downloading latest data...")
