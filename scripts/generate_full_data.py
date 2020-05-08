@@ -14,7 +14,6 @@ import sys
 
 from io import StringIO
 
-import numpy
 import pandas as pd
 import requests
 
