@@ -1,16 +1,3 @@
-import json
-import functions
-import os
-import sys
-
-TEMP_JSON = "temp.json"
-TOPLEVEL_KEY = "data"
-
-# Geo properties that the client doesn't use and that we can prune out.
-PROPERTIES_TO_PRUNE = [
-    "date",
-    "geo_resolution",
-]
 
 def normalize_date(date):
     date = date.replace("-", ".")
@@ -23,6 +10,3 @@ def normalize_date(date):
     if len(date_parts[0]) != 4:
         date_parts.reverse()
     return ".".join(date_parts)
-
-def convert_to_client_format(file_path):
-    functions.animation_formating_geo(file_path, TEMP_JSON)
