@@ -7,16 +7,18 @@ split into daily slices.
 
 import argparse
 import json
-import functions
-import os
 import multiprocessing
-import pandas as pd
+import os
 import re
-import requests
-import split
 import sys
 
 from io import StringIO
+
+import pandas as pd
+import requests
+
+import functions
+import split
 
 JHU_URL= 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv'
 
@@ -46,6 +48,18 @@ parser.add_argument('--input_jhu', default='', type=str,
         help='read from local jhu file')
 
 
+def generate_geo_ids(df, lat_field_name, lng_field_name, quiet=False):
+    if not quiet:
+        print("Rounding latitudes and longitudes...")
+    df[lat_field_name] = df[lat_field_name].apply(functions.round_lat_long)
+    df[lng_field_name] = df[lng_field_name].apply(functions.round_lat_long)
+
+    if not quiet:
+        print("Generating 'geo ids'...")
+    df["geoid"] = df[lat_field_name] + "|" + df[lng_field_name]
+
+    return df
+
 def prepare_latest_data(quiet=False):
     if not quiet:
         print("Downloading latest data...")
@@ -68,7 +82,8 @@ def prepare_latest_data(quiet=False):
     df['latitude'] = df.latitude.astype(str)
     df['longitude'] = df.longitude.astype(str)
 
-    # filters
+    if not quiet:
+        print("Applying filters...")
     df = df[~df.country.isin(['United States', 'Virgin Islands, U.S.', 'Puerto Rico'])]
     df = df[~df.latitude.isnull() | df.longitude.isnull()]
     df = df[~df.latitude.str.contains('[aA-zZ]', regex=True)]
@@ -77,13 +92,14 @@ def prepare_latest_data(quiet=False):
     df = df[pd.to_datetime(df.date_confirmation,
         format="%d.%m.%Y", errors='coerce') < pd.datetime.now()]
 
-    df["geoid"] = df.apply(lambda row: functions.latlong_to_geo_id(
-        row.latitude, row.longitude), axis=1)
+    generate_geo_ids(df, "latitude", "longitude", quiet=quiet)
 
     # Extract mappings between lat|long and geographical names, then only keep
     # the geo_id.
+    if not quiet:
+        print("Extracting location info...")
     functions.compile_location_info(df.to_dict("records"),
-        "app/location_info_world.data", quiet=quiet)
+                                    "app/location_info_world.data", quiet=quiet)
     df = df.drop(['city', 'province', 'country', 'latitude', 'longitude'], axis=1)
 
     dates  = df.date_confirmation.unique()
@@ -132,8 +148,8 @@ def prepare_jhu_data(outfile, read_from_file, quiet=False):
     df = df[df.Admin2 != 'Unassigned']
     df = df[~((df.Lat == 0) & (df.Long_ == 0))]
 
-    df["geoid"] = df.apply(lambda row: functions.latlong_to_geo_id(
-        row['Lat'], row['Long_']), axis=1)
+    generate_geo_ids(df, "Lat", "Long_", quiet=quiet)
+
     functions.compile_location_info(df.to_dict("records"),
         out_file="app/location_info_us.data",
         keys=["Country_Region", "Province_State", "Admin2"],
