@@ -42,7 +42,7 @@ let countryFeaturesByDay = {};
 let provinceFeaturesByDay = {};
 let atomicFeaturesByDay = {};
 
-let timeControl = document.getElementById('slider');
+let timeControl;
 
 function onMapZoomChanged() {
   showDataAtDate(currentIsoDate);
@@ -583,6 +583,7 @@ function initMap() {
     'closeOnClick': false
   });
 
+  timeControl = document.getElementById('slider');
   timeControl.addEventListener('input', function() {
     setTimeControlLabel(timeControl.value);
     showDataAtDate(dates[timeControl.value]);
@@ -638,7 +639,7 @@ function initMap() {
 }
 
 // Exports
-window['clearFilter'] = clearFilter;
-window['filterList'] = filterList;
-window['initMap'] = initMap;
-window['handleFlyTo'] = handleFlyTo;
+global['clearFilter'] = clearFilter;
+global['filterList'] = filterList;
+global['initMap'] = initMap;
+global['handleFlyTo'] = handleFlyTo;
