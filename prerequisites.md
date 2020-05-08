@@ -3,6 +3,7 @@ If you want to run this server locally, you will need the following:
 |Name|Why|Debian/Ubuntu package|
 |--|--|--|
 |Java|Run the Closure compiler|openjdk-11-jre|
+|NodeJS|Run the JS unit tests|nodejs|
 |Python 3|Run the server|`python3`|
 |Pandas|Massage the data for server ingestion|`python3-pandas`|
 |SASS|Generate CSS from SCSS|`ruby-sass`|

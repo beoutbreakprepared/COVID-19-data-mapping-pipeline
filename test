@@ -6,10 +6,11 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "tests"))
 
 from colorama import Fore, Back, Style
-from tests import *
+from tests import deploy_test, js_test, run_test
 
 TESTS = [
     deploy_test.DeployTest,
+    js_test.JsTest,
     run_test.RunTest,
 ]
 
