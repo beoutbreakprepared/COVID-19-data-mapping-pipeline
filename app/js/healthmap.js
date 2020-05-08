@@ -221,43 +221,8 @@ function formatFeatureForMap(feature) {
   return feature;
 }
 
-function fetchWhoData() {
-  const params = {
-    'where': '1=1',
-    'geometryType': 'esriGeometryEnvelope',
-    'spatialRel': 'esriSpatialRelIntersects',
-    'units': 'esriSRUnit_Meter',
-    'returnGeodetic': 'true',
-    'outFields': 'cum_conf%2C+ADM0_NAME',
-    'returnGeometry': 'false',
-    'returnCentroid': 'true',
-    'featureEncoding': 'esriDefault',
-    'multipatchOption': 'xyFootprint',
-    'applyVCSProjection': 'false',
-    'returnIdsOnly': 'false',
-    'returnUniqueIdsOnly': 'false',
-    'returnCountOnly': 'false',
-    'returnExtentOnly': 'false',
-    'returnQueryGeometry': 'false',
-    'returnDistinctValues': 'false',
-    'cacheHint': 'false',
-    'returnZ': 'false',
-    'returnM': 'false',
-    'returnExceededLimitFeatures': 'true',
-    'f': 'pjson'
-  }
-  const token = '5T5nSi527N4F7luB';
-  let paramArray = [];
-  for (let p in params) {
-    paramArray.push(p + '=' + params[p]);
-  }
-  const url = 'https://services.arcgis.com/' +
-      token + '/' +
-      'ArcGIS/rest/services/COVID_19_CasesByCountry(pl)_VIEW/' +
-      'FeatureServer/0/query?' +
-      paramArray.join('&');
-
-  return fetch(url)
+function fetchJhuData() {
+  return fetch('jhu.json?nocache=' + timestamp)
     .then(function(response) { return response.json(); })
     .then(function(jsonData) {
       let obj = jsonData['features'];
@@ -628,7 +593,7 @@ function initMap() {
       fetchCountryNames(),
       fetchDataIndex(),
       fetchLocationData(),
-      fetchWhoData()
+      fetchJhuData()
     ]).then(onBasicDataFetched);
 
     showLegend();

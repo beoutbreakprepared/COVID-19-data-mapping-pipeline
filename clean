@@ -6,6 +6,7 @@ import os
 # These files can be re-generated and aren't checked into version control.
 FILES_TO_REMOVE = [
   "app/dailies/index.txt",
+  "app/jhu.json",
   "app/latestCounts.json",
   "app/location_info.data",
 ]
