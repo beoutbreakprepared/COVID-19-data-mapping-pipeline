@@ -639,7 +639,7 @@ function initMap() {
 }
 
 // Exports
-global['clearFilter'] = clearFilter;
-global['filterList'] = filterList;
-global['initMap'] = initMap;
-global['handleFlyTo'] = handleFlyTo;
+globalThis['clearFilter'] = clearFilter;
+globalThis['filterList'] = filterList;
+globalThis['initMap'] = initMap;
+globalThis['handleFlyTo'] = handleFlyTo;

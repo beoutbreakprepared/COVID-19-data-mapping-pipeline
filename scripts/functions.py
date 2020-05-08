@@ -373,6 +373,9 @@ def animation_formating(infile):
     return array
 
 
+def round_lat_long(lat_or_lng):
+    return str(round(float(lat_or_lng), LAT_LNG_DECIMAL_PLACES))
+
 def latlong_to_geo_id(lat, lng):
   '''
   Returns a string key from a latitude and longitude.
