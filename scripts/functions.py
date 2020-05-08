@@ -376,11 +376,6 @@ def animation_formating(infile):
 def round_lat_long(lat_or_lng):
     return str(round(float(lat_or_lng), LAT_LNG_DECIMAL_PLACES))
 
-def latlong_to_geo_id(lat, lng):
-  '''
-  Returns a string key from a latitude and longitude.
-  '''
-  return "|".join([str(round(float(a), LAT_LNG_DECIMAL_PLACES)) for a in [lat, lng]])
 
 def find_country_iso_code_from_name(name, dict):
   if name == "nan":
