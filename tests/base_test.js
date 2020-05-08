@@ -1,5 +1,9 @@
 function assert(condition, explanation) {
   if (!condition) {
-    console.log('FAILURE: ' + explanation);
+    throw explanation;
   }
+}
+
+function assertEquals(expected, actual, explanation) {
+    assert(expected == actual, explanation);
 }
