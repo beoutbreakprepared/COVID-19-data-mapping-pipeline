@@ -4,7 +4,7 @@ import sys
 
 sys.path.append("scripts")
 import generate_full_data
-import split
+import jhu_global_data
 
 # The directory where JSON files for daily data are expected to be.
 DAILIES_DIR = "app/dailies"
@@ -19,6 +19,9 @@ def retrieve_generable_data(out_dir, should_overwrite=False, quiet=False):
     out_path = os.path.join(out_dir, "latestCounts.json")
     if not os.path.exists(out_path) or should_overwrite:
         success &= scrape_total_count.scrape_total_count(out_path)
+    out_path = os.path.join(out_dir, "jhu.json")
+    if not os.path.exists(out_path) or should_overwrite:
+        success &= jhu_global_data.main(out_path)
 
     return success
 
