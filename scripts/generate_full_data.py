@@ -92,7 +92,7 @@ def prepare_latest_data(quiet=False):
     df = df[pd.to_datetime(df.date_confirmation,
         format="%d.%m.%Y", errors='coerce') < pd.datetime.now()]
 
-    generate_geo_ids(df, "latitude", "longitude")
+    generate_geo_ids(df, "latitude", "longitude", quiet=quiet)
 
     # Extract mappings between lat|long and geographical names, then only keep
     # the geo_id.
@@ -148,7 +148,7 @@ def prepare_jhu_data(outfile, read_from_file, quiet=False):
     df = df[df.Admin2 != 'Unassigned']
     df = df[~((df.Lat == 0) & (df.Long_ == 0))]
 
-    generate_geo_ids(df, "Lat", "Long_")
+    generate_geo_ids(df, "Lat", "Long_", quiet=quiet)
 
     functions.compile_location_info(df.to_dict("records"),
         out_file="app/location_info_us.data",

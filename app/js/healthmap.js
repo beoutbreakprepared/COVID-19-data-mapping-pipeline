@@ -639,6 +639,9 @@ function initMap() {
 }
 
 // Exports
+if (typeof(globalThis) === 'undefined') {
+    globalThis = global;
+}
 globalThis['clearFilter'] = clearFilter;
 globalThis['filterList'] = filterList;
 globalThis['initMap'] = initMap;
