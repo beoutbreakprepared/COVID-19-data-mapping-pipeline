@@ -66,14 +66,6 @@ def log_message(message: str, config: configparser.ConfigParser) -> None:
         F.write(message)
         F.write('\n')
 
-def savedata(data: list, outfile: str) -> None:
-    '''
-    dave data to file.
-    '''
-    with open(outfile, 'w') as F:
-        json.dump(data, F)
-
-
 
 def load_sheet(Sheet: GoogleSheet, config: configparser.ConfigParser) -> pd.DataFrame:
     from googleapiclient.discovery import build
@@ -175,223 +167,27 @@ def load_sheet(Sheet: GoogleSheet, config: configparser.ConfigParser) -> pd.Data
                 columns[x] = 'country'
         return pd.DataFrame(data=keep, columns=columns)
 
-def clean_data(data: pd.DataFrame, colnames: list) -> pd.DataFrame:
-    '''
-    Basic cleaning and filtering on dataframe.
-    Most of this gets done either by curators or pipeline now, this filters out for :
-    - valid lat/longs
-    - valid dates (using %d.%m.%Y format)
-    - manage white space
-    - Keeps only columns that are going to be in final version.
-
-    Args
-    :data: pd.DataFrame, data from sheet
-    :colnames: list, list of columns we are keeping for final version
-    '''
-    df = data.copy()
-    df.rename({x: x.strip() for x in df.columns}, inplace=True, axis=1)
-
-    # drop invalid lat/longs
-    lat,lon     = df.latitude, df.longitude
-    invalid_lat = lat.str.contains('#REF') | lat.str.contains('N/A') | lat.isnull() | (lat == '')
-    invalid_lon = lon.str.contains('#REF') | lon.str.contains('N/A') | lon.isnull() | (lon == '')
-    invalid     = invalid_lat | invalid_lon
-    df = df[~invalid] # NOT invalid
-
-    # Only keep those that have a date_confirmation
-    df['date_confirmation'] = df['date_confirmation'].str.strip() # some have empty spaces
-    dc = df.date_confirmation
-    dc = dc.fillna('')
-    dc = dc.apply(lambda x: x.split('-')[1].strip() if '-'  in x else x.strip())
-    valid_date = (dc != '') & ~(dc.isnull()) & dc.str.match('.*\d{2}\.\d{2}\.\d{4}.*')
-    df = df[valid_date]
-    df['date_confirmation'] = df['date_confirmation'].str.strip()
-
-    # Basic cleaning for strings
-    for c in ['city', 'province', 'country']:
-        df[c] = df[c].str.strip()
-        df[c] = df[c].str.title()
-        df[c] = df[c].str.replace('\xa0', ' ') # encoding for a space that was found in some entries.
-
-
-    # Only keep the columns we want
-    df = df[colnames]
-
-    return df
-
-
-def reduceToUnique(data: pd.DataFrame) -> list:
-    '''
-    Get counts for unique locations (by lat/long combination).
-    Output is a records style list [{d1}, {d2}, ... {}].
-
-    Does some situatinal name changing for consistency, but this should be done on Curator's side.
-    '''
-    df = data.copy()
-    groups = df.groupby(['latitude', 'longitude'])
-
-
-    results = []
-    for g in groups:
-        lat, lon = g[0]
-        cut      = g[1]
-        count    = len(cut)
-        try:
-            # Uniques to flag inconsistencies.
-            cities = cut.city.unique()
-            provinces = cut.province.unique()
-            countries = cut.country.unique()
-
-            # Subject to change.
-            city     = cities[0]
-            province = provinces[0]
-            country  = countries[0]
-
-            if 'Singapore' in countries:
-                city = ''
-                province = ''
-                country = 'Singapore'
-
-            elif 'Macau' in provinces:
-                city = ''
-                province = 'Macau'
-                country = 'China'
-
-            else:
-                # get city that occurs the most.
-                if len(cities) > 1:
-                    vcounts = cut.city.value_counts()
-                    city = vcounts[vcounts == vcounts.max()].index[0]
-
-            # Only display this info on map if N cases == 1
-            age = cut.age.values[0] if count == 1 else ''
-            sex = cut.sex.values[0] if count == 1 else ''
-            symptoms = cut.symptoms.values[0] if count == 1 else ''
-            source = cut.source.values[0] if count == 1 else ''
-            geo_resolution = cut.geo_resolution.values[0]
-
-            d = {
-                    'latitude': lat,
-                    'longitude': lon,
-                    'city': city,
-                    'province': province,
-                    'country': country,
-                    'age': age,
-                    'sex': sex,
-                    'symptoms': symptoms,
-                    'source': source,
-                    'date_confirmation': date_confirmation,
-                    'cases': count,
-                    'geo_resolution' : geo_resolution
-                }
-            results.append(d)
-
-        except:
-            d = {
-                    'latitude': lat,
-                    'longitude': lon,
-                    'city': city,
-                    'province': province,
-                    'country': country,
-                    'age': '',
-                    'sex': '',
-                    'symptoms': '',
-                    'source': '',
-                    'date_confirmation' : '',
-                    'cases': count,
-                    'geo_resolution': geo_resolution
-                }
-            results.append(d)
-
-    return results
-
-def animation_formating(infile):
-    '''
-    Read from "full-data" and convert to something usable for the animation.
-    '''
-
-    with open(infile, 'r') as F:
-        data = json.load(F)
-
-    data = data['data']
-    data = pd.DataFrame(data)
-    data = data[['latitude', 'longitude', 'date_confirmation']]
-
-    # drop #REF! in case they are propagated here :
-    data = data[data.latitude != '#REF!']
-    data = data[data.longitude != '#REF!']
-    data = data[data.date_confirmation != '#REF!']
-
-    data['date']  = pd.to_datetime(data.date_confirmation, errors='coerce', format='%d.%m.%Y')
-    data['coord'] = data.apply(lambda s: str('{}|{}'.format(s['latitude'], s['longitude'])), axis=1)
-#    data.drop(['date_confirmation', 'latitude', 'longitude'], inplace=True, axis=1)
-    data.dropna(inplace=True)
-
-    # Sort so that results are in order (might be important for animation)
-    data.sort_values(by='date', inplace=True)
-
-    sums    = {} # To store cumulative sums at each location
-    results = {}
-
-    # Loop through dates and coordinates and count
-    for date in data.date.unique():
-        datestr = pd.to_datetime(date).strftime('%Y-%m-%d') # unique coverts to np.datetime64, which doesn't have strftime.
-
-        if datestr not in results.keys():
-            results[datestr] = []
-
-        subset = data[data.date == date]
-        for coord in subset.coord.unique():
-            N_cases = len(subset[subset.coord == coord])
-
-            if coord not in sums.keys():
-                sums[coord] = N_cases
-            else:
-                sums[coord] += N_cases
-
-
-            lat, long = coord.split('|')
-            results[datestr].append({'caseCount': sums[coord],
-                                     'latitude': lat,
-                                     'longitude': long})
-
-            if sums[coord] < 10:
-                pin = 'pin4.svg'
-            elif sums[coord] >= 10 and sums[coord] < 25:
-                pin = 'pin3.svg'
-            elif sums[coord] >= 25 and sums[coord] < 50:
-                pin = 'pin2.svg'
-            else:
-                pin = 'pin1.svg'
-
-            results[datestr][-1]['pin'] = pin
-
-    # Reformatting data to fit with animation script :
-    dates = results.keys()
-    array = [{d: results[d]} for d in dates]
-
-    return array
-
 
 def round_lat_long(lat_or_lng):
     return str(round(float(lat_or_lng), LAT_LNG_DECIMAL_PLACES))
 
 
 def find_country_iso_code_from_name(name, dict):
-  if name == "nan":
-    return ""
-  # If this is already a 2-letter ISO code, return it as-is
-  if len(name) == 2 and name == name.upper():
-    return name
-  if name in dict:
-    return dict[name]
-  for key in dict:
-    if key.lower() == name.lower():
-      return dict[key]
+    if name == "nan":
+        return ""
+    # If this is already a 2-letter ISO code, return it as-is
+    if len(name) == 2 and name == name.upper():
+        return name
+    if name in dict:
+        return dict[name]
+    for key in dict:
+        if key.lower() == name.lower():
+            return dict[key]
 
-  print("Sorry, I don't know about '" + name + "', you might want "
-        "to update the country data file.")
-  sys.exit(1)
+    print("Sorry, I don't know about '" + name + "', you might want "
+          "to update the country data file.")
+    sys.exit(1)
+
 
 def compile_location_info(in_data, out_file,
                           keys=["country", "province", "city"],
