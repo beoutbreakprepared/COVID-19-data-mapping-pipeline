@@ -15,17 +15,15 @@ import js_compilation
 # to the target. Please keep alphabetized.
 EXCLUDED = [
     "__pycache__",
+    ".gitignore",
+    ".sass-cache",
     "analytics.js",
-    "clean",
     "css/styles.scss",
     "css/styles.css.map",
-    "data_util.py",
-    "deploy",
     "js/externs_d3.js",
     "js/externs_mapbox.js",
     "js/healthmap.js",
-    "prerequisites.md",
-    "run",
+    "js/healthmap_test.js",
 ]
 
 BACKUP_DIR_PREFIX = "backup_"
