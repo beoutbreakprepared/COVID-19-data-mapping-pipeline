@@ -57,12 +57,13 @@ function showDataAtDate(isodate) {
   // Show per-country data for low zoom levels, but only for the most recent
   // date.
   if (zoom <= ZOOM_THRESHOLD && currentIsoDate == dates[dates.length - 1]) {
-    for (let country in latestDataPerCountry) {
-      let countryData = latestDataPerCountry[country];
+    for (let centroid_geoid in latestDataPerCountry) {
+      let countryData = latestDataPerCountry[centroid_geoid];
+      let country = countryData[0];
       let feature = formatFeatureForMap({
         'properties': {
-          'geoid': countryData[0] + '|' + countryData[1],
-          'total': countryData[2],
+          'geoid': centroid_geoid,
+          'total': countryData[1],
           'new': 0
         }
       });
@@ -241,9 +242,12 @@ function fetchJhuData() {
         let lon = location['centroid']['x'] || 0;
         let lat = location['centroid']['y'] || 0;
         const geoid = '' + lat + '|' + lon;
-        let cumConf = location['attributes']['cum_conf'] || 0;
+        // The total count comes down as a formatted string.
+        let cumConf = parseInt(
+            location['attributes']['cum_conf'].replace(/,/g, ''),
+            10) || 0;
         let legendGroup = 'default';
-        latestDataPerCountry[name] = [lat, lon, cumConf];
+        latestDataPerCountry[geoid] = [name, cumConf];
         // No city or province, just the country name.
         locationInfo[geoid] = ',,' + name;
         if (cumConf <= 10) {
@@ -493,19 +497,30 @@ function showPopupForEvent(e) {
   let coordinatesString = geo_id.split('|');
   let lat = parseFloat(coordinatesString[0]);
   let lng = parseFloat(coordinatesString[1]);
-  // Country, province, city
-  let location = locationInfo[geo_id].split(',');
-  // Replace country code with name if necessary
-  if (location[2].length == 2) {
-    location[2] = countryNames[location[2]];
+
+  let locationString = '';
+  let totalCaseCount = 0;
+  if (map.getZoom() > ZOOM_THRESHOLD) {
+    // Country, province, city
+    let location = locationInfo[geo_id].split(',');
+    // Replace country code with name if necessary
+    if (location[2].length == 2) {
+      location[2] = countryNames[location[2]];
+    }
+    // Remove empty strings
+    location = location.filter(function (el) { return el != ''; });
+    locationString = location.join(', ');
+    totalCaseCount = props['total'];
+  } else {
+    let countryData = latestDataPerCountry[geo_id];
+    locationString = countryData[0];
+    totalCaseCount = countryData[1];
   }
-  // Remove empty strings
-  location = location.filter(function (el) { return el != ''; });
 
   let content = document.createElement('div');
-  content.innerHTML = '<h3 class="popup-header">' + location.join(', ') +
+  content.innerHTML = '<h3 class="popup-header">' + locationString +
       '</h3>' + '<div>' + '<strong>Number of Cases: </strong>' +
-      props['total'].toLocaleString() + '</div>';
+      totalCaseCount.toLocaleString() + '</div>';
 
   // Only show case graphs for atomic locations.
   if (map.getZoom() > ZOOM_THRESHOLD) {
