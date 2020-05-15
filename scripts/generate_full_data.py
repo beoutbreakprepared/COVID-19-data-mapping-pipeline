@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 Pull data from latestdata.csv, and JHU repo for US
 split into daily slices.
@@ -25,41 +24,28 @@ JHU_URL = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse
 LATEST_DATA_URL = "https://raw.githubusercontent.com/beoutbreakprepared/nCoV2019/master/latest_data/latestdata.tar.gz"
 
 
-parser = argparse.ArgumentParser(description="Generate full-data.json file")
+parser = argparse.ArgumentParser(description="Generate data for the frontend")
 
 parser.add_argument("out_dir", type=str, default=".", help="path to dailies directory")
 
-parser.add_argument(
-    "-l",
-    "--latest",
-    type=str,
-    default=False,
-    help="path to read latestdata.csv locally, fetch from github otherwise",
+parser.add_argument("-l", "--latest", type=str, default=False,
+    help="path to read latestdata.csv locally, fetch from github otherwise"
 )
 
-parser.add_argument(
-    "-f", "--full", type=str, default=False, help="option to save full-data"
+parser.add_argument("-f", "--full", type=str, default=False,
+    help="option to save full-data"
 )
 
-parser.add_argument(
-    "-j",
-    "--jhu",
-    type=str,
-    help="Option to save jhu data (before formating)",
-    default=False,
+parser.add_argument("-j", "--jhu", type=str, default=False,
+    help="Option to save jhu data (before formating)"
 )
 
-
-parser.add_argument(
-    "-t",
-    "--timeit",
-    action="store_const",
-    const=True,
-    help="option to print execution time",
+parser.add_argument("-t", "--timeit", action="store_const", const=True,
+    help="option to print execution time"
 )
 
-parser.add_argument(
-    "--input_jhu", default="", type=str, help="read from local jhu file"
+parser.add_argument("--input_jhu", default="", type=str,
+    help="read from local jhu file"
 )
 
 
@@ -76,7 +62,7 @@ def generate_geo_ids(df, lat_field_name, lng_field_name, quiet=False):
     return df
 
 
-def prepare_latest_data(quiet=False):
+def prepare_latest_data(countries, quiet=False):
     if not quiet:
         print("Downloading latest data...")
     os.system("curl --silent '" + LATEST_DATA_URL + "' > latestdata.tgz")
@@ -127,9 +113,8 @@ def prepare_latest_data(quiet=False):
     # the geo_id.
     if not quiet:
         print("Extracting location info...")
-    functions.compile_location_info(
-        df.to_dict("records"), "app/location_info_world.data", quiet=quiet
-    )
+    functions.compile_location_info(df.to_dict("records"),
+        "app/location_info_world.data", countries, quiet=quiet)
     df = df.drop(["city", "province", "country", "latitude", "longitude"], axis=1)
 
     dates = df.date_confirmation.unique()
@@ -146,12 +131,8 @@ def prepare_latest_data(quiet=False):
     return new
 
 
-def prepare_jhu_data(outfile, read_from_file, quiet=False):
-    """
-    Get JHU data from URL and format to
-    to be compatible with full-data.json
-    (used for US data)
-    """
+def prepare_jhu_data(outfile, read_from_file, countries, quiet=False):
+    """Gets JHU US data from the URL and formats it for the client."""
 
     if read_from_file:
         read_from = read_from_file
@@ -181,12 +162,10 @@ def prepare_jhu_data(outfile, read_from_file, quiet=False):
 
     generate_geo_ids(df, "Lat", "Long_", quiet=quiet)
 
-    functions.compile_location_info(
-        df.to_dict("records"),
-        out_file="app/location_info_us.data",
+    functions.compile_location_info(df.to_dict("records"),
+        "app/location_info_us.data", countries,
         keys=["Country_Region", "Province_State", "Admin2"],
-        quiet=quiet,
-    )
+        quiet=quiet)
 
     rx = "\d{1,2}/\d{1,2}/\d"
     date_columns = [c for c in df.columns if re.match(rx, c)]
@@ -218,49 +197,13 @@ def prepare_jhu_data(outfile, read_from_file, quiet=False):
     return df
 
 
-def daily_slice(new_cases, total_cases):
-    # full starts from new cases by location/date
-    # structure for daily slice YYYY.MM.DD.json
-    # {"date": "YYYY-MM-DD", "features": [{"properties": {"geoid": "lat|long",
-    # "new": int, "total": int}}, ... ]
+def generate_data(out_dir, jhu=False, input_jhu="", export_full_data=False,
+                  overwrite=False, quiet=False):
 
-    assert new_cases.name == total_cases.name, "mismatched dates"
+    countries = functions.read_country_data(quiet=quiet)
+    latest = prepare_latest_data(countries, quiet=quiet)
+    jhu = prepare_jhu_data(jhu, input_jhu, countries, quiet=quiet)
 
-    features = []
-
-    for id in new_cases.index:
-        new = int(new_cases[id])
-        total = int(total_cases[id])
-        if new == total == 0:
-            continue
-        properties = {"geoid": id, "total": total}
-        if new != 0:
-            properties["new"] = new
-
-        features.append({"properties": properties})
-
-    return {"date": new_cases.name.replace(".", "-"), "features": features}
-
-
-def chunks(new_cases, total_cases):
-    """
-    Yields successive equal-sized chunks from the input list.
-    """
-    for i in range(len(new_cases)):
-        yield (new_cases.iloc[i], total_cases.iloc[i])
-
-
-def generate_data(
-    out_dir,
-    jhu=False,
-    input_jhu="",
-    export_full_data=False,
-    overwrite=False,
-    quiet=False,
-):
-
-    latest = prepare_latest_data(quiet=quiet)
-    jhu = prepare_jhu_data(jhu, input_jhu, quiet=quiet)
     full = latest.merge(jhu, on="date", how="outer")
     full.fillna(0, inplace=True)
     full = full.set_index("date")
@@ -284,13 +227,13 @@ def generate_data(
 
     n_cpus = multiprocessing.cpu_count()
     if not quiet:
-        print(
-            "Processing " + str(len(full)) + " features "
-            "with " + str(n_cpus) + " threads..."
-        )
+        print("Processing " + str(len(full)) + " features "
+              "with " + str(n_cpus) + " threads...")
 
     pool = multiprocessing.Pool(n_cpus)
-    out_slices = pool.starmap(daily_slice, chunks(new_cases, total_cases), chunksize=10)
+    out_slices = pool.starmap(split.daily_slice,
+                              split.chunks(new_cases, total_cases),
+                              chunksize=10)
 
     index = []
     for s in out_slices:
@@ -309,17 +252,15 @@ def generate_data(
             f.write(json.dumps(s))
 
         with open(os.path.join(out_dir, "index.txt"), "w") as f:
-            # Reverse-sort the index file so that the browser will fetch recent slices
-            # first.
+            # Reverse-sort the index file so that the browser will fetch recent
+            # slices first.
             f.write("\n".join(sorted(index, reverse=True)))
             f.close()
 
     # Concatenate location info for the US and elsewhere
     os.system("rm -f app/location_info.data")
-    os.system(
-        "cat app/location_info_world.data app/location_info_us.data > "
-        "app/location_info.data"
-    )
+    os.system("cat app/location_info_world.data app/location_info_us.data > "
+              "app/location_info.data")
     os.remove("app/location_info_world.data")
     os.remove("app/location_info_us.data")
 
@@ -329,7 +270,6 @@ if __name__ == "__main__":
 
     if args.timeit:
         import time
-
         t0 = time.time()
 
     generate_data(args.out_dir, args.jhu, args.input_jhu, args.full)
