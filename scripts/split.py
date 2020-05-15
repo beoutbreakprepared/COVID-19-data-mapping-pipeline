@@ -1,4 +1,3 @@
-
 def normalize_date(date):
     date = date.replace("-", ".")
     if len(date) == len("D.MM.YYYY"):
