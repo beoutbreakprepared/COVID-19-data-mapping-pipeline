@@ -189,11 +189,8 @@ def find_country_iso_code_from_name(name, dict):
     sys.exit(1)
 
 
-def compile_location_info(in_data, out_file,
-                          keys=["country", "province", "city"],
-                          country_file="app/countries.data",
-                          quiet=False):
-
+def read_country_data(country_file="app/countries.data", quiet=False):
+    """Reads and returns the mapping between country names and ISO codes"""
     if not quiet:
         print("Reading country data...")
     countries = {}
@@ -203,6 +200,11 @@ def compile_location_info(in_data, out_file,
             (name, iso) = country.split(":")
             countries[name] = iso
         f.close()
+
+    return countries
+
+def compile_location_info(in_data, out_file, countries,
+    keys=["country", "province", "city"], quiet=False):
 
     if not quiet:
         print("Exporting location info...")

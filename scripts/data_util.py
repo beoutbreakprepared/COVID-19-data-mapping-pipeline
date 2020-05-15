@@ -30,7 +30,7 @@ def prepare_for_local_development(quiet=False):
     if not os.path.exists(DAILIES_DIR):
         os.mkdir(DAILIES_DIR)
 
-    dailies = os.listdir(DAILIES_DIR)
+    dailies = [f for f in os.listdir(DAILIES_DIR) if f.endswith(".json")]
     if len(dailies) > 0:
         if not quiet:
             print(
