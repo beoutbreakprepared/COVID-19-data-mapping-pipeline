@@ -62,7 +62,7 @@ def generate_geo_ids(df, lat_field_name, lng_field_name, quiet=False):
     return df
 
 
-def prepare_latest_data(countries, quiet=False):
+def prepare_latest_data(countries, countries_out_dir, overwrite=True, quiet=False):
     if not quiet:
         print("Downloading latest data from '" + LATEST_DATA_URL + "'...")
     os.system("curl --silent '" + LATEST_DATA_URL + "' > latestdata.tgz")
@@ -115,9 +115,11 @@ def prepare_latest_data(countries, quiet=False):
     if not quiet:
         print("Extracting location info...")
     functions.compile_location_info(df.to_dict("records"),
-        "app/location_info_world.data", countries, quiet=quiet)
+                                    "app/location_info_world.data", countries,
+                                    quiet=quiet)
     df = df.drop(["latitude", "longitude"], axis=1)
-    split.slice_by_country(df, countries, quiet)
+    split.slice_by_country_and_export(df, countries, countries_out_dir,
+                                      overwrite, quiet)
 
     df = df.drop(["city", "province", "country"], axis=1)
 
@@ -201,11 +203,11 @@ def prepare_jhu_data(outfile, read_from_file, countries, quiet=False):
     return df
 
 
-def generate_data(out_dir, jhu=False, input_jhu="", export_full_data=False,
-                  overwrite=False, quiet=False):
+def generate_data(dailies_out_dir, countries_out_dir, jhu=False, input_jhu="",
+                  export_full_data=False, overwrite=False, quiet=False):
 
     countries = functions.read_country_data(quiet=quiet)
-    latest = prepare_latest_data(countries, quiet=quiet)
+    latest = prepare_latest_data(countries, countries_out_dir, overwrite, quiet=quiet)
     jhu = prepare_jhu_data(jhu, input_jhu, countries, quiet=quiet)
 
     full = latest.merge(jhu, on="date", how="outer")
@@ -222,7 +224,7 @@ def generate_data(out_dir, jhu=False, input_jhu="", export_full_data=False,
     if export_full_data:
         full.to_csv(export_full_data)
 
-    split.slice_by_day_and_export(full, out_dir, overwrite=overwrite,
+    split.slice_by_day_and_export(full, dailies_out_dir, overwrite=overwrite,
                                   quiet=quiet)
 
     # Concatenate location info for the US and elsewhere

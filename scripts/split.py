@@ -28,6 +28,17 @@ def normalize_date(date):
     return "-".join(parts)
 
 
+def write_out(json_data, out_path, overwrite=True):
+    if not overwrite and os.path.exists(out_path):
+        print(
+            "I will not clobber '" + out_path + "', "
+            "please delete it first."
+        )
+        return
+    with open(out_path, "w") as f:
+        f.write(json.dumps(json_data))
+
+
 def slice_by_day_and_export(full, out_dir, overwrite=True, quiet=False):
     full.index = [normalize_date(x) for x in full.index]
     full.index.name = "date"
@@ -42,7 +53,7 @@ def slice_by_day_and_export(full, out_dir, overwrite=True, quiet=False):
               "with " + str(n_cpus) + " threads...")
 
     pool = multiprocessing.Pool(n_cpus)
-    out_slices = pool.starmap(daily_slice,
+    out_slices = pool.starmap(produce_daily_slice,
                               chunks(new_cases, total_cases, quiet),
                               chunksize=10)
     index = []
@@ -51,15 +62,7 @@ def slice_by_day_and_export(full, out_dir, overwrite=True, quiet=False):
         daily_slice_file_path = os.path.join(out_dir, out_name)
         index.append(out_name)
 
-        if not overwrite and os.path.exists(daily_slice_file_path):
-            print(
-                "I will not clobber '" + daily_slice_file_path + "', "
-                "please delete it first"
-            )
-            continue
-
-        with open(daily_slice_file_path, "w") as f:
-            f.write(json.dumps(s))
+        write_out(s, daily_slice_file_path, overwrite)
 
         with open(os.path.join(out_dir, "index.txt"), "w") as f:
             # Reverse-sort the index file so that the browser will fetch recent
@@ -68,7 +71,7 @@ def slice_by_day_and_export(full, out_dir, overwrite=True, quiet=False):
             f.close()
 
 
-def daily_slice(new_cases, total_cases):
+def produce_daily_slice(new_cases, total_cases):
     # full starts from new cases by location/date
     # structure for daily slice YYYY-MM-DD.json
     # {"date": "YYYY-MM-DD", "features": [{"properties": {"geoid": "lat|long",
@@ -91,13 +94,20 @@ def daily_slice(new_cases, total_cases):
 
     return {"date": new_cases.name, "features": features}
 
-def write_single_country_data(iso_code, data_frame):
+def write_single_country_data(iso_code, data_frame, out_dir, overwrite=True):
     features = []
     data_frame = data_frame.rename(columns={"date_confirmation": "date"})
     data_frame = data_frame.sort_values("date")
+    for date in data_frame.index:
+        properties = {"date": date}
+        features.append({"properties": properties})
+
+    slice_file_path = os.path.join(out_dir, iso_code + ".json")
+    write_out({"features": features}, slice_file_path, overwrite)
 
 
-def slice_by_country(data_frame, countries, quiet=False):
+def slice_by_country_and_export(data_frame, countries, out_dir, overwrite=True,
+                                quiet=False):
     groups = data_frame.groupby("country")
     for g in groups:
         (country, frame) = g
@@ -105,7 +115,7 @@ def slice_by_country(data_frame, countries, quiet=False):
             print("Warning: I don't know about '" + country + "'")
             continue
         country_iso = countries[country]
-        write_single_country_data(country_iso, frame)
+        write_single_country_data(country_iso, frame, out_dir, overwrite)
 
 
 def chunks(new_cases, total_cases, quiet=False):

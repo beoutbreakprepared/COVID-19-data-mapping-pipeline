@@ -67,6 +67,8 @@ def prepare_for_deployment(quiet=False):
     # Clean whatever is left over.
     for daily in glob.glob("dailies/*.json"):
         os.remove(daily)
+    for country in glob.glob("countries/*.json"):
+        os.remove(country)
 
     generate_data(overwrite=True, quiet=quiet)
 
@@ -78,5 +80,7 @@ def generate_data(overwrite=False, quiet=False):
             "take a few minutes..."
         )
     generate_full_data.generate_data(
-        os.path.join(self_dir, DAILIES_DIR), overwrite=overwrite, quiet=quiet
+        os.path.join(self_dir, DAILIES_DIR),
+        os.path.join(self_dir, COUNTRIES_DIR),
+        overwrite=overwrite, quiet=quiet
     )
