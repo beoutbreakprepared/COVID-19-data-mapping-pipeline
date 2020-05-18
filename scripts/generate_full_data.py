@@ -117,10 +117,7 @@ def prepare_latest_data(countries, quiet=False):
         print("Extracting location info...")
     functions.compile_location_info(df.to_dict("records"),
         "app/location_info_world.data", countries, quiet=quiet)
-    df = df.drop(["latitude", "longitude"], axis=1)
-    split.slice_by_country(df, countries, quiet)
-
-    df = df.drop(["city", "province", "country"], axis=1)
+    df = df.drop(["city", "province", "country", "latitude", "longitude"], axis=1)
 
     dates = df.date_confirmation.unique()
     geoids = df.geoid.unique()
@@ -177,15 +174,15 @@ def prepare_jhu_data(outfile, read_from_file, countries, quiet=False):
     keep = ["geoid"] + date_columns
     df = df[keep]
 
-    # rename to match latestdata format
+    # Rename to match latest data format
     new_dates = []
     for c in date_columns:
-        month, day, year = c.split("/")
-        month = month.zfill(2)
-        day = day.zfill(2)
-        year = "20" + year if len(year) == 2 else year
-        new = f"{day}.{month}.{year}"
-        new_dates.append(new)
+        # This data uses a 'MM/DD/YY' (only two digits for the year) format.
+        # Let's fix that ambiguous format before passing it on to normalization.
+        # Assume no data is from before 2000.
+        parts = c.split("/")
+        c = "/".join([parts[1], parts[0], "20" + parts[2]])
+        new_dates.append(split.normalize_date(c))
     df.rename(dict(zip(date_columns, new_dates)), axis=1, inplace=True)
 
     df = df.set_index("geoid")
@@ -223,7 +220,22 @@ def generate_data(out_dir, jhu=False, input_jhu="", export_full_data=False,
     if export_full_data:
         full.to_csv(export_full_data)
 
-    out_slices = split.slice_by_day(full, quiet)
+    full.index = [split.normalize_date(x) for x in full.index]
+    full.index.name = "date"
+    full = full.sort_values(by="date")
+
+    new_cases = full
+    total_cases = new_cases.cumsum()
+
+    n_cpus = multiprocessing.cpu_count()
+    if not quiet:
+        print("Processing " + str(len(full)) + " features "
+              "with " + str(n_cpus) + " threads...")
+
+    pool = multiprocessing.Pool(n_cpus)
+    out_slices = pool.starmap(split.daily_slice,
+                              split.chunks(new_cases, total_cases, quiet=quiet),
+                              chunksize=10)
 
     index = []
     for s in out_slices:
