@@ -5,7 +5,6 @@ split into daily slices.
 """
 
 import argparse
-import json
 import os
 import re
 import sys
@@ -223,29 +222,8 @@ def generate_data(out_dir, jhu=False, input_jhu="", export_full_data=False,
     if export_full_data:
         full.to_csv(export_full_data)
 
-    out_slices = split.slice_by_day(full, quiet)
-
-    index = []
-    for s in out_slices:
-        out_name = s["date"] + ".json"
-        daily_slice_file_path = os.path.join(out_dir, out_name)
-        index.append(out_name)
-
-        if not overwrite and os.path.exists(daily_slice_file_path):
-            print(
-                "I will not clobber '" + daily_slice_file_path + "', "
-                "please delete it first"
-            )
-            continue
-
-        with open(daily_slice_file_path, "w") as f:
-            f.write(json.dumps(s))
-
-        with open(os.path.join(out_dir, "index.txt"), "w") as f:
-            # Reverse-sort the index file so that the browser will fetch recent
-            # slices first.
-            f.write("\n".join(sorted(index, reverse=True)))
-            f.close()
+    split.slice_by_day_and_export(full, out_dir, overwrite=overwrite,
+                                  quiet=quiet)
 
     # Concatenate location info for the US and elsewhere
     os.system("rm -f app/location_info.data")

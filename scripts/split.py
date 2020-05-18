@@ -1,5 +1,7 @@
 """Some utilities to split data according to time or location."""
 
+import json
+import os
 import multiprocessing
 
 def normalize_date(date):
@@ -26,7 +28,7 @@ def normalize_date(date):
     return "-".join(parts)
 
 
-def slice_by_day(full, quiet=False):
+def slice_by_day_and_export(full, out_dir, overwrite=True, quiet=False):
     full.index = [normalize_date(x) for x in full.index]
     full.index.name = "date"
     full = full.sort_values(by="date")
@@ -40,9 +42,31 @@ def slice_by_day(full, quiet=False):
               "with " + str(n_cpus) + " threads...")
 
     pool = multiprocessing.Pool(n_cpus)
-    return pool.starmap(daily_slice,
-                        chunks(new_cases, total_cases, quiet),
-                        chunksize=10)
+    out_slices = pool.starmap(daily_slice,
+                              chunks(new_cases, total_cases, quiet),
+                              chunksize=10)
+    index = []
+    for s in out_slices:
+        out_name = s["date"] + ".json"
+        daily_slice_file_path = os.path.join(out_dir, out_name)
+        index.append(out_name)
+
+        if not overwrite and os.path.exists(daily_slice_file_path):
+            print(
+                "I will not clobber '" + daily_slice_file_path + "', "
+                "please delete it first"
+            )
+            continue
+
+        with open(daily_slice_file_path, "w") as f:
+            f.write(json.dumps(s))
+
+        with open(os.path.join(out_dir, "index.txt"), "w") as f:
+            # Reverse-sort the index file so that the browser will fetch recent
+            # slices first.
+            f.write("\n".join(sorted(index, reverse=True)))
+            f.close()
+
 
 def daily_slice(new_cases, total_cases):
     # full starts from new cases by location/date
