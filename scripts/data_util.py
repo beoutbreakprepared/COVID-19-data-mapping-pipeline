@@ -6,8 +6,7 @@ sys.path.append("scripts")
 import generate_full_data
 import jhu_global_data
 
-# The directores where JSON files for daily data and country data are expected
-# to be.
+# The directory where JSON files for daily data are expected to be.
 DAILIES_DIR = "app/dailies"
 
 self_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")

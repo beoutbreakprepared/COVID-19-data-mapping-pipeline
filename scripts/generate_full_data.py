@@ -108,6 +108,7 @@ def prepare_latest_data(countries, quiet=False):
         pd.to_datetime(df.date_confirmation, format="%d.%m.%Y", errors="coerce")
         < pd.datetime.now()
     ]
+    df["date_confirmation"] = df["date_confirmation"].apply(split.normalize_date)
 
     generate_geo_ids(df, "latitude", "longitude", quiet=quiet)
 
