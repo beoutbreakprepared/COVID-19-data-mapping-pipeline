@@ -66,7 +66,7 @@ def generate_geo_ids(df, lat_field_name, lng_field_name, quiet=False):
 
 def prepare_latest_data(countries, quiet=False):
     if not quiet:
-        print("Downloading latest data...")
+        print("Downloading latest data from '" + LATEST_DATA_URL + "'...")
     os.system("curl --silent '" + LATEST_DATA_URL + "' > latestdata.tgz")
     os.system("tar xzf latestdata.tgz")
     os.remove("latestdata.tgz")
@@ -108,6 +108,7 @@ def prepare_latest_data(countries, quiet=False):
         pd.to_datetime(df.date_confirmation, format="%d.%m.%Y", errors="coerce")
         < pd.datetime.now()
     ]
+    df["date_confirmation"] = df["date_confirmation"].apply(split.normalize_date)
 
     generate_geo_ids(df, "latitude", "longitude", quiet=quiet)
 
@@ -141,7 +142,7 @@ def prepare_jhu_data(outfile, read_from_file, countries, quiet=False):
     else:
         # Get JHU data
         if not quiet:
-            print("Downloading data from JHU...")
+            print("Downloading JHU data from '" + JHU_URL + "'...")
         req = requests.get(JHU_URL)
         if req.status_code != 200:
             print("Could not get JHU data, aborting")
@@ -169,20 +170,20 @@ def prepare_jhu_data(outfile, read_from_file, countries, quiet=False):
         keys=["Country_Region", "Province_State", "Admin2"],
         quiet=quiet)
 
-    rx = "\d{1,2}/\d{1,2}/\d"
+    rx = r"\d{1,2}/\d{1,2}/\d"
     date_columns = [c for c in df.columns if re.match(rx, c)]
     keep = ["geoid"] + date_columns
     df = df[keep]
 
-    # rename to match latestdata format
+    # Rename to match latest data format
     new_dates = []
     for c in date_columns:
-        month, day, year = c.split("/")
-        month = month.zfill(2)
-        day = day.zfill(2)
-        year = "20" + year if len(year) == 2 else year
-        new = f"{day}.{month}.{year}"
-        new_dates.append(new)
+        # This data uses a 'MM/DD/YY' (only two digits for the year) format.
+        # Let's fix that ambiguous format before passing it on to normalization.
+        # Assume no data is from before 2000.
+        parts = c.split("/")
+        c = "/".join([parts[1], parts[0], "20" + parts[2]])
+        new_dates.append(split.normalize_date(c))
     df.rename(dict(zip(date_columns, new_dates)), axis=1, inplace=True)
 
     df = df.set_index("geoid")
@@ -234,12 +235,12 @@ def generate_data(out_dir, jhu=False, input_jhu="", export_full_data=False,
 
     pool = multiprocessing.Pool(n_cpus)
     out_slices = pool.starmap(split.daily_slice,
-                              split.chunks(new_cases, total_cases),
+                              split.chunks(new_cases, total_cases, quiet=quiet),
                               chunksize=10)
 
     index = []
     for s in out_slices:
-        out_name = s["date"].replace("-", ".") + ".json"
+        out_name = s["date"] + ".json"
         daily_slice_file_path = os.path.join(out_dir, out_name)
         index.append(out_name)
 
