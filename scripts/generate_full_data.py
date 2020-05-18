@@ -66,7 +66,7 @@ def generate_geo_ids(df, lat_field_name, lng_field_name, quiet=False):
 
 def prepare_latest_data(countries, quiet=False):
     if not quiet:
-        print("Downloading latest data...")
+        print("Downloading latest data from '" + LATEST_DATA_URL + "'...")
     os.system("curl --silent '" + LATEST_DATA_URL + "' > latestdata.tgz")
     os.system("tar xzf latestdata.tgz")
     os.remove("latestdata.tgz")
@@ -117,7 +117,10 @@ def prepare_latest_data(countries, quiet=False):
         print("Extracting location info...")
     functions.compile_location_info(df.to_dict("records"),
         "app/location_info_world.data", countries, quiet=quiet)
-    df = df.drop(["city", "province", "country", "latitude", "longitude"], axis=1)
+    df = df.drop(["latitude", "longitude"], axis=1)
+    split.slice_by_country(df, countries, quiet)
+
+    df = df.drop(["city", "province", "country"], axis=1)
 
     dates = df.date_confirmation.unique()
     geoids = df.geoid.unique()
@@ -141,7 +144,7 @@ def prepare_jhu_data(outfile, read_from_file, countries, quiet=False):
     else:
         # Get JHU data
         if not quiet:
-            print("Downloading data from JHU...")
+            print("Downloading JHU data from '" + JHU_URL + "'...")
         req = requests.get(JHU_URL)
         if req.status_code != 200:
             print("Could not get JHU data, aborting")
@@ -169,7 +172,7 @@ def prepare_jhu_data(outfile, read_from_file, countries, quiet=False):
         keys=["Country_Region", "Province_State", "Admin2"],
         quiet=quiet)
 
-    rx = "\d{1,2}/\d{1,2}/\d"
+    rx = r"\d{1,2}/\d{1,2}/\d"
     date_columns = [c for c in df.columns if re.match(rx, c)]
     keep = ["geoid"] + date_columns
     df = df[keep]
@@ -220,26 +223,11 @@ def generate_data(out_dir, jhu=False, input_jhu="", export_full_data=False,
     if export_full_data:
         full.to_csv(export_full_data)
 
-    full.index = [split.normalize_date(x) for x in full.index]
-    full.index.name = "date"
-    full = full.sort_values(by="date")
-
-    new_cases = full
-    total_cases = new_cases.cumsum()
-
-    n_cpus = multiprocessing.cpu_count()
-    if not quiet:
-        print("Processing " + str(len(full)) + " features "
-              "with " + str(n_cpus) + " threads...")
-
-    pool = multiprocessing.Pool(n_cpus)
-    out_slices = pool.starmap(split.daily_slice,
-                              split.chunks(new_cases, total_cases),
-                              chunksize=10)
+    out_slices = split.slice_by_day(full, quiet)
 
     index = []
     for s in out_slices:
-        out_name = s["date"].replace("-", ".") + ".json"
+        out_name = s["date"] + ".json"
         daily_slice_file_path = os.path.join(out_dir, out_name)
         index.append(out_name)
 

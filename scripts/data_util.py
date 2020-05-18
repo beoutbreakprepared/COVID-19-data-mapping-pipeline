@@ -6,8 +6,10 @@ sys.path.append("scripts")
 import generate_full_data
 import jhu_global_data
 
-# The directory where JSON files for daily data are expected to be.
+# The directores where JSON files for daily data and country data are expected
+# to be.
 DAILIES_DIR = "app/dailies"
+COUNTRIES_DIR = "app/countries"
 
 self_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")
 
@@ -29,9 +31,12 @@ def retrieve_generable_data(out_dir, should_overwrite=False, quiet=False):
 def prepare_for_local_development(quiet=False):
     if not os.path.exists(DAILIES_DIR):
         os.mkdir(DAILIES_DIR)
+    if not os.path.exists(COUNTRIES_DIR):
+        os.mkdir(COUNTRIES_DIR)
 
     dailies = [f for f in os.listdir(DAILIES_DIR) if f.endswith(".json")]
-    if len(dailies) > 0:
+    countries = [f for f in os.listdir(COUNTRIES_DIR) if f.endswith(".json")]
+    if len(dailies) > 0 and len(countries) > 0:
         if not quiet:
             print(
                 "I found some daily data ready to use. To re-generate, "
