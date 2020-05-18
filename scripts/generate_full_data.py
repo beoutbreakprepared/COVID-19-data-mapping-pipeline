@@ -6,7 +6,6 @@ split into daily slices.
 
 import argparse
 import json
-import multiprocessing
 import os
 import re
 import sys
@@ -118,7 +117,10 @@ def prepare_latest_data(countries, quiet=False):
         print("Extracting location info...")
     functions.compile_location_info(df.to_dict("records"),
         "app/location_info_world.data", countries, quiet=quiet)
-    df = df.drop(["city", "province", "country", "latitude", "longitude"], axis=1)
+    df = df.drop(["latitude", "longitude"], axis=1)
+    split.slice_by_country(df, countries, quiet)
+
+    df = df.drop(["city", "province", "country"], axis=1)
 
     dates = df.date_confirmation.unique()
     geoids = df.geoid.unique()
@@ -221,22 +223,7 @@ def generate_data(out_dir, jhu=False, input_jhu="", export_full_data=False,
     if export_full_data:
         full.to_csv(export_full_data)
 
-    full.index = [split.normalize_date(x) for x in full.index]
-    full.index.name = "date"
-    full = full.sort_values(by="date")
-
-    new_cases = full
-    total_cases = new_cases.cumsum()
-
-    n_cpus = multiprocessing.cpu_count()
-    if not quiet:
-        print("Processing " + str(len(full)) + " features "
-              "with " + str(n_cpus) + " threads...")
-
-    pool = multiprocessing.Pool(n_cpus)
-    out_slices = pool.starmap(split.daily_slice,
-                              split.chunks(new_cases, total_cases, quiet=quiet),
-                              chunksize=10)
+    out_slices = split.slice_by_day(full, quiet)
 
     index = []
     for s in out_slices:
