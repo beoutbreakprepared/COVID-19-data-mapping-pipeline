@@ -14,6 +14,8 @@ import sys
 from io import StringIO
 
 import pandas as pd
+# Don't show "SettingWithCopyWarning" notices.
+pd.options.mode.chained_assignment = None
 import requests
 
 import functions
