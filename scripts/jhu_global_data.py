@@ -15,11 +15,17 @@ def main(outfile):
     date = (datetime.now() - timedelta(days=1)).strftime('%m-%d-%Y')
     url = url_base.format(date)
 
-
     req = requests.get(url)
     if req.status_code != 200:
-        print('Couldn\'t get Global JHU data, aborting')
-        return False
+        # Try the previous day instead
+        date = (datetime.now() - timedelta(days=2)).strftime('%m-%d-%Y')
+        url = url_base.format(date)
+        req = requests.get(url)
+        if req.status_code != 200:
+            print("Couldn't get Global JHU data, aborting. "
+                  "URL was " + url + ", "
+                  "status code = " + str(req.status_code))
+            return False
 
     df = pd.read_csv(StringIO(req.text), usecols=['Lat', 'Long_',
                                                   'Country_Region', 'Confirmed'])
