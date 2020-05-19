@@ -1,0 +1,44 @@
+#!/usr/bin/python3
+
+import json
+import os
+import sys
+
+COUNTRIES_DIR = "app/countries"
+
+COUNTRY_FILES = [f for f in os.listdir(COUNTRIES_DIR) if f.endswith(".json")]
+
+if len(COUNTRY_FILES) == 0:
+    print("Please use 'run' to generate country data first.")
+    sys.exit(1)
+
+COUNTRY_CODE_TO_NAME = {}
+with open("app/countries.data") as f:
+    country_names = f.read()
+    f.close()
+pairs = country_names.split('|')
+for p in pairs:
+    (name, code) = p.split(":")
+    COUNTRY_CODE_TO_NAME[code] = name
+
+LATEST_DATE_TO_COUNTRY_LAST_UPDATED_THEN = {}
+
+for country_file in COUNTRY_FILES:
+    code = country_file.replace(".json", "")
+    with open(os.path.join(COUNTRIES_DIR, country_file)) as f:
+        data = json.loads(f.read())
+        f.close()
+    latest_date = ""
+    for date in data:
+        if date > latest_date:
+            latest_date = date
+    if latest_date not in LATEST_DATE_TO_COUNTRY_LAST_UPDATED_THEN:
+        LATEST_DATE_TO_COUNTRY_LAST_UPDATED_THEN[latest_date] = [code]
+    else:
+        LATEST_DATE_TO_COUNTRY_LAST_UPDATED_THEN[latest_date].append(code)
+
+for date in sorted(LATEST_DATE_TO_COUNTRY_LAST_UPDATED_THEN.keys(),
+                   reverse=True):
+    print(date + ": " + ", ".join(
+        [COUNTRY_CODE_TO_NAME[c] for c in \
+         LATEST_DATE_TO_COUNTRY_LAST_UPDATED_THEN[date]]))
