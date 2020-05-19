@@ -5,8 +5,6 @@ split into daily slices.
 """
 
 import argparse
-import json
-import multiprocessing
 import os
 import re
 import sys
@@ -18,6 +16,7 @@ import pandas as pd
 pd.options.mode.chained_assignment = None
 import requests
 
+import data_util
 import functions
 import split
 
@@ -64,7 +63,7 @@ def generate_geo_ids(df, lat_field_name, lng_field_name, quiet=False):
     return df
 
 
-def prepare_latest_data(countries, quiet=False):
+def prepare_latest_data(countries, countries_out_dir, overwrite=True, quiet=False):
     if not quiet:
         print("Downloading latest data from '" + LATEST_DATA_URL + "'...")
     os.system("curl --silent '" + LATEST_DATA_URL + "' > latestdata.tgz")
@@ -117,21 +116,16 @@ def prepare_latest_data(countries, quiet=False):
     if not quiet:
         print("Extracting location info...")
     functions.compile_location_info(df.to_dict("records"),
-        "app/location_info_world.data", countries, quiet=quiet)
-    df = df.drop(["city", "province", "country", "latitude", "longitude"], axis=1)
+                                    "app/location_info_world.data", countries,
+                                    quiet=quiet)
+    df = df.rename(columns={"date_confirmation": "date"})
+    df = df.drop(["city", "province", "latitude", "longitude"], axis=1)
+    if not quiet:
+        print("Slicing by country...")
+    split.slice_by_country_and_export(df, countries, countries_out_dir,
+                                      overwrite, quiet)
 
-    dates = df.date_confirmation.unique()
-    geoids = df.geoid.unique()
-    geoids.sort()
-
-    new = pd.DataFrame(columns=geoids, index=dates)
-    new.index.name = "date"
-    for i in new.index:
-        counts = df[df.date_confirmation == i].geoid.value_counts()
-        new.loc[i] = counts
-    new = new.fillna(0)
-    new.reset_index(drop=False)
-    return new
+    return data_util.build_case_count_table_from_line_list(df)
 
 
 def prepare_jhu_data(outfile, read_from_file, countries, quiet=False):
@@ -145,7 +139,8 @@ def prepare_jhu_data(outfile, read_from_file, countries, quiet=False):
             print("Downloading JHU data from '" + JHU_URL + "'...")
         req = requests.get(JHU_URL)
         if req.status_code != 200:
-            print("Could not get JHU data, aborting")
+            print("Could not get JHU data, aborting. "
+                  "Status code " + str(req.status_code))
             sys.exit(1)
         read_from = StringIO(req.text)
 
@@ -200,11 +195,11 @@ def prepare_jhu_data(outfile, read_from_file, countries, quiet=False):
     return df
 
 
-def generate_data(out_dir, jhu=False, input_jhu="", export_full_data=False,
-                  overwrite=False, quiet=False):
+def generate_data(dailies_out_dir, countries_out_dir, jhu=False, input_jhu="",
+                  export_full_data=False, overwrite=False, quiet=False):
 
     countries = functions.read_country_data(quiet=quiet)
-    latest = prepare_latest_data(countries, quiet=quiet)
+    latest = prepare_latest_data(countries, countries_out_dir, overwrite, quiet=quiet)
     jhu = prepare_jhu_data(jhu, input_jhu, countries, quiet=quiet)
 
     full = latest.merge(jhu, on="date", how="outer")
@@ -216,49 +211,13 @@ def generate_data(out_dir, jhu=False, input_jhu="", export_full_data=False,
 
         full[c] = full[c].astype(int)
 
-    # drop columns with negative values (errors in JHU data)
-    # Hopefully they will be fixed at some point.
     if export_full_data:
         full.to_csv(export_full_data)
 
-    full.index = [split.normalize_date(x) for x in full.index]
-    full.index.name = "date"
-    full = full.sort_values(by="date")
-
-    new_cases = full
-    total_cases = new_cases.cumsum()
-
-    n_cpus = multiprocessing.cpu_count()
     if not quiet:
-        print("Processing " + str(len(full)) + " features "
-              "with " + str(n_cpus) + " threads...")
-
-    pool = multiprocessing.Pool(n_cpus)
-    out_slices = pool.starmap(split.daily_slice,
-                              split.chunks(new_cases, total_cases, quiet=quiet),
-                              chunksize=10)
-
-    index = []
-    for s in out_slices:
-        out_name = s["date"] + ".json"
-        daily_slice_file_path = os.path.join(out_dir, out_name)
-        index.append(out_name)
-
-        if not overwrite and os.path.exists(daily_slice_file_path):
-            print(
-                "I will not clobber '" + daily_slice_file_path + "', "
-                "please delete it first"
-            )
-            continue
-
-        with open(daily_slice_file_path, "w") as f:
-            f.write(json.dumps(s))
-
-        with open(os.path.join(out_dir, "index.txt"), "w") as f:
-            # Reverse-sort the index file so that the browser will fetch recent
-            # slices first.
-            f.write("\n".join(sorted(index, reverse=True)))
-            f.close()
+        print("Slicing by date...")
+    split.slice_by_day_and_export(full, dailies_out_dir, overwrite=overwrite,
+                                  quiet=quiet)
 
     # Concatenate location info for the US and elsewhere
     os.system("rm -f app/location_info.data")
