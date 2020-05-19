@@ -16,6 +16,9 @@ class DeployTest(base_test.BaseTest):
         return os.system("grep --quiet '" + pattern + "' " + \
              os.path.join(TEST_TARGET, path)) == 0
 
+    def target_file_exists(self, path):
+        return os.path.exists(os.path.join(TEST_TARGET, path))
+
     def run(self):
         if os.path.exists(TEST_TARGET):
             # Previous run may have failed.
@@ -35,6 +38,9 @@ class DeployTest(base_test.BaseTest):
         self.check(
             self.target_file_contains("location_info.data", "Berlin,DE"),
             "The location info file should contain geo information")
+
+        self.check(self.target_file_exists("js/bundle.js"),
+                   "Javascript should get compiled as part of deployment.")
 
     def tear_down(self):
         if self.passed():
