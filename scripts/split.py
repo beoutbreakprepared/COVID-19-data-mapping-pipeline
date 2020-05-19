@@ -4,6 +4,8 @@ import json
 import os
 import multiprocessing
 
+import data_util
+
 def normalize_date(date):
     """Returns a normalized string representation of a date string."""
     original_argument = date
@@ -95,15 +97,26 @@ def produce_daily_slice(new_cases, total_cases):
     return {"date": new_cases.name, "features": features}
 
 def write_single_country_data(iso_code, data_frame, out_dir, overwrite=True):
-    features = []
-    data_frame = data_frame.rename(columns={"date_confirmation": "date"})
-    data_frame = data_frame.sort_values("date")
-    for date in data_frame.index:
-        properties = {"date": date}
-        features.append({"properties": properties})
 
+    # A dictionary where the keys are date strings, and values are themselves
+    # dictionaries from geo ID to the number of new cases on that day and
+    # location.
+    new_cases_by_day = {}
+    data_frame = data_frame.drop(["country"], axis=1)
+    case_count_table = data_util.build_case_count_table_from_line_list(
+        data_frame)
+
+    case_count_dict = case_count_table.to_dict("split")
+    for i in range(len(case_count_dict["index"])):
+        date = case_count_dict["index"][i]
+        new_cases_by_day[date] = {}
+        for j in range(len(case_count_dict["columns"])):
+            geoid = case_count_dict["columns"][j]
+            count = case_count_dict["data"][i][j]
+            if count > 0:
+                new_cases_by_day[date][geoid] = int(case_count_dict["data"][i][j])
     slice_file_path = os.path.join(out_dir, iso_code + ".json")
-    write_out({"features": features}, slice_file_path, overwrite)
+    write_out(new_cases_by_day, slice_file_path, overwrite)
 
 
 def slice_by_country_and_export(data_frame, countries, out_dir, overwrite=True,
@@ -111,6 +124,8 @@ def slice_by_country_and_export(data_frame, countries, out_dir, overwrite=True,
     groups = data_frame.groupby("country")
     for g in groups:
         (country, frame) = g
+        # Normalize to lower case
+        country = country.lower()
         if country not in countries:
             print("Warning: I don't know about '" + country + "'")
             continue

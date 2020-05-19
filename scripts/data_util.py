@@ -1,5 +1,6 @@
 import glob
 import os
+import pandas
 import sys
 
 sys.path.append("scripts")
@@ -12,6 +13,25 @@ COUNTRIES_DIR = "app/countries"
 DAILIES_DIR = "app/dailies"
 
 self_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")
+
+def build_case_count_table_from_line_list(in_data):
+    """
+    This takes an input data frame where each row represents a single
+    case, with a confirmation date and a geo ID, and returns a data
+    frame where each row represents a single date, columns are unique
+    geo IDs and cells are the sum of corresponding case counts.
+    """
+    unique_dates = in_data.date.unique()
+    unique_geoids = in_data.geoid.unique()
+    unique_geoids.sort()
+    out_data = pandas.DataFrame(columns=unique_geoids, index=unique_dates)
+
+    out_data.index.name = "date"
+    for date in out_data.index:
+        out_data.loc[date] = in_data[in_data.date == date].geoid.value_counts()
+    out_data = out_data.fillna(0)
+    out_data.reset_index(drop=False)
+    return out_data
 
 # Returns whether we were able to get the necessary data
 def retrieve_generable_data(out_dir, should_overwrite=False, quiet=False):

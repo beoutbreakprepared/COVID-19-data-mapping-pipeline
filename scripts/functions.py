@@ -198,7 +198,8 @@ def read_country_data(country_file="app/countries.data", quiet=False):
         country_data = f.read().strip()
         for country in country_data.split("|"):
             (name, iso) = country.split(":")
-            countries[name] = iso
+            # Normalize to lower case.
+            countries[name.lower()] = iso
         f.close()
 
     return countries

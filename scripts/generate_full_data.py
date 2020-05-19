@@ -16,6 +16,7 @@ import pandas as pd
 pd.options.mode.chained_assignment = None
 import requests
 
+import data_util
 import functions
 import split
 
@@ -117,24 +118,14 @@ def prepare_latest_data(countries, countries_out_dir, overwrite=True, quiet=Fals
     functions.compile_location_info(df.to_dict("records"),
                                     "app/location_info_world.data", countries,
                                     quiet=quiet)
-    df = df.drop(["latitude", "longitude"], axis=1)
+    df = df.rename(columns={"date_confirmation": "date"})
+    df = df.drop(["city", "province", "latitude", "longitude"], axis=1)
+    if not quiet:
+        print("Slicing by country...")
     split.slice_by_country_and_export(df, countries, countries_out_dir,
                                       overwrite, quiet)
 
-    df = df.drop(["city", "province", "country"], axis=1)
-
-    dates = df.date_confirmation.unique()
-    geoids = df.geoid.unique()
-    geoids.sort()
-
-    new = pd.DataFrame(columns=geoids, index=dates)
-    new.index.name = "date"
-    for i in new.index:
-        counts = df[df.date_confirmation == i].geoid.value_counts()
-        new.loc[i] = counts
-    new = new.fillna(0)
-    new.reset_index(drop=False)
-    return new
+    return data_util.build_case_count_table_from_line_list(df)
 
 
 def prepare_jhu_data(outfile, read_from_file, countries, quiet=False):
@@ -148,7 +139,8 @@ def prepare_jhu_data(outfile, read_from_file, countries, quiet=False):
             print("Downloading JHU data from '" + JHU_URL + "'...")
         req = requests.get(JHU_URL)
         if req.status_code != 200:
-            print("Could not get JHU data, aborting")
+            print("Could not get JHU data, aborting. "
+                  "Status code " + str(req.status_code))
             sys.exit(1)
         read_from = StringIO(req.text)
 
@@ -219,11 +211,11 @@ def generate_data(dailies_out_dir, countries_out_dir, jhu=False, input_jhu="",
 
         full[c] = full[c].astype(int)
 
-    # drop columns with negative values (errors in JHU data)
-    # Hopefully they will be fixed at some point.
     if export_full_data:
         full.to_csv(export_full_data)
 
+    if not quiet:
+        print("Slicing by date...")
     split.slice_by_day_and_export(full, dailies_out_dir, overwrite=overwrite,
                                   quiet=quiet)
 
