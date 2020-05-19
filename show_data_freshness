@@ -8,7 +8,7 @@ COUNTRIES_DIR = "app/countries"
 
 COUNTRY_FILES = [f for f in os.listdir(COUNTRIES_DIR) if f.endswith(".json")]
 
-if len(country_files) == 0:
+if len(COUNTRY_FILES) == 0:
     print("Please use 'run' to generate country data first.")
     sys.exit(1)
 
