@@ -121,10 +121,13 @@ def write_single_country_data(iso_code, data_frame, out_dir, overwrite=True):
 
 def slice_by_country_and_export(data_frame, countries, out_dir, overwrite=True,
                                 quiet=False):
+    # Normalize to lower case
+    for c in countries:
+        countries[c] = countries[c].lower()
+
     groups = data_frame.groupby("country")
     for g in groups:
         (country, frame) = g
-        # Normalize to lower case
         country = country.lower()
         if country not in countries:
             print("Warning: I don't know about '" + country + "'")

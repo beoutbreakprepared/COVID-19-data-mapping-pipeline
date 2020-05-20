@@ -198,7 +198,7 @@ def prepare_jhu_data(outfile, read_from_file, countries, quiet=False):
 def generate_data(dailies_out_dir, countries_out_dir, jhu=False, input_jhu="",
                   export_full_data=False, overwrite=False, quiet=False):
 
-    countries = functions.read_country_data(quiet=quiet)
+    countries = data_util.get_all_countries()
     latest = prepare_latest_data(countries, countries_out_dir, overwrite, quiet=quiet)
     jhu = prepare_jhu_data(jhu, input_jhu, countries, quiet=quiet)
 

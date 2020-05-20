@@ -7,12 +7,28 @@ sys.path.append("scripts")
 import generate_full_data
 import jhu_global_data
 
+# The file that contains mappings from country names to ISO codes.
+COUNTRY_DATA_FILE = "app/countries.data"
+
 # The directory where JSON files for country-specific and day-specific data
 # are expected to reside.
 COUNTRIES_DIR = "app/countries"
 DAILIES_DIR = "app/dailies"
 
 self_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")
+
+
+def get_all_countries():
+    """Returns a dictionary of country ISO codes to their name."""
+    countries = {}
+    with open(COUNTRY_DATA_FILE) as f:
+        data = f.read().strip()
+        f.close()
+    pairs = data.split('|')
+    for p in pairs:
+        (name, code) = p.split(":")
+        countries[code] = name
+    return countries
 
 def build_case_count_table_from_line_list(in_data):
     """
@@ -47,6 +63,9 @@ def retrieve_generable_data(out_dir, should_overwrite=False, quiet=False):
 
     return success
 
+
+def make_country_pages():
+    countries = get_all_countries()
 
 def prepare_for_local_development(quiet=False):
     if not os.path.exists(COUNTRIES_DIR):
