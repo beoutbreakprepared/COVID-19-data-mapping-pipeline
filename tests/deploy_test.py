@@ -25,7 +25,7 @@ class DeployTest(base_test.BaseTest):
             os.system("rm -rf " + TEST_TARGET)
         os.mkdir(TEST_TARGET)
         # Note: set 'quiet' to True for debugging failures.
-        deploy(TEST_TARGET, quiet=True)
+        deploy(os.path.join(os.getcwd(), TEST_TARGET), quiet=True)
 
         self.check(
             self.target_file_contains("index.html", "google-analytics"),
@@ -41,6 +41,9 @@ class DeployTest(base_test.BaseTest):
 
         self.check(self.target_file_exists("js/bundle.js"),
                    "Javascript should get compiled as part of deployment.")
+        self.check(not self.target_file_exists("js/healthmap.js"),
+                   "Original Javascript files shouldn't be copied to "
+                   "the target.")
 
     def tear_down(self):
         if self.passed():
