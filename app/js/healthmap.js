@@ -177,7 +177,9 @@ function fetchDailySlice(sliceFileName, isNewest) {
     url += '?nocache=' + timestamp;
   }
   return fetch(url)
-      .then(function(response) { return response.json(); })
+      .then(function(response) {
+          return response.status == 200 ? response.json() : undefined;
+      })
       .then(function(jsonData) {
         if (!jsonData) {
           return;
