@@ -7,8 +7,8 @@ sys.path.append("scripts")
 import generate_full_data
 import jhu_global_data
 
-# The directory where JSON files for country-specific and day-specific data
-# are expected to reside.
+# The directories (inside app/) where JSON files for country-specific and
+# day-specific data are expected to reside.
 COUNTRIES_DIR = "app/countries"
 DAILIES_DIR = "app/dailies"
 
@@ -49,6 +49,7 @@ def retrieve_generable_data(out_dir, should_overwrite=False, quiet=False):
 
 
 def prepare_for_local_development(quiet=False):
+    success = True
     if not os.path.exists(COUNTRIES_DIR):
         os.mkdir(COUNTRIES_DIR)
     if not os.path.exists(DAILIES_DIR):
@@ -66,21 +67,21 @@ def prepare_for_local_development(quiet=False):
     else:
         generate_data(quiet=quiet)
 
-    retrieve_generable_data(
+    success &= retrieve_generable_data(
         os.path.join(self_dir, "app"), should_overwrite=False, quiet=quiet
     )
 
-    return False
+    return success
 
 
 def prepare_for_deployment(quiet=False):
-    os.chdir(self_dir)
 
+    success = True
     if not retrieve_generable_data(
         os.path.join(self_dir, "app"), should_overwrite=True, quiet=quiet
     ):
         print("I wasn't able to retrieve necessary data, aborting")
-        sys.exit(1)
+        success = False
 
     if not os.path.exists(DAILIES_DIR):
         os.mkdir(DAILIES_DIR)
@@ -94,6 +95,7 @@ def prepare_for_deployment(quiet=False):
         os.remove(country)
 
     generate_data(overwrite=True, quiet=quiet)
+    return success
 
 
 def generate_data(overwrite=False, quiet=False):

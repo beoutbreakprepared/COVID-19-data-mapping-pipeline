@@ -3,30 +3,35 @@ Makes it easy and painless to deploy the site and make all necessary changes
 so that it's immediately ready to serve in production.
 """
 import datetime
+import glob
 import os
 import shlex
 import subprocess
 import sys
 
+from colorama import Fore, Style
+
 import data_util
 import js_compilation
 
+BACKUP_DIR_PREFIX = "backup_"
+
 # Files and directories inside "app" that do not need to be copied over
 # to the target. Please keep alphabetized.
-EXCLUDED = [
+EXCLUDED_GLOBS = [
     "__pycache__",
+    "*~",
+    "*.orig",
     ".gitignore",
     ".sass-cache",
     "analytics.js",
-    "css/styles.scss",
-    "css/styles.css.map",
-    "js/externs_d3.js",
-    "js/externs_mapbox.js",
+    "css/*.scss",
+    "css/*.css.map",
+    "js/externs*.js",
     "js/healthmap.js",
-    "js/healthmap_test.js",
+    "js/*_test.js",
 ]
 
-BACKUP_DIR_PREFIX = "backup_"
 
 # Returns True if everything we need is here, False otherwise.
 def check_dependencies():
@@ -50,10 +55,6 @@ def check_dependencies():
         os.system("rm -f compiler-latest.zip")
 
     return True
-
-
-def has_analytics_code():
-    return os.system("grep --quiet 'google-analytics.com' app/index.html") == 0
 
 
 def insert_analytics_code(quiet=False):
@@ -103,15 +104,17 @@ def use_compiled_js(quiet=False):
         f.close()
 
 
+# Returns whether the operation was a success.
 def backup_pristine_files():
-    os.system("cp app/index.html app/index.html.orig")
+    return os.system("cp app/index.html app/index.html.orig") == 0
 
 
+# Returns whether the operation was a success.
 def restore_pristine_files():
-    os.system("mv app/index.html.orig app/index.html")
+    return os.system("mv app/index.html.orig app/index.html") == 0
 
 
-# Returns whether the backup operation succeeded
+# Returns whether the backup operation succeeded.
 def backup_current_version(target_path, quiet=False):
     timestamp = datetime.datetime.now().strftime("%Y.%m.%d_%H.%M.%S")
     backup_dir = BACKUP_DIR_PREFIX + timestamp
@@ -122,43 +125,54 @@ def backup_current_version(target_path, quiet=False):
 
 
 def copy_contents(target_path, quiet=False):
+    success = True
     if not quiet:
         print("Replacing target contents with new version...")
     # TODO: Use 'rsync' if it's available.
-    os.system("rm -rf " + target_path + "/*")
-    to_copy = [
-        "'app/" + f + "'"
-        for f in os.listdir("app")
-        if f not in EXCLUDED
-        and not f.startswith(BACKUP_DIR_PREFIX)
-        and not f.endswith(".orig")
-    ]
-    cmd = "cp -a " + " ".join(to_copy) + " " + target_path + "/"
-    os.system(cmd)
+    success &= (os.system("rm -rf " + target_path + "/*") == 0)
+    original_dir = os.getcwd()
+    os.chdir("app")
+    all_files = set(glob.glob("**"))
+    excluded = set()
+    for f in all_files:
+        for g in EXCLUDED_GLOBS:
+            if f in glob.glob(g):
+                excluded.add(f)
+    cmd = "cp -a " + " ".join(all_files) + " " + target_path + "/"
+    success &= (os.system(cmd) == 0)
+    os.chdir(target_path)
+    for g in EXCLUDED_GLOBS:
+        for f in glob.glob(g):
+            if os.path.exists(f):
+                os.system("rm -rf " + f)
+
+    os.chdir(original_dir)
+    return success
 
 
 def deploy(target_path, quiet=False):
     if not check_dependencies():
         sys.exit(1)
-    backup_pristine_files()
-    data_util.prepare_for_deployment(quiet=quiet)
-    os.system("sass app/css/styles.scss app/css/styles.css")
+
+    success = True
+    success &= backup_pristine_files()
+    success &= data_util.prepare_for_deployment(quiet=quiet)
+    success &= (os.system("sass app/css/styles.scss app/css/styles.css") == 0)
 
     use_compiled_js(quiet=quiet)
-
-    if has_analytics_code():
-        if not quiet:
-            print("Analytics code is already present, skipping that step.")
-    else:
-        insert_analytics_code(quiet=quiet)
+    insert_analytics_code(quiet=quiet)
 
     if not backup_current_version(target_path, quiet=quiet):
         print("I could not back up the current version, bailing out.")
         sys.exit(1)
 
-    copy_contents(target_path, quiet=quiet)
-    restore_pristine_files()
+    success &= copy_contents(target_path, quiet=quiet)
+    success &= restore_pristine_files()
 
-    if not quiet:
-        print("All done. You can test it out with: "
-              "cd " + target_path + " && python3 -m http.server")
+    if success:
+        if not quiet:
+            print(Fore.GREEN + "All done. " + Style.RESET_ALL + ""
+                  "You can test it out with: "
+                  "cd " + target_path + " && python3 -m http.server")
+    else:
+        print(Fore.RED + "Something went wrong." + Style.RESET_ALL)
