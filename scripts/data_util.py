@@ -147,6 +147,9 @@ def prepare_for_deployment(quiet=False):
 
     if not os.path.exists(DAILIES_DIR):
         os.mkdir(DAILIES_DIR)
+    if not os.path.exists(COUNTRIES_DIR):
+        os.mkdir(COUNTRIES_DIR)
+
     # Clean whatever is left over.
     for daily in glob.glob("dailies/*.json"):
         os.remove(daily)
