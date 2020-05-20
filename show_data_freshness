@@ -4,6 +4,9 @@ import json
 import os
 import sys
 
+sys.path.append("scripts")
+import data_util
+
 COUNTRIES_DIR = "app/countries"
 
 COUNTRY_FILES = [f for f in os.listdir(COUNTRIES_DIR) if f.endswith(".json")]
@@ -11,15 +14,6 @@ COUNTRY_FILES = [f for f in os.listdir(COUNTRIES_DIR) if f.endswith(".json")]
 if len(COUNTRY_FILES) == 0:
     print("Please use 'run' to generate country data first.")
     sys.exit(1)
-
-COUNTRY_CODE_TO_NAME = {}
-with open("app/countries.data") as f:
-    country_names = f.read()
-    f.close()
-pairs = country_names.split('|')
-for p in pairs:
-    (name, code) = p.split(":")
-    COUNTRY_CODE_TO_NAME[code] = name
 
 LATEST_DATE_TO_COUNTRY_LAST_UPDATED_THEN = {}
 
@@ -37,8 +31,9 @@ for country_file in COUNTRY_FILES:
     else:
         LATEST_DATE_TO_COUNTRY_LAST_UPDATED_THEN[latest_date].append(code)
 
+COUNTRIES = data_util.get_all_countries()
 for date in sorted(LATEST_DATE_TO_COUNTRY_LAST_UPDATED_THEN.keys(),
                    reverse=True):
     print(date + ": " + ", ".join(
-        [COUNTRY_CODE_TO_NAME[c] for c in \
+        [COUNTRIES[c] for c in \
          LATEST_DATE_TO_COUNTRY_LAST_UPDATED_THEN[date]]))

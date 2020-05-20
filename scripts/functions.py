@@ -11,6 +11,8 @@ import sys
 from datetime import datetime, timedelta
 from shutil import copyfile
 
+import data_util
+
 LAT_LNG_DECIMAL_PLACES = 4
 
 class GoogleSheet(object):
@@ -188,21 +190,6 @@ def find_country_iso_code_from_name(name, dict):
           "to update the country data file.")
     sys.exit(1)
 
-
-def read_country_data(country_file="app/countries.data", quiet=False):
-    """Reads and returns the mapping between country names and ISO codes"""
-    if not quiet:
-        print("Reading country data...")
-    countries = {}
-    with open(country_file) as f:
-        country_data = f.read().strip()
-        for country in country_data.split("|"):
-            (name, iso) = country.split(":")
-            # Normalize to lower case.
-            countries[name.lower()] = iso
-        f.close()
-
-    return countries
 
 def compile_location_info(in_data, out_file, countries,
     keys=["country", "province", "city"], quiet=False):
