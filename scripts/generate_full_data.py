@@ -63,7 +63,7 @@ def generate_geo_ids(df, lat_field_name, lng_field_name, quiet=False):
     return df
 
 
-def prepare_latest_data(countries, countries_out_dir, overwrite=True, quiet=False):
+def prepare_latest_data(countries_out_dir, overwrite=True, quiet=False):
     if not quiet:
         print("Downloading latest data from '" + LATEST_DATA_URL + "'...")
     os.system("curl --silent '" + LATEST_DATA_URL + "' > latestdata.tgz")
@@ -116,19 +116,18 @@ def prepare_latest_data(countries, countries_out_dir, overwrite=True, quiet=Fals
     if not quiet:
         print("Extracting location info...")
     functions.compile_location_info(df.to_dict("records"),
-                                    "app/location_info_world.data", countries,
+                                    "app/location_info_world.data",
                                     quiet=quiet)
     df = df.rename(columns={"date_confirmation": "date"})
     df = df.drop(["city", "province", "latitude", "longitude"], axis=1)
     if not quiet:
         print("Slicing by country...")
-    split.slice_by_country_and_export(df, countries, countries_out_dir,
-                                      overwrite, quiet)
+    split.slice_by_country_and_export(df, countries_out_dir, overwrite, quiet)
 
     return data_util.build_case_count_table_from_line_list(df)
 
 
-def prepare_jhu_data(outfile, read_from_file, countries, quiet=False):
+def prepare_jhu_data(outfile, read_from_file, quiet=False):
     """Gets JHU US data from the URL and formats it for the client."""
 
     if read_from_file:
@@ -161,7 +160,7 @@ def prepare_jhu_data(outfile, read_from_file, countries, quiet=False):
     generate_geo_ids(df, "Lat", "Long_", quiet=quiet)
 
     functions.compile_location_info(df.to_dict("records"),
-        "app/location_info_us.data", countries,
+        "app/location_info_us.data",
         keys=["Country_Region", "Province_State", "Admin2"],
         quiet=quiet)
 
@@ -198,9 +197,8 @@ def prepare_jhu_data(outfile, read_from_file, countries, quiet=False):
 def generate_data(dailies_out_dir, countries_out_dir, jhu=False, input_jhu="",
                   export_full_data=False, overwrite=False, quiet=False):
 
-    countries = data_util.get_all_countries()
-    latest = prepare_latest_data(countries, countries_out_dir, overwrite, quiet=quiet)
-    jhu = prepare_jhu_data(jhu, input_jhu, countries, quiet=quiet)
+    latest = prepare_latest_data(countries_out_dir, overwrite, quiet=quiet)
+    jhu = prepare_jhu_data(jhu, input_jhu, quiet=quiet)
 
     full = latest.merge(jhu, on="date", how="outer")
     full.fillna(0, inplace=True)

@@ -119,21 +119,13 @@ def write_single_country_data(iso_code, data_frame, out_dir, overwrite=True):
     write_out(new_cases_by_day, slice_file_path, overwrite)
 
 
-def slice_by_country_and_export(data_frame, countries, out_dir, overwrite=True,
-                                quiet=False):
-    # Normalize to lower case
-    for c in countries:
-        countries[c] = countries[c].lower()
+def slice_by_country_and_export(data_frame, out_dir, overwrite=True, quiet=False):
 
     groups = data_frame.groupby("country")
     for g in groups:
         (country, frame) = g
-        country = country.lower()
-        if country not in countries:
-            print("Warning: I don't know about '" + country + "'")
-            continue
-        country_iso = countries[country]
-        write_single_country_data(country_iso, frame, out_dir, overwrite)
+        code = data_util.country_code_from_name(country.lower())
+        write_single_country_data(code, frame, out_dir, overwrite)
 
 
 def chunks(new_cases, total_cases, quiet=False):
