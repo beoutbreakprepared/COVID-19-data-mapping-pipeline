@@ -1,5 +1,8 @@
 var d3 = {};
 
+d3.namespaces = {};
+d3.namespaces.svg = {};
+
 /** @constructor */
 d3.Axis = function() {};
 
