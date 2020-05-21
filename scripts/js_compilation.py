@@ -1,5 +1,6 @@
 import os
 
+DEBUG = False
 
 def compile_js(quiet=False):
 
@@ -9,7 +10,8 @@ def compile_js(quiet=False):
     cmd = (
         "java -jar tools/closure-compiler.jar "
         "--language_in ECMASCRIPT6 "
-        "--compilation_level SIMPLE_OPTIMIZATIONS "
+        "--compilation_level ADVANCED_OPTIMIZATIONS "
+        "" + ("--formatting=pretty_print " if DEBUG else "") + ""
         "--js app/js/healthmap.js "
         "--externs app/js/externs_d3.js "
         "--externs app/js/externs_mapbox.js "
