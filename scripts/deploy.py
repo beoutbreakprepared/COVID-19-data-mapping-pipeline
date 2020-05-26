@@ -77,38 +77,44 @@ def insert_analytics_code(quiet=False):
         f.close()
 
 
-def use_compiled_js(quiet=False):
-    js_compilation.compile_js(quiet)
-
+def link_to_compiled_js_in_html(html_file):
     # Now link to the compiled code in the HTML file
-    main_page = ""
+    html = ""
     scripting_time = False
-    with open("app/index.html") as f:
+    with open(html_file) as f:
         for line in f:
             if line.strip() == "<!-- /js -->":
                 scripting_time = False
-                main_page += '<script src="js/bundle.js"></script>\n'
+                html += '<script src="/js/bundle.js"></script>\n'
             elif scripting_time:
                 continue
             elif line.strip() == "<!-- js -->":
                 scripting_time = True
             else:
-                main_page += line
+                html += line
         f.close()
 
     # Remove the file and write a modified version
-    os.system("rm app/index.html")
-    with open("app/index.html", "w") as f:
-        f.write(main_page)
+    os.system("rm " + html_file)
+    with open(html_file, "w") as f:
+        f.write(html)
         f.close()
+
+
+def use_compiled_js(quiet=False):
+    js_compilation.compile_js(quiet)
+    link_to_compiled_js_in_html("app/index.html")
+    link_to_compiled_js_in_html("app/country.html")
 
 
 def backup_pristine_files():
     os.system("cp app/index.html app/index.html.orig")
+    os.system("cp app/country.html app/country.html.orig")
 
 
 def restore_pristine_files():
     os.system("mv app/index.html.orig app/index.html")
+    os.system("mv app/country.html.orig app/country.html")
 
 
 # Returns whether the backup operation succeeded
@@ -141,10 +147,11 @@ def deploy(target_path, quiet=False):
     if not check_dependencies():
         sys.exit(1)
     backup_pristine_files()
-    data_util.prepare_for_deployment(quiet=quiet)
-    os.system("sass app/css/styles.scss app/css/styles.css")
 
     use_compiled_js(quiet=quiet)
+
+    data_util.prepare_for_deployment(quiet=quiet)
+    os.system("sass app/css/styles.scss app/css/styles.css")
 
     if has_analytics_code():
         if not quiet:

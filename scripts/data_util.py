@@ -140,7 +140,7 @@ def prepare_for_deployment(quiet=False):
     os.chdir(self_dir)
 
     if not retrieve_generable_data(
-        os.path.join(self_dir, "app"), should_overwrite=True, quiet=quiet
+            os.path.join(self_dir, "app"), should_overwrite=True, quiet=quiet
     ):
         print("I wasn't able to retrieve necessary data, aborting")
         sys.exit(1)

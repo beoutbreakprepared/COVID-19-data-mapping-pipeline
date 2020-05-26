@@ -550,6 +550,14 @@ function handleFlyTo(lat, lon, zoom, item) {
 };
 
 
+function loadCountryData() {
+  const code = document.getElementById('dash').getAttribute('c');
+  fetch('/countries/' + code + '.json').then(function(response) {
+    console.log(response);
+  });
+}
+
+
 function initMap() {
   mapboxgl.accessToken = MAPBOX_TOKEN;
   map = new mapboxgl.Map({
@@ -625,4 +633,5 @@ if (typeof(globalThis) === 'undefined') {
 globalThis['clearFilter'] = clearFilter;
 globalThis['filterList'] = filterList;
 globalThis['initMap'] = initMap;
+globalThis['loadCountryData'] = loadCountryData;
 globalThis['handleFlyTo'] = handleFlyTo;
