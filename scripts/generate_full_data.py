@@ -84,6 +84,7 @@ def prepare_latest_data(countries_out_dir, overwrite=True, quiet=False):
                 "latitude",
                 "longitude"
             ],
+            dtype=str
         )
         os.remove("latestdata.csv")
 
@@ -94,11 +95,12 @@ def prepare_latest_data(countries_out_dir, overwrite=True, quiet=False):
         )
         sys.exit(1)
 
-    df["latitude"] = df.latitude.astype(str)
+    df["latitude"]  = df.latitude.astype(str)
     df["longitude"] = df.longitude.astype(str)
 
     if not quiet:
         print("Applying filters...")
+
     df = df[~df.country.isin(["United States", "Virgin Islands, U.S.", "Puerto Rico"])]
     df = df[~df.latitude.isnull() | df.longitude.isnull()]
     df = df[~df.latitude.str.contains("[aA-zZ]", regex=True)]
@@ -108,7 +110,7 @@ def prepare_latest_data(countries_out_dir, overwrite=True, quiet=False):
     df["date_confirmation"] = df.date_confirmation.str.extract("(\d{2}\.\d{2}\.\d{4})")
     df = df[
         pd.to_datetime(df.date_confirmation, format="%d.%m.%Y", errors="coerce")
-        < pd.datetime.now()
+        < pd.Timestamp.now()
     ]
     df["date_confirmation"] = df["date_confirmation"].apply(split.normalize_date)
 
