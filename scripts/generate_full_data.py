@@ -80,8 +80,9 @@ def prepare_latest_data(countries_out_dir, overwrite=True, quiet=False):
                 "province",
                 "country",
                 "date_confirmation",
+                "date_admission_hospital",
                 "latitude",
-                "longitude",
+                "longitude"
             ],
         )
         os.remove("latestdata.csv")
@@ -102,6 +103,8 @@ def prepare_latest_data(countries_out_dir, overwrite=True, quiet=False):
     df = df[~df.latitude.isnull() | df.longitude.isnull()]
     df = df[~df.latitude.str.contains("[aA-zZ]", regex=True)]
     df = df[~df.longitude.str.contains("[aA-zZ]", regex=True)]
+    df.date_confirmation = df.date_confirmation.fillna(df.date_admission_hospital)
+    df = df.drop('date_admission_hospital', axis=1)
     df["date_confirmation"] = df.date_confirmation.str.extract("(\d{2}\.\d{2}\.\d{4})")
     df = df[
         pd.to_datetime(df.date_confirmation, format="%d.%m.%Y", errors="coerce")
