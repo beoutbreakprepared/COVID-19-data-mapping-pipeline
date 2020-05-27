@@ -95,12 +95,8 @@ def prepare_latest_data(countries_out_dir, overwrite=True, quiet=False):
         )
         sys.exit(1)
 
-    df["latitude"]  = df.latitude.astype(str)
-    df["longitude"] = df.longitude.astype(str)
-
     if not quiet:
         print("Applying filters...")
-
     df = df[~df.country.isin(["United States", "Virgin Islands, U.S.", "Puerto Rico"])]
     df = df[~df.latitude.isnull() | df.longitude.isnull()]
     df = df[~df.latitude.str.contains("[aA-zZ]", regex=True)]
