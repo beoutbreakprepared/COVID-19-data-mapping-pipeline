@@ -124,14 +124,10 @@ def backup_pristine_files():
 
 # Returns whether the operation was a success.
 def restore_pristine_files():
-<<<<<<< HEAD
-    return os.system("mv app/index.html.orig app/index.html") == 0
-=======
     success = True
     success &= os.system("mv app/index.html.orig app/index.html") == 0
     success &= os.system("mv app/country.html.orig app/country.html") == 0
     return success
->>>>>>> upstream/dev
 
 
 # Returns whether the backup operation succeeded.
@@ -161,12 +157,9 @@ def copy_contents(target_path, quiet=False):
             if f in glob.glob(g):
                 excluded.add(f)
     cmd = "cp -a " + " ".join(all_files) + " " + target_path + "/"
-<<<<<<< HEAD
-=======
     if not quiet:
         print(os.getcwd())
         print(cmd)
->>>>>>> upstream/dev
     success &= (os.system(cmd) == 0)
     os.chdir(target_path)
     for g in EXCLUDED_GLOBS:
@@ -184,10 +177,6 @@ def deploy(target_path, quiet=False):
 
     success = True
     success &= backup_pristine_files()
-<<<<<<< HEAD
-    success &= data_util.prepare_for_deployment(quiet=quiet)
-=======
->>>>>>> upstream/dev
     success &= (os.system("sass app/css/styles.scss app/css/styles.css") == 0)
 
     use_compiled_js(quiet=quiet)
@@ -195,10 +184,7 @@ def deploy(target_path, quiet=False):
 
     success &= data_util.prepare_for_deployment(quiet=quiet)
 
-<<<<<<< HEAD
-=======
     success &= backup_current_version(target_path, quiet=quiet)
->>>>>>> upstream/dev
     success &= copy_contents(target_path, quiet=quiet)
     success &= restore_pristine_files()
 

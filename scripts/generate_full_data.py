@@ -200,14 +200,8 @@ def prepare_jhu_data(outfile, read_from_file, quiet=False):
 def generate_data(dailies_out_dir, countries_out_dir, jhu=False, input_jhu="",
                   export_full_data=False, overwrite=False, quiet=False):
 
-<<<<<<< HEAD
-    countries = data_util.get_all_countries()
-    latest = prepare_latest_data(countries, countries_out_dir, overwrite, quiet=quiet)
-    jhu = prepare_jhu_data(jhu, input_jhu, countries, quiet=quiet)
-=======
     latest = prepare_latest_data(countries_out_dir, overwrite, quiet=quiet)
     jhu = prepare_jhu_data(jhu, input_jhu, quiet=quiet)
->>>>>>> upstream/dev
 
     full = latest.merge(jhu, on="date", how="outer")
     full.fillna(0, inplace=True)

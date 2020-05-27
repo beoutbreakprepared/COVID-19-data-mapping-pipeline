@@ -174,30 +174,8 @@ def round_lat_long(lat_or_lng):
     return str(round(float(lat_or_lng), LAT_LNG_DECIMAL_PLACES))
 
 
-<<<<<<< HEAD
-def find_country_iso_code_from_name(name, dict):
-    if name == "nan":
-        return ""
-    # If this is already a 2-letter ISO code, return it as-is
-    if len(name) == 2 and name == name.upper():
-        return name
-    if name in dict:
-        return dict[name]
-    for key in dict:
-        if key.lower() == name.lower():
-            return dict[key]
-
-    print("Sorry, I don't know about '" + name + "', you might want "
-          "to update the country data file.")
-    sys.exit(1)
-
-
-def compile_location_info(in_data, out_file, countries,
-    keys=["country", "province", "city"], quiet=False):
-=======
 def compile_location_info(in_data, out_file,
                           keys=["country", "province", "city"], quiet=False):
->>>>>>> upstream/dev
 
     if not quiet:
         print("Exporting location info...")
