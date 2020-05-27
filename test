@@ -11,8 +11,8 @@ from tests import data_processing_test, deploy_test, js_test, run_test
 TESTS = [
     data_processing_test.DataProcessingTest,
     deploy_test.DeployTest,
-    js_test.JsTest,
     run_test.RunTest,
+    js_test.JsTest,
 ]
 
 for test_class in TESTS:

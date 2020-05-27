@@ -10,8 +10,8 @@ import jhu_global_data
 # The file that contains mappings from country names to ISO codes.
 COUNTRY_DATA_FILE = "app/countries.data"
 
-# The directory where JSON files for country-specific and day-specific data
-# are expected to reside.
+# The directories (inside app/) where JSON files for country-specific and
+# day-specific data are expected to reside.
 COUNTRIES_DIR = "app/countries"
 DAILIES_DIR = "app/dailies"
 
@@ -111,6 +111,7 @@ def make_country_pages():
             i.close()
 
 def prepare_for_local_development(quiet=False):
+    success = True
     if not os.path.exists(COUNTRIES_DIR):
         os.mkdir(COUNTRIES_DIR)
     if not os.path.exists(DAILIES_DIR):
@@ -128,22 +129,22 @@ def prepare_for_local_development(quiet=False):
     else:
         generate_data(quiet=quiet)
 
-    retrieve_generable_data(
+    success &= retrieve_generable_data(
         os.path.join(self_dir, "app"), should_overwrite=False, quiet=quiet
     )
     make_country_pages()
 
-    return False
+    return success
 
 
 def prepare_for_deployment(quiet=False):
-    os.chdir(self_dir)
 
+    success = True
     if not retrieve_generable_data(
             os.path.join(self_dir, "app"), should_overwrite=True, quiet=quiet
     ):
         print("I wasn't able to retrieve necessary data, aborting")
-        sys.exit(1)
+        success = False
 
     if not os.path.exists(DAILIES_DIR):
         os.mkdir(DAILIES_DIR)
@@ -158,6 +159,7 @@ def prepare_for_deployment(quiet=False):
 
     generate_data(overwrite=True, quiet=quiet)
     make_country_pages()
+    return success
 
 
 def generate_data(overwrite=False, quiet=False):
