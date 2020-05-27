@@ -152,7 +152,8 @@ def copy_contents(target_path, quiet=False):
                 excluded.add(f)
     cmd = "cp -a " + " ".join(all_files) + " " + target_path + "/"
     if not quiet:
-      print(cmd)
+        print(os.getcwd())
+        print(cmd)
     success &= (os.system(cmd) == 0)
     os.chdir(target_path)
     for g in EXCLUDED_GLOBS:
