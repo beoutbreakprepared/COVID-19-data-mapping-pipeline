@@ -102,11 +102,6 @@ def link_to_compiled_js_in_html(html_file):
         f.close()
 
 
-<<<<<<< HEAD
-# Returns whether the operation was a success.
-def backup_pristine_files():
-    return os.system("cp app/index.html app/index.html.orig") == 0
-=======
 def use_compiled_js(quiet=False):
     js_compilation.compile_js(quiet)
     link_to_compiled_js_in_html("app/index.html")
@@ -119,7 +114,6 @@ def backup_pristine_files():
     success &= os.system("cp app/index.html app/index.html.orig") == 0
     success &= os.system("cp app/country.html app/country.html.orig") == 0
     return success
->>>>>>> upstream/dev
 
 
 # Returns whether the operation was a success.
