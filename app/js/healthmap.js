@@ -367,6 +367,10 @@ function handleShowModal(html) {
     modal.classList.add('is-visible');
   }, 40);
   modal.innerHTML = html;
+  // Attach an event to the close button once this is finished rendering.
+  setTimeout(function() {
+    document.getElementById('modal-cancel').onclick = handleHideModal;
+  }, 0);
 }
 
 function handleHideModal() {
@@ -633,6 +637,7 @@ if (typeof(globalThis) === 'undefined' && typeof(global) !== "undefined") {
     globalThis = global;
 }
 globalThis['clearFilter'] = clearFilter;
+globalThis['fetchAboutPage'] = fetchAboutPage;
 globalThis['filterList'] = filterList;
 globalThis['initMap'] = initMap;
 globalThis['loadCountryData'] = loadCountryData;
