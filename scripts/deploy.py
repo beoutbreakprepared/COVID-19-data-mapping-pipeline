@@ -131,8 +131,10 @@ def backup_current_version(target_path, quiet=False):
 
     if not quiet:
         print("Backing up current version into '" + backup_dir + "'...")
-    return os.system("cp -a " + target_path + " " + backup_dir) == 0
-
+    success = os.system("cp -a " + target_path + " " + backup_dir) == 0
+    if not success and not quiet:
+        print("I could not back up the current version.")
+    return success
 
 def copy_contents(target_path, quiet=False):
     success = True
@@ -149,6 +151,8 @@ def copy_contents(target_path, quiet=False):
             if f in glob.glob(g):
                 excluded.add(f)
     cmd = "cp -a " + " ".join(all_files) + " " + target_path + "/"
+    if not quiet:
+      print(cmd)
     success &= (os.system(cmd) == 0)
     os.chdir(target_path)
     for g in EXCLUDED_GLOBS:
@@ -173,10 +177,7 @@ def deploy(target_path, quiet=False):
 
     success &= data_util.prepare_for_deployment(quiet=quiet)
 
-    if not backup_current_version(target_path, quiet=quiet):
-        print("I could not back up the current version, bailing out.")
-        sys.exit(1)
-
+    success &= backup_current_version(target_path, quiet=quiet)
     success &= copy_contents(target_path, quiet=quiet)
     success &= restore_pristine_files()
 
