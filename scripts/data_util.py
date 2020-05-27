@@ -7,12 +7,51 @@ sys.path.append("scripts")
 import generate_full_data
 import jhu_global_data
 
+# The file that contains mappings from country names to ISO codes.
+COUNTRY_DATA_FILE = "app/countries.data"
+
 # The directories (inside app/) where JSON files for country-specific and
 # day-specific data are expected to reside.
 COUNTRIES_DIR = "app/countries"
 DAILIES_DIR = "app/dailies"
 
 self_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")
+
+COUNTRIES_ISO_TO_NAME = {}
+COUNTRIES_NAME_TO_ISO = {}
+
+
+def initialize_country_names_and_codes():
+    global COUNTRIES_ISO_TO_NAME
+    global COUNTRIES_NAME_TO_ISO
+    if len(COUNTRIES_ISO_TO_NAME) > 1:
+        return
+    COUNTRIES_ISO_TO_NAME = {}
+    with open(COUNTRY_DATA_FILE) as f:
+        data = f.read().strip()
+        f.close()
+    pairs = data.split('|')
+    for p in pairs:
+        (name, code) = p.split(":")
+        COUNTRIES_ISO_TO_NAME[code] = name
+        COUNTRIES_NAME_TO_ISO[name.lower()] = code
+
+
+def get_all_countries():
+    """Returns a dictionary of country ISO codes to their name."""
+    return COUNTRIES_ISO_TO_NAME
+    if len(COUNTRIES_ISO_TO_NAME) > 0:
+        return COUNTRIES_ISO_TO_NAME
+
+
+def country_code_from_name(name):
+    # Are we being passed something that's already a code?
+    if len(name) == 2 and name == name.upper():
+        return name
+    if name.lower() in COUNTRIES_NAME_TO_ISO:
+        return COUNTRIES_NAME_TO_ISO[name.lower()]
+    print("WARNING: I don't know about country '" + name + "'")
+
 
 def build_case_count_table_from_line_list(in_data):
     """
@@ -48,6 +87,29 @@ def retrieve_generable_data(out_dir, should_overwrite=False, quiet=False):
     return success
 
 
+def make_country_pages():
+    countries = get_all_countries()
+    with open("app/country.html") as f:
+        template = f.read().strip()
+        f.close()
+    for code in countries:
+        directory = os.path.join("app", "c", code)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        index_file = os.path.join(directory, "index.html")
+        if os.path.exists(index_file):
+            os.remove(index_file)
+        tokens = {
+            "code": code,
+            "title": countries[code],
+        }
+        output = template
+        for t in tokens:
+            output = output.replace("{{" + t + "}}", tokens[t])
+        with open(index_file, "w") as i:
+            i.write(output)
+            i.close()
+
 def prepare_for_local_development(quiet=False):
     success = True
     if not os.path.exists(COUNTRIES_DIR):
@@ -70,6 +132,7 @@ def prepare_for_local_development(quiet=False):
     success &= retrieve_generable_data(
         os.path.join(self_dir, "app"), should_overwrite=False, quiet=quiet
     )
+    make_country_pages()
 
     return success
 
@@ -78,7 +141,7 @@ def prepare_for_deployment(quiet=False):
 
     success = True
     if not retrieve_generable_data(
-        os.path.join(self_dir, "app"), should_overwrite=True, quiet=quiet
+            os.path.join(self_dir, "app"), should_overwrite=True, quiet=quiet
     ):
         print("I wasn't able to retrieve necessary data, aborting")
         success = False
@@ -95,6 +158,7 @@ def prepare_for_deployment(quiet=False):
         os.remove(country)
 
     generate_data(overwrite=True, quiet=quiet)
+    make_country_pages()
     return success
 
 
@@ -109,3 +173,7 @@ def generate_data(overwrite=False, quiet=False):
         os.path.join(self_dir, COUNTRIES_DIR),
         overwrite=overwrite, quiet=quiet
     )
+
+# Fetch country names and codes at module initialization time to avoid doing it
+# repeatedly.
+initialize_country_names_and_codes()

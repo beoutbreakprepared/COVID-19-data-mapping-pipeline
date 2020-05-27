@@ -78,40 +78,50 @@ def insert_analytics_code(quiet=False):
         f.close()
 
 
-def use_compiled_js(quiet=False):
-    js_compilation.compile_js(quiet)
-
+def link_to_compiled_js_in_html(html_file):
     # Now link to the compiled code in the HTML file
-    main_page = ""
+    html = ""
     scripting_time = False
-    with open("app/index.html") as f:
+    with open(html_file) as f:
         for line in f:
             if line.strip() == "<!-- /js -->":
                 scripting_time = False
-                main_page += '<script src="js/bundle.js"></script>\n'
+                html += '<script src="/js/bundle.js"></script>\n'
             elif scripting_time:
                 continue
             elif line.strip() == "<!-- js -->":
                 scripting_time = True
             else:
-                main_page += line
+                html += line
         f.close()
 
     # Remove the file and write a modified version
-    os.system("rm app/index.html")
-    with open("app/index.html", "w") as f:
-        f.write(main_page)
+    os.system("rm " + html_file)
+    with open(html_file, "w") as f:
+        f.write(html)
         f.close()
+
+
+def use_compiled_js(quiet=False):
+    js_compilation.compile_js(quiet)
+    link_to_compiled_js_in_html("app/index.html")
+    link_to_compiled_js_in_html("app/country.html")
 
 
 # Returns whether the operation was a success.
 def backup_pristine_files():
-    return os.system("cp app/index.html app/index.html.orig") == 0
+    success = True
+    success &= os.system("cp app/index.html app/index.html.orig") == 0
+    success &= os.system("cp app/country.html app/country.html.orig") == 0
+    return success
 
 
 # Returns whether the operation was a success.
 def restore_pristine_files():
-    return os.system("mv app/index.html.orig app/index.html") == 0
+    success = True
+    success &= os.system("mv app/index.html.orig app/index.html") == 0
+    success &= os.system("mv app/country.html.orig app/country.html") == 0
+    return success
 
 
 # Returns whether the backup operation succeeded.
@@ -121,8 +131,10 @@ def backup_current_version(target_path, quiet=False):
 
     if not quiet:
         print("Backing up current version into '" + backup_dir + "'...")
-    return os.system("cp -a " + target_path + " " + backup_dir) == 0
-
+    success = os.system("cp -a " + target_path + " " + backup_dir) == 0
+    if not success and not quiet:
+        print("I could not back up the current version.")
+    return success
 
 def copy_contents(target_path, quiet=False):
     success = True
@@ -139,6 +151,9 @@ def copy_contents(target_path, quiet=False):
             if f in glob.glob(g):
                 excluded.add(f)
     cmd = "cp -a " + " ".join(all_files) + " " + target_path + "/"
+    if not quiet:
+        print(os.getcwd())
+        print(cmd)
     success &= (os.system(cmd) == 0)
     os.chdir(target_path)
     for g in EXCLUDED_GLOBS:
@@ -156,16 +171,14 @@ def deploy(target_path, quiet=False):
 
     success = True
     success &= backup_pristine_files()
-    success &= data_util.prepare_for_deployment(quiet=quiet)
     success &= (os.system("sass app/css/styles.scss app/css/styles.css") == 0)
 
     use_compiled_js(quiet=quiet)
     insert_analytics_code(quiet=quiet)
 
-    if not backup_current_version(target_path, quiet=quiet):
-        print("I could not back up the current version, bailing out.")
-        sys.exit(1)
+    success &= data_util.prepare_for_deployment(quiet=quiet)
 
+    success &= backup_current_version(target_path, quiet=quiet)
     success &= copy_contents(target_path, quiet=quiet)
     success &= restore_pristine_files()
 
