@@ -406,7 +406,21 @@ div.mapboxgl-popup-content {
 
 .credit-text { display: none }
 
-/* modal */
+/* Overrides for autodrive mode: remove most interactive elements */
+
+.autodrive .sidebar, .autodrive .credit,
+.autodrive .mapboxgl-ctrl-top-left,
+.autodrive .mapboxgl-ctrl-top-right,
+.autodrive .mapboxgl-ctrl-bottom-left,
+.autodrive .mapboxgl-ctrl-bottom-right {
+  display: none;
+}
+
+.autodrive #range-slider {
+  left: 1rem;
+}
+
+/* Modal */
 
 #modal-wrapper {
   display: none;
