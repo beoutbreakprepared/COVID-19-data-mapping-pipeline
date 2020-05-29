@@ -427,5 +427,5 @@ globalThis['clearFilter'] = clearFilter;
 globalThis['fetchAboutPage'] = fetchAboutPage;
 globalThis['filterList'] = filterList;
 globalThis['init'] = init;
-globalThis['loadCountryData'] = function() { dataFetcher.loadCountryData(); };
+globalThis['loadCountryData'] = function() { dataProvider.loadCountryData(); };
 globalThis['handleFlyTo'] = handleFlyTo;
