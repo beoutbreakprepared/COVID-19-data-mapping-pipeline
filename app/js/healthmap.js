@@ -21,13 +21,11 @@ const ZOOM_THRESHOLD = 2;
 const timestamp = (new Date()).getTime();
 
 // Globals
+let dataProvider;
 let locationInfo = {};
 // A map from 2-letter ISO country codes to full names
 let countryNames = {};
-// A map from country names to most recent data (case count, etc.).
-let latestDataPerCountry = {};
 let dates = [];
-let dataSliceFileNames = [];
 let map;
 // The same popup object will be reused.
 let popup;
@@ -57,8 +55,9 @@ function showDataAtDate(isodate) {
   // Show per-country data for low zoom levels, but only for the most recent
   // date.
   if (zoom <= ZOOM_THRESHOLD && currentIsoDate == dates[dates.length - 1]) {
-    for (let centroid_geoid in latestDataPerCountry) {
-      let countryData = latestDataPerCountry[centroid_geoid];
+    const data = dataProvider.getLatestDataPerCountry();
+    for (let centroid_geoid in data) {
+      let countryData = data[centroid_geoid];
       let country = countryData[0];
       let feature = formatFeatureForMap({
         'properties': {
@@ -79,126 +78,13 @@ function setTimeControlLabel(date) {
   document.getElementById('date').innerText = dates[date];
 }
 
-function updateTimeControl() {
-  // There's no point in showing the time control if we only have data for one
-  // date.
-  if (dates.length < 2) {
-    return;
-  }
-  document.getElementById('range-slider').style.display = 'flex';
-  timeControl.min = 0;
-  timeControl.max = dates.length - 1;
-  // Keep the slider at max value.
-  timeControl.value = dates.length - 1;
-  setTimeControlLabel(dates.length - 1);
-}
-
-function toggleMapAnimation() {
-  const shouldStart = !animationIntervalId;
-  document.getElementById('playpause').setAttribute('src', 'img/' +
-      (shouldStart ? 'pause' : 'play') + '.svg');
-  if (shouldStart) {
-    let i = 0;
-    animationIntervalId = setInterval(function() {
-      timeControl.value = i;
-      showDataAtDate(dates[i]);
-      setTimeControlLabel(i);
-      i++;
-      if (i === dates.length) {
-        // We've reached the end.
-        toggleMapAnimation();
-      }
-    }, ANIMATION_FRAME_DURATION_MS);
-  } else {
-    clearInterval(animationIntervalId);
-    animationIntervalId = 0;
-  }
-}
-
 /** Fills with leading zeros to the desired width. */
 function zfill(n, width) {
   n = n + '';
   return n.length >= width ? n : new Array(width - n.length + 1).join('0') + n;
 }
 
-function processDailySlice(jsonData, isNewest) {
-  let currentDate = jsonData['date'];
-  let features = jsonData['features'];
-
-  // Cases grouped by country and province.
-  let provinceFeatures = {};
-  let countryFeatures = {};
-
-  // "Re-hydrate" the features into objects ingestable by the map.
-  for (let i = 0; i < features.length; i++) {
-    let feature = formatFeatureForMap(features[i]);
-
-    // If we don't know where this is, discard.
-    if (!locationInfo[feature['properties']['geoid']]) {
-      continue;
-    }
-    // City, province, country.
-    let location = locationInfo[feature['properties']['geoid']].split(',');
-    if (!provinceFeatures[location[1]]) {
-      provinceFeatures[location[1]] = {'total': 0, 'new': 0};
-    }
-    provinceFeatures[location[1]]['total'] += feature['properties']['total'];
-    provinceFeatures[location[1]]['new'] += feature['properties']['new'];
-    if (!countryFeatures[location[2]]) {
-      countryFeatures[location[2]] = {'total': 0, 'new': 0};
-    }
-    countryFeatures[location[2]]['total'] += feature['properties']['total'];
-    countryFeatures[location[2]]['new'] += feature['properties']['new'];
-  }
-
-  dates.unshift(currentDate);
-
-  countryFeaturesByDay[currentDate] = countryFeatures;
-  provinceFeaturesByDay[currentDate] = provinceFeatures;
-  atomicFeaturesByDay[currentDate] = features;
-
-  // Only use the latest data for the map until we're done downloading
-  // everything.
-  if (isNewest) {
-    showDataAtDate(currentDate);
-  }
-
-  updateTimeControl();
-}
-
-/**
- * Fetches the next daily slice of data we need. If no argument is provided,
- * fetches the latest slice first.
- */
-function fetchDailySlice(sliceFileName, isNewest) {
-  let url = 'dailies/' + sliceFileName;
-  // Don't cache the most recent daily slice. Cache all others.
-  if (isNewest) {
-    url += '?nocache=' + timestamp;
-  }
-  return fetch(url)
-      .then(function(response) {
-          return response.status == 200 ? response.json() : undefined;
-      })
-      .then(function(jsonData) {
-        if (!jsonData) {
-          return;
-        }
-        processDailySlice(jsonData, isNewest);
-  });
-}
-
-function onBasicDataFetched() {
-  // We can now start getting daily data.
-  let dailyFetches = [];
-  for (let i = 0; i < dataSliceFileNames.length; i++) {
-    dailyFetches.push(fetchDailySlice(dataSliceFileNames[i], i == 0));
-  }
-  Promise.all(dailyFetches).then(onAllDailySlicesFetched);
-}
-
 function onAllDailySlicesFetched() {
-  dates = dates.sort();
 }
 
 // Takes an array of features, and bundles them in a way that the map API
@@ -222,102 +108,6 @@ function formatFeatureForMap(feature) {
   // Flip latitude and longitude.
   feature['geometry'] = {'type': 'Point', 'coordinates': [coords[1], coords[0]]};
   return feature;
-}
-
-function fetchJhuData() {
-  return fetch('jhu.json?nocache=' + timestamp)
-    .then(function(response) { return response.json(); })
-    .then(function(jsonData) {
-      let obj = jsonData['features'];
-      let list = '';
-      // Sort according to decreasing confirmed cases.
-      obj.sort(function(a, b) {
-        return b['attributes']['cum_conf'] - a['attributes']['cum_conf'];
-      });
-      for (let i = 0; i < obj.length; ++i) {
-        let location = obj[i];
-        if (!location || !location['attributes'] || !location['centroid']) {
-          // We can't do much with this location.
-          continue;
-        }
-        let name = location['attributes']['ADM0_NAME'] || '';
-        let lon = location['centroid']['x'] || 0;
-        let lat = location['centroid']['y'] || 0;
-        const geoid = '' + lat + '|' + lon;
-        // The total count comes down as a formatted string.
-        let cumConf = parseInt(
-            location['attributes']['cum_conf'].replace(/,/g, ''),
-            10) || 0;
-        let legendGroup = 'default';
-        latestDataPerCountry[geoid] = [name, cumConf];
-        // No city or province, just the country name.
-        locationInfo[geoid] = ',,' + name;
-        if (cumConf <= 10) {
-          legendGroup = '10';
-        } else if (cumConf <= 100) {
-          legendGroup = '100';
-        } else if (cumConf <= 500) {
-          legendGroup = '500';
-        } else if (cumConf <= 2000) {
-          legendGroup = '2000';
-        }
-
-        list += '<li><button onClick="handleFlyTo(' + lon + ',' + lat +
-            ',' + 4 + ')"><span class="label">' + name +
-            '</span><span class="num legend-group-' + legendGroup + '">' +
-            cumConf.toLocaleString() + '</span></span></button></li>';
-      }
-      document.getElementById('location-list').innerHTML = list;
-    });
-}
-
-// Load the location data (geo names from latitude and longitude).
-function fetchLocationData() {
-  return fetch('location_info.data')
-    .then(function(response) { return response.text(); })
-    .then(function(responseText) {
-      let lines = responseText.split('\n');
-      for (let i = 0; i < lines.length; i++) {
-        let parts = lines[i].split(':');
-        locationInfo[parts[0]] = parts[1];
-      }
-    });
-}
-
-function fetchDataIndex() {
-  return fetch('dailies/index.txt')
-    .then(function(response) { return response.text(); })
-    .then(function(responseText) {
-      let lines = responseText.split('\n');
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!!line) {
-          dataSliceFileNames.push(line);
-        }
-      }
-    });
-}
-
-function fetchCountryNames() {
-  return fetch('countries.data')
-    .then(function(response) { return response.text(); })
-    .then(function(responseText) {
-      let countries = responseText.trim().split('|');
-      for (let i = 0; i < countries.length; i++) {
-        let parts = countries[i].split(':');
-        countryNames[parts[1]] = parts[0];
-      }
-    });
-}
-
-// Load latest counts from scraper
-function fetchLatestCounts() {
-  return fetch('latestCounts.json?nocache=' + timestamp)
-    .then(function(response) { return response.json(); })
-    .then(function(jsonData) {
-      document.getElementById('total-cases').innerText = jsonData[0]['caseCount'];
-      document.getElementById('last-updated-date').innerText = jsonData[0]['date'];
-    });
 }
 
 // Build list of locations with counts
@@ -518,7 +308,11 @@ function showPopupForEvent(e) {
     locationString = location.join(', ');
     totalCaseCount = props['total'];
   } else {
-    let countryData = latestDataPerCountry[geo_id];
+    const data = dataProvider.getLatestDataPerCountry();
+    if (!data[geo_id]) {
+      return;
+    }
+    const countryData = data[geo_id];
     locationString = countryData[0];
     totalCaseCount = countryData[1];
   }
@@ -556,15 +350,8 @@ function handleFlyTo(lat, lon, zoom, item) {
 };
 
 
-function loadCountryData() {
-  const code = document.getElementById('dash').getAttribute('c');
-  fetch('/countries/' + code + '.json').then(function(response) {
-    console.log(response);
-  });
-}
-
-
-function initMap() {
+function init() {
+  dataProvider = new DataProvider();
 
   const hash = window.location.href.split('#')[1] || '';
   if (hash == 'autodrive') {
@@ -621,15 +408,14 @@ function initMap() {
       popup.remove();
     });
 
+    dataProvider.fetchInitialData(function() {
+      // Once the initial data is here, fetch the daily slices.
+      dataProvider.fetchDailySlices(function() {
+        dates = dates.sort();
+      });
+    });
     // Get the basic data about locations before we can start getting daily
     // slices.
-    Promise.all([
-      fetchLatestCounts(),
-      fetchCountryNames(),
-      fetchDataIndex(),
-      fetchLocationData(),
-      fetchJhuData()
-    ]).then(onBasicDataFetched);
 
     showLegend();
   });
@@ -645,6 +431,6 @@ if (typeof(globalThis) === 'undefined' && typeof(global) !== "undefined") {
 globalThis['clearFilter'] = clearFilter;
 globalThis['fetchAboutPage'] = fetchAboutPage;
 globalThis['filterList'] = filterList;
-globalThis['initMap'] = initMap;
-globalThis['loadCountryData'] = loadCountryData;
+globalThis['init'] = init;
+globalThis['loadCountryData'] = function() { dataProvider.loadCountryData(); };
 globalThis['handleFlyTo'] = handleFlyTo;

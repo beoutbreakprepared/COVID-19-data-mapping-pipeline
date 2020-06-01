@@ -12,6 +12,8 @@ def compile_js(quiet=False):
         "--language_in ECMASCRIPT6 "
         "--compilation_level ADVANCED_OPTIMIZATIONS "
         "" + ("--formatting=pretty_print " if DEBUG else "") + ""
+        "--js app/js/dataprovider.js "
+        "--js app/js/timeanimation.js "
         "--js app/js/healthmap.js "
         "--externs app/js/externs_d3.js "
         "--externs app/js/externs_mapbox.js "
