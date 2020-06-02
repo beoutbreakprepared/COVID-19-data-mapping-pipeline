@@ -1,6 +1,12 @@
 
 /** @constructor */
-let DataProvider = function() {
+let DataProvider = function(baseUrl) {
+  /**
+   * @const
+   * @private3
+   */
+  this.baseUrl_ = baseUrl;
+
   /** @private */
   this.countryFeaturesByDay_ = [];
 
@@ -60,7 +66,7 @@ DataProvider.prototype.fetchLocationData = function() {
 
 DataProvider.prototype.fetchDataIndex = function() {
   let self = this;
-  return fetch('dailies/index.txt')
+  return fetch(this.baseUrl_ + '/d/index.txt')
     .then(function(response) { return response.text(); })
     .then(function(responseText) {
       let lines = responseText.split('\n');
@@ -101,7 +107,7 @@ DataProvider.prototype.fetchLatestCounts = function() {
 /** Loads the appropriate country-specific data. */
 DataProvider.prototype.loadCountryData = function() {
   const code = document.getElementById('dash').getAttribute('c');
-  fetch('/countries/' + code + '.json').then(function(response) {
+  fetch(this.baseUrl_ + 'c/' + code + '.json').then(function(response) {
     console.log(response);
   });
 };
@@ -113,7 +119,7 @@ DataProvider.prototype.loadCountryData = function() {
  */
 DataProvider.prototype.fetchDailySlice = function(sliceFileName, isNewest) {
   let self = this;
-  let url = 'dailies/' + sliceFileName;
+  let url = this.baseUrl_ + 'd/' + sliceFileName;
   // Don't cache the most recent daily slice. Cache all others.
   if (isNewest) {
     url += '?nocache=' + timestamp;
