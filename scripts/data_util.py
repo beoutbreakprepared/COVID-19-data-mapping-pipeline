@@ -30,7 +30,7 @@ def initialize_country_names_and_codes():
     with open(COUNTRY_DATA_FILE) as f:
         data = f.read().strip()
         f.close()
-    pairs = data.split('|')
+    pairs = data.split('\n')
     for p in pairs:
         (name, code) = p.split(":")
         COUNTRIES_ISO_TO_NAME[code] = name
