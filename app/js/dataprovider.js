@@ -107,7 +107,7 @@ DataProvider.prototype.fetchLatestCounts = function() {
 /** Loads the appropriate country-specific data. */
 DataProvider.prototype.loadCountryData = function() {
   const code = document.getElementById('dash').getAttribute('c');
-  fetch('/countries/' + code + '.json').then(function(response) {
+  fetch(this.baseUrl_ + 'c/' + code + '.json').then(function(response) {
     console.log(response);
   });
 };
