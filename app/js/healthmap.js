@@ -351,7 +351,7 @@ function handleFlyTo(lat, lon, zoom, item) {
 
 
 function init() {
-  dataProvider = new DataProvider();
+  dataProvider = new DataProvider('https://raw.githubusercontent.com/ghdsi/covid-19/master/');
 
   const hash = window.location.href.split('#')[1] || '';
   if (hash == 'autodrive') {
