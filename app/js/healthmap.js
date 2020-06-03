@@ -23,8 +23,8 @@ const timestamp = (new Date()).getTime();
 // Globals
 let dataProvider;
 let locationInfo = {};
-// A map from 2-letter ISO country codes to full names
-let countryNames = {};
+// A map from 2-letter ISO country codes to country objects.
+let countries = {};
 let dates = [];
 let map;
 // The same popup object will be reused.
@@ -301,7 +301,7 @@ function showPopupForEvent(e) {
     let location = locationInfo[geo_id].split(',');
     // Replace country code with name if necessary
     if (location[2].length == 2) {
-      location[2] = countryNames[location[2]];
+      location[2] = countries[location[2]].getName();
     }
     // Remove empty strings
     location = location.filter(function (el) { return el != ''; });

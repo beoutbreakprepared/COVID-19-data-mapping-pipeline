@@ -84,10 +84,19 @@ DataProvider.prototype.fetchCountryNames = function() {
   return fetch('https://raw.githubusercontent.com/ghdsi/common/master/countries.data')
     .then(function(response) { return response.text(); })
     .then(function(responseText) {
-      let countries = responseText.trim().split('|');
-      for (let i = 0; i < countries.length; i++) {
-        let parts = countries[i].split(':');
-        countryNames[parts[1]] = parts[0];
+      let countryLines = responseText.trim().split('\n');
+      for (let i = 0; i < countryLines.length; i++) {
+        let parts = countryLines[i].split(':');
+        const code = parts[0];
+        const name = parts[1];
+        let bboxParts = parts[2].split('|');
+        let bboxes = [];
+        for (let j = 0; j < bboxParts.length; j++) {
+            let bbox = bboxParts[j].split(',');
+            bboxes.push(bbox);
+        }
+        let c = new Country(code, name, bboxes);
+        countries[code] = c;
       }
     });
 };
