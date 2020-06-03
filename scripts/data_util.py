@@ -4,16 +4,10 @@ import pandas
 import sys
 
 sys.path.append("scripts")
-import generate_full_data
 import jhu_global_data
 
 # The file that contains mappings from country names to ISO codes.
-COUNTRY_DATA_FILE = "app/countries.data"
-
-# The directories (inside app/) where JSON files for country-specific and
-# day-specific data are expected to reside.
-COUNTRIES_DIR = "app/countries"
-DAILIES_DIR = "app/dailies"
+COUNTRY_DATA_FILE = "../common/countries.data"
 
 self_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")
 
@@ -112,22 +106,6 @@ def make_country_pages():
 
 def prepare_for_local_development(quiet=False):
     success = True
-    if not os.path.exists(COUNTRIES_DIR):
-        os.mkdir(COUNTRIES_DIR)
-    if not os.path.exists(DAILIES_DIR):
-        os.mkdir(DAILIES_DIR)
-
-    countries = [f for f in os.listdir(COUNTRIES_DIR) if f.endswith(".json")]
-    dailies = [f for f in os.listdir(DAILIES_DIR) if f.endswith(".json")]
-    if len(countries) > 0 and len(dailies) > 0:
-        if not quiet:
-            print(
-                "I found some daily data ready to use. To re-generate, "
-                "empty the '" + DAILIES_DIR + "' directory (or "
-                "run './clean') and start me again."
-            )
-    else:
-        generate_data(quiet=quiet)
 
     success &= retrieve_generable_data(
         os.path.join(self_dir, "app"), should_overwrite=False, quiet=quiet
@@ -146,33 +124,9 @@ def prepare_for_deployment(quiet=False):
         print("I wasn't able to retrieve necessary data, aborting")
         success = False
 
-    if not os.path.exists(DAILIES_DIR):
-        os.mkdir(DAILIES_DIR)
-    if not os.path.exists(COUNTRIES_DIR):
-        os.mkdir(COUNTRIES_DIR)
-
-    # Clean whatever is left over.
-    for daily in glob.glob("dailies/*.json"):
-        os.remove(daily)
-    for country in glob.glob("countries/*.json"):
-        os.remove(country)
-
-    generate_data(overwrite=True, quiet=quiet)
     make_country_pages()
     return success
 
-
-def generate_data(overwrite=False, quiet=False):
-    if not quiet:
-        print(
-            "I need to generate the appropriate data, this is going to "
-            "take a few minutes..."
-        )
-    generate_full_data.generate_data(
-        os.path.join(self_dir, DAILIES_DIR),
-        os.path.join(self_dir, COUNTRIES_DIR),
-        overwrite=overwrite, quiet=quiet
-    )
 
 # Fetch country names and codes at module initialization time to avoid doing it
 # repeatedly.
