@@ -351,7 +351,8 @@ function handleFlyTo(lat, lon, zoom, item) {
 
 
 function init() {
-  dataProvider = new DataProvider('https://raw.githubusercontent.com/ghdsi/covid-19/master/');
+  dataProvider = new DataProvider(
+      'https://raw.githubusercontent.com/ghdsi/covid-19/master/');
 
   const hash = window.location.href.split('#')[1] || '';
   if (hash == 'autodrive') {
@@ -424,6 +425,16 @@ function init() {
   document.getElementById('playpause').setAttribute('src', 'img/play.svg');
 }
 
+function countryInit() {
+  dataProvider = new DataProvider(
+      'https://raw.githubusercontent.com/ghdsi/covid-19/master/');
+  dataProvider.loadCountryData(showCountryPage);
+}
+
+function showCountryPage(data) {
+  console.log(data);
+}
+
 // Exports
 if (typeof(globalThis) === 'undefined' && typeof(global) !== "undefined") {
     globalThis = global;
@@ -432,5 +443,5 @@ globalThis['clearFilter'] = clearFilter;
 globalThis['fetchAboutPage'] = fetchAboutPage;
 globalThis['filterList'] = filterList;
 globalThis['init'] = init;
-globalThis['loadCountryData'] = function() { dataProvider.loadCountryData(); };
+globalThis['countryInit'] = countryInit;
 globalThis['handleFlyTo'] = handleFlyTo;

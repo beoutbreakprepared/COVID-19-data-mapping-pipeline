@@ -81,7 +81,7 @@ DataProvider.prototype.fetchDataIndex = function() {
 
 
 DataProvider.prototype.fetchCountryNames = function() {
-  return fetch('countries.data')
+  return fetch('https://raw.githubusercontent.com/ghdsi/common/master/countries.data')
     .then(function(response) { return response.text(); })
     .then(function(responseText) {
       let countries = responseText.trim().split('|');
@@ -105,11 +105,11 @@ DataProvider.prototype.fetchLatestCounts = function() {
 
 
 /** Loads the appropriate country-specific data. */
-DataProvider.prototype.loadCountryData = function() {
+DataProvider.prototype.loadCountryData = function(callback) {
   const code = document.getElementById('dash').getAttribute('c');
-  fetch(this.baseUrl_ + 'c/' + code + '.json').then(function(response) {
-    console.log(response);
-  });
+  fetch(this.baseUrl_ + 'c/' + code + '.json')
+      .then(function(response) { return response.json(); })
+      .then(callback);
 };
 
 
