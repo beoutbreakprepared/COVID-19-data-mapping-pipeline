@@ -105,11 +105,11 @@ DataProvider.prototype.fetchLatestCounts = function() {
 
 
 /** Loads the appropriate country-specific data. */
-DataProvider.prototype.loadCountryData = function() {
+DataProvider.prototype.loadCountryData = function(callback) {
   const code = document.getElementById('dash').getAttribute('c');
-  fetch(this.baseUrl_ + 'c/' + code + '.json').then(function(response) {
-    console.log(response);
-  });
+  fetch(this.baseUrl_ + 'c/' + code + '.json')
+      .then(function(response) { return response.json(); })
+      .then(callback);
 };
 
 
