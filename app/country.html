@@ -3,14 +3,18 @@
 <head>
   <title>{{title}}</title>
   <meta charset="utf-8">
+  <link rel="stylesheet" type="text/css" href="/css/fonts.css" />
+  <link rel="stylesheet" type="text/css" href="/css/styles.css?c" />
 </head>
-<body onload="loadCountryData()">
+<body>
 
   <div id="dash" c="{{code}}"></div>
   <!-- js -->
+  <script src="/js/dataprovider.js"></script>
   <script src="/js/healthmap.js"></script>
   <!-- /js -->
   <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script>loadCountryData()</script>
 
 </body>
 

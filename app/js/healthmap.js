@@ -21,7 +21,7 @@ const ZOOM_THRESHOLD = 2;
 const timestamp = (new Date()).getTime();
 
 // Globals
-let dataProvider;
+let  dataProvider = new DataProvider('https://raw.githubusercontent.com/ghdsi/covid-19/master/');
 let locationInfo = {};
 // A map from 2-letter ISO country codes to full names
 let countryNames = {};
@@ -351,8 +351,6 @@ function handleFlyTo(lat, lon, zoom, item) {
 
 
 function init() {
-  dataProvider = new DataProvider('https://raw.githubusercontent.com/ghdsi/covid-19/master/');
-
   const hash = window.location.href.split('#')[1] || '';
   if (hash == 'autodrive') {
     document.body.classList.add('autodrive');
