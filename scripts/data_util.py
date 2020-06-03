@@ -4,7 +4,6 @@ import pandas
 import sys
 
 sys.path.append("scripts")
-import jhu_global_data
 
 # The file that contains mappings from country names to ISO codes.
 COUNTRY_DATA_FILE = "../common/countries.data"
@@ -66,20 +65,6 @@ def build_case_count_table_from_line_list(in_data):
     out_data.reset_index(drop=False)
     return out_data
 
-# Returns whether we were able to get the necessary data
-def retrieve_generable_data(out_dir, should_overwrite=False, quiet=False):
-    import scrape_total_count
-
-    success = True
-    out_path = os.path.join(out_dir, "latestCounts.json")
-    if not os.path.exists(out_path) or should_overwrite:
-        success &= scrape_total_count.scrape_total_count(out_path)
-    out_path = os.path.join(out_dir, "jhu.json")
-    if not os.path.exists(out_path) or should_overwrite:
-        success &= jhu_global_data.main(out_path)
-
-    return success
-
 
 def make_country_pages():
     countries = get_all_countries()
@@ -105,27 +90,13 @@ def make_country_pages():
             i.close()
 
 def prepare_for_local_development(quiet=False):
-    success = True
-
-    success &= retrieve_generable_data(
-        os.path.join(self_dir, "app"), should_overwrite=False, quiet=quiet
-    )
     make_country_pages()
-
-    return success
+    return True
 
 
 def prepare_for_deployment(quiet=False):
-
-    success = True
-    if not retrieve_generable_data(
-            os.path.join(self_dir, "app"), should_overwrite=True, quiet=quiet
-    ):
-        print("I wasn't able to retrieve necessary data, aborting")
-        success = False
-
     make_country_pages()
-    return success
+    return True
 
 
 # Fetch country names and codes at module initialization time to avoid doing it
