@@ -88,14 +88,7 @@ def make_country_pages():
         with open(index_file, "w") as i:
             i.write(output)
             i.close()
-
-def prepare_for_local_development(quiet=False):
-    make_country_pages()
-    return True
-
-
-def prepare_for_deployment(quiet=False):
-    make_country_pages()
+    # TODO: return False is anything bad happens.
     return True
 
 
