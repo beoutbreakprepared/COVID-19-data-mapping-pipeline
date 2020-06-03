@@ -52,7 +52,7 @@ DataProvider.prototype.fetchDailySlices = function(callback) {
 
 /** Loads the location data (geo names from latitude and longitude). */
 DataProvider.prototype.fetchLocationData = function() {
-  return fetch('location_info.data')
+  return fetch(this.baseUrl_ + 'location_info.data')
     .then(function(response) { return response.text(); })
     .then(function(responseText) {
       let lines = responseText.split('\n');
@@ -95,7 +95,7 @@ DataProvider.prototype.fetchCountryNames = function() {
 
 /** Loads the latest case counts from the scraper. */
 DataProvider.prototype.fetchLatestCounts = function() {
-  return fetch('latestCounts.json?nocache=' + timestamp)
+  return fetch(this.baseUrl_ + 'latestCounts.json?nocache=' + timestamp)
     .then(function(response) { return response.json(); })
     .then(function(jsonData) {
       document.getElementById('total-cases').innerText = jsonData[0]['caseCount'];
@@ -185,7 +185,7 @@ DataProvider.prototype.processDailySlice = function(jsonData, isNewest) {
 
 DataProvider.prototype.fetchJhuData = function() {
   let self = this;
-  return fetch('jhu.json?nocache=' + timestamp)
+  return fetch(this.baseUrl_ + 'jhu.json?nocache=' + timestamp)
     .then(function(response) { return response.json(); })
     .then(function(jsonData) {
       let obj = jsonData['features'];
