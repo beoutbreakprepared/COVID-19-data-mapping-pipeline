@@ -209,7 +209,9 @@ DataProvider.prototype.fetchJhuData = function() {
           // We can't do much with this location.
           continue;
         }
-        let name = location['attributes']['ADM0_NAME'] || '';
+        const code = location['attributes']['code'];
+        const country = countries[code];
+        const name = country.getName();
         let lon = location['centroid']['x'] || 0;
         let lat = location['centroid']['y'] || 0;
         const geoid = '' + lat + '|' + lon;
