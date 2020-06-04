@@ -21,6 +21,7 @@ mapboxgl.NavigationControl = function() {};
 mapboxgl.Popup = function(options) {};
 
 mapboxgl.Popup.prototype.addTo = function(m) {};
+mapboxgl.Popup.prototype.fitBounds = function(b) {};
 mapboxgl.Popup.prototype.remove = function() {};
 mapboxgl.Popup.prototype.setDOMContent = function(c) {};
 mapboxgl.Popup.prototype.setLngLat = function(l) {};
