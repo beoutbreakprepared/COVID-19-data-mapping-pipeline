@@ -31,13 +31,13 @@ DataProvider.prototype.getLatestDataPerCountry = function() {
 };
 
 DataProvider.prototype.fetchInitialData = function(callback) {
+  const self = this;
   Promise.all([
     this.fetchLatestCounts(),
     this.fetchCountryNames(),
     this.fetchDataIndex(),
-    this.fetchLocationData(),
-    this.fetchJhuData()
-  ]).then(callback);
+    this.fetchLocationData()
+  ]).then(function() { self.fetchJhuData(); }).then(callback);
 };
 
 
@@ -198,11 +198,11 @@ DataProvider.prototype.fetchJhuData = function() {
     .then(function(response) { return response.json(); })
     .then(function(jsonData) {
       let obj = jsonData['features'];
-      let list = '';
       // Sort according to decreasing confirmed cases.
       obj.sort(function(a, b) {
         return b['attributes']['cum_conf'] - a['attributes']['cum_conf'];
       });
+      let countryList = document.getElementById('location-list');
       for (let i = 0; i < obj.length; ++i) {
         let location = obj[i];
         if (!location || !location['attributes'] || !location['centroid']) {
@@ -211,6 +211,9 @@ DataProvider.prototype.fetchJhuData = function() {
         }
         const code = location['attributes']['code'];
         const country = countries[code];
+        if (!country) {
+          continue;
+        }
         const name = country.getName();
         let lon = location['centroid']['x'] || 0;
         let lat = location['centroid']['y'] || 0;
@@ -233,11 +236,15 @@ DataProvider.prototype.fetchJhuData = function() {
           legendGroup = '2000';
         }
 
-        list += '<li><button onClick="handleFlyTo(' + lon + ',' + lat +
-            ',' + 4 + ')"><span class="label">' + name +
-            '</span><span class="num legend-group-' + legendGroup + '">' +
-            cumConf.toLocaleString() + '</span></span></button></li>';
+        let item = document.createElement('li');
+        let button = document.createElement('button');
+        button.setAttribute('country', code);
+        button.onclick = flyToCountry;
+        button.innerHTML = '<span class="label">' + name + '</span>' +
+            '<span class="num legend-group-' + legendGroup + '">' +
+            cumConf.toLocaleString() + '</span></span>';
+        item.appendChild(button);
+        countryList.appendChild(item);
       }
-      document.getElementById('location-list').innerHTML = list;
     });
 }

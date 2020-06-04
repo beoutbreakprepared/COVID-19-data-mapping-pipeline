@@ -340,13 +340,14 @@ function showPopupForEvent(e) {
 }
 
 
-function handleFlyTo(lat, lon, zoom, item) {
-  map.flyTo({'center': [lat, lon], 'zoom': zoom })
-  window.scrollTo({
-    'top': 0,
-    'left': 0,
-    'behavior': 'smooth'
-  });
+function flyToCountry(event) {
+  let target = event.target;
+  while (!target.getAttribute('country')) {
+    target = target.parentNode;
+  }
+  const country = countries[target.getAttribute('country')];
+  const dest = country.getMainBoundingBox();
+  map.fitBounds([[dest[0], dest[1]], [dest[2], dest[3]]]);
 };
 
 
@@ -444,4 +445,3 @@ globalThis['fetchAboutPage'] = fetchAboutPage;
 globalThis['filterList'] = filterList;
 globalThis['init'] = init;
 globalThis['countryInit'] = countryInit;
-globalThis['handleFlyTo'] = handleFlyTo;
