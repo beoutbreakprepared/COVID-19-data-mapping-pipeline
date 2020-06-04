@@ -3,7 +3,7 @@
 let DataProvider = function(baseUrl) {
   /**
    * @const
-   * @private3
+   * @private
    */
   this.baseUrl_ = baseUrl;
 
