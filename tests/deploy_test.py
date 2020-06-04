@@ -40,10 +40,6 @@ class DeployTest(base_test.BaseTest):
             "The index page needs to make an unobfuscated call "
             "to 'fetchAboutPage'")
 
-        self.check(
-            self.target_file_contains("location_info.data", "Berlin,DE"),
-            "The location info file should contain geo information")
-
         self.check(self.target_file_exists("js/bundle.js"),
                    "Javascript should get compiled as part of deployment.")
         self.check(not self.target_file_exists("js/healthmap.js"),

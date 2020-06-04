@@ -19,7 +19,7 @@ def run_http_server():
 
 
 def run():
-    data_util.prepare_for_local_development()
+    data_util.make_country_pages()
 
     try:
         os.chdir("app")

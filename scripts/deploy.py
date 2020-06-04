@@ -176,7 +176,7 @@ def deploy(target_path, quiet=False):
     use_compiled_js(quiet=quiet)
     insert_analytics_code(quiet=quiet)
 
-    success &= data_util.prepare_for_deployment(quiet=quiet)
+    success &= data_util.make_country_pages()
 
     success &= backup_current_version(target_path, quiet=quiet)
     success &= copy_contents(target_path, quiet=quiet)

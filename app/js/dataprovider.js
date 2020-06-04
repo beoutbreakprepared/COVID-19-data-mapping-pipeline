@@ -3,7 +3,7 @@
 let DataProvider = function(baseUrl) {
   /**
    * @const
-   * @private3
+   * @private
    */
   this.baseUrl_ = baseUrl;
 
@@ -31,13 +31,13 @@ DataProvider.prototype.getLatestDataPerCountry = function() {
 };
 
 DataProvider.prototype.fetchInitialData = function(callback) {
+  const self = this;
   Promise.all([
     this.fetchLatestCounts(),
     this.fetchCountryNames(),
     this.fetchDataIndex(),
-    this.fetchLocationData(),
-    this.fetchJhuData()
-  ]).then(callback);
+    this.fetchLocationData()
+  ]).then(function() { self.fetchJhuData(); }).then(callback);
 };
 
 
@@ -84,10 +84,19 @@ DataProvider.prototype.fetchCountryNames = function() {
   return fetch('https://raw.githubusercontent.com/ghdsi/common/master/countries.data')
     .then(function(response) { return response.text(); })
     .then(function(responseText) {
-      let countries = responseText.trim().split('|');
-      for (let i = 0; i < countries.length; i++) {
-        let parts = countries[i].split(':');
-        countryNames[parts[1]] = parts[0];
+      let countryLines = responseText.trim().split('\n');
+      for (let i = 0; i < countryLines.length; i++) {
+        let parts = countryLines[i].split(':');
+        const code = parts[0];
+        const name = parts[1];
+        let bboxParts = parts[2].split('|');
+        let bboxes = [];
+        for (let j = 0; j < bboxParts.length; j++) {
+            let bbox = bboxParts[j].split(',');
+            bboxes.push(bbox);
+        }
+        let c = new Country(code, name, bboxes);
+        countries[code] = c;
       }
     });
 };
@@ -189,18 +198,23 @@ DataProvider.prototype.fetchJhuData = function() {
     .then(function(response) { return response.json(); })
     .then(function(jsonData) {
       let obj = jsonData['features'];
-      let list = '';
       // Sort according to decreasing confirmed cases.
       obj.sort(function(a, b) {
         return b['attributes']['cum_conf'] - a['attributes']['cum_conf'];
       });
+      let countryList = document.getElementById('location-list');
       for (let i = 0; i < obj.length; ++i) {
         let location = obj[i];
         if (!location || !location['attributes'] || !location['centroid']) {
           // We can't do much with this location.
           continue;
         }
-        let name = location['attributes']['ADM0_NAME'] || '';
+        const code = location['attributes']['code'];
+        const country = countries[code];
+        if (!country) {
+          continue;
+        }
+        const name = country.getName();
         let lon = location['centroid']['x'] || 0;
         let lat = location['centroid']['y'] || 0;
         const geoid = '' + lat + '|' + lon;
@@ -222,11 +236,15 @@ DataProvider.prototype.fetchJhuData = function() {
           legendGroup = '2000';
         }
 
-        list += '<li><button onClick="handleFlyTo(' + lon + ',' + lat +
-            ',' + 4 + ')"><span class="label">' + name +
-            '</span><span class="num legend-group-' + legendGroup + '">' +
-            cumConf.toLocaleString() + '</span></span></button></li>';
+        let item = document.createElement('li');
+        let button = document.createElement('button');
+        button.setAttribute('country', code);
+        button.onclick = flyToCountry;
+        button.innerHTML = '<span class="label">' + name + '</span>' +
+            '<span class="num legend-group-' + legendGroup + '">' +
+            cumConf.toLocaleString() + '</span></span>';
+        item.appendChild(button);
+        countryList.appendChild(item);
       }
-      document.getElementById('location-list').innerHTML = list;
     });
 }

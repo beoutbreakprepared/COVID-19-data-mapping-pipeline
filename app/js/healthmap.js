@@ -23,8 +23,8 @@ const timestamp = (new Date()).getTime();
 // Globals
 let dataProvider;
 let locationInfo = {};
-// A map from 2-letter ISO country codes to full names
-let countryNames = {};
+// A map from 2-letter ISO country codes to country objects.
+let countries = {};
 let dates = [];
 let map;
 // The same popup object will be reused.
@@ -301,7 +301,7 @@ function showPopupForEvent(e) {
     let location = locationInfo[geo_id].split(',');
     // Replace country code with name if necessary
     if (location[2].length == 2) {
-      location[2] = countryNames[location[2]];
+      location[2] = countries[location[2]].getName();
     }
     // Remove empty strings
     location = location.filter(function (el) { return el != ''; });
@@ -340,13 +340,14 @@ function showPopupForEvent(e) {
 }
 
 
-function handleFlyTo(lat, lon, zoom, item) {
-  map.flyTo({'center': [lat, lon], 'zoom': zoom })
-  window.scrollTo({
-    'top': 0,
-    'left': 0,
-    'behavior': 'smooth'
-  });
+function flyToCountry(event) {
+  let target = event.target;
+  while (!target.getAttribute('country')) {
+    target = target.parentNode;
+  }
+  const country = countries[target.getAttribute('country')];
+  const dest = country.getMainBoundingBox();
+  map.fitBounds([[dest[0], dest[1]], [dest[2], dest[3]]]);
 };
 
 
@@ -444,4 +445,3 @@ globalThis['fetchAboutPage'] = fetchAboutPage;
 globalThis['filterList'] = filterList;
 globalThis['init'] = init;
 globalThis['countryInit'] = countryInit;
-globalThis['handleFlyTo'] = handleFlyTo;

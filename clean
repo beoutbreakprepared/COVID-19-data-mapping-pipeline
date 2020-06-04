@@ -1,22 +1,6 @@
 #!/usr/bin/python3
 
-import glob
 import os
 
-# These files can be re-generated and aren't checked into version control.
-FILES_TO_REMOVE = [
-    "app/dailies/index.txt",
-    "app/jhu.json",
-    "app/latestCounts.json",
-    "app/location_info.data",
-]
-
-for f in FILES_TO_REMOVE:
-    if os.path.exists(f):
-        os.remove(f)
-
-for daily in glob.glob("app/dailies/*.json"):
-    os.remove(daily)
-
-for country in glob.glob("app/countries/*.json"):
-    os.remove(country)
+# Remove country-specific auto-generated pages
+os.system("rm -rf c")
