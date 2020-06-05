@@ -5,9 +5,6 @@ import sys
 
 sys.path.append("scripts")
 
-# The file that contains mappings from country names to ISO codes.
-COUNTRY_DATA_FILE = "../common/countries.data"
-
 self_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")
 
 COUNTRIES_ISO_TO_NAME = {}
@@ -20,7 +17,9 @@ def initialize_country_names_and_codes():
     if len(COUNTRIES_ISO_TO_NAME) > 1:
         return
     COUNTRIES_ISO_TO_NAME = {}
-    with open(COUNTRY_DATA_FILE) as f:
+    data_file = "countries.data"
+    os.system("curl 'https://raw.githubusercontent.com/ghdsi/common/master/countries.data' > " + data_file)
+    with open(data_file) as f:
         data = f.read().strip()
         f.close()
     pairs = data.split('\n')
@@ -28,6 +27,7 @@ def initialize_country_names_and_codes():
         (code, name, _) = p.split(":")
         COUNTRIES_ISO_TO_NAME[code] = name
         COUNTRIES_NAME_TO_ISO[name.lower()] = code
+    os.remove(data_file)
 
 
 def get_all_countries():
